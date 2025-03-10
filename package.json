@@ -2,14 +2,27 @@
   "name": "hono-api-drizzle",
   "type": "module",
   "scripts": {
-    "dev": "tsx watch src/index.ts"
+    "build": "tsc && tsc-alias",
+    "dev": "tsx watch src/index.ts",
+    "start": "NODE_ENV=production node dist/src/index.js",
+    "type-check": "tsc --noEmit"
   },
   "dependencies": {
     "@hono/node-server": "^1.13.8",
-    "hono": "^4.7.4"
+    "dotenv": "^16.4.7",
+    "dotenv-expand": "^12.0.1",
+    "drizzle-orm": "^0.40.0",
+    "drizzle-zod": "^0.7.0",
+    "hono": "^4.7.4",
+    "pg": "^8.13.3",
+    "zod": "^3.24.2"
   },
   "devDependencies": {
     "@types/node": "^20.11.17",
-    "tsx": "^4.7.1"
+    "@types/pg": "^8.11.11",
+    "drizzle-kit": "^0.30.5",
+    "tsc-alias": "^1.8.11",
+    "tsx": "^4.19.3",
+    "typescript": "^5.8.2"
   }
 }
