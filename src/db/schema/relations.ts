@@ -10,6 +10,7 @@ import { studioRoom } from "./studio-room.schema";
 import { user } from "./user.schema";
 import { showPlatform } from "./show-platform";
 import { platform } from "./platform.schema";
+import { showPlatformMc } from "./show-platform-mc.schema";
 
 export const addressRelation = relations(address, ({ one }) => ({
   city: one(city, {
@@ -27,6 +28,7 @@ export const cityRelation = relations(city, ({ many }) => ({
 }));
 
 export const mcRelation = relations(mc, ({ one, many }) => ({
+  showPlatformMcs: many(showPlatformMc),
   user: one(user, {
     fields: [mc.userId],
     references: [user.id],
@@ -45,18 +47,33 @@ export const showRelation = relations(show, ({ one, many }) => ({
   showPlatforms: many(showPlatform),
 }));
 
-export const showPlatformRelation = relations(showPlatform, ({ one }) => ({
-  show: one(show, {
-    fields: [showPlatform.showId],
-    references: [show.id],
+export const showPlatformRelation = relations(
+  showPlatform,
+  ({ one, many }) => ({
+    show: one(show, {
+      fields: [showPlatform.showId],
+      references: [show.id],
+    }),
+    platform: one(platform, {
+      fields: [showPlatform.platformId],
+      references: [platform.id],
+    }),
+    studioRoom: one(studioRoom, {
+      fields: [showPlatform.studioRoomId],
+      references: [studioRoom.id],
+    }),
+    showPlatformMcs: many(showPlatformMc),
+  })
+);
+
+export const showPlatformMcRelation = relations(showPlatformMc, ({ one }) => ({
+  showPlatform: one(showPlatform, {
+    fields: [showPlatformMc.showPlatformId],
+    references: [showPlatform.id],
   }),
-  platform: one(platform, {
-    fields: [showPlatform.platformId],
-    references: [platform.id],
-  }),
-  studioRoom: one(studioRoom, {
-    fields: [showPlatform.studioRoomId],
-    references: [studioRoom.id],
+  mc: one(mc, {
+    fields: [showPlatformMc.mcId],
+    references: [mc.id],
   }),
 }));
 
