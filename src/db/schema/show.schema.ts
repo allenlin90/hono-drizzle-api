@@ -1,0 +1,31 @@
+import { pgTable as table } from "drizzle-orm/pg-core";
+import * as t from "drizzle-orm/pg-core";
+
+import { PREFIX } from "@/constants";
+import { brandedUid, timestamps } from "../helpers/columns.helpers";
+import { brand } from "./brand.schema";
+import { studioRoom } from "./studio-room.schema";
+
+export const show = table(
+  "show",
+  {
+    id: t.serial("id").primaryKey(),
+    uid: brandedUid(PREFIX.SHOW),
+    name: t.varchar("name", { length: 255 }).unique().notNull(),
+    brandId: t
+      .integer("brand_id")
+      .references(() => brand.id)
+      .notNull(),
+    studioRoomId: t
+      .integer("studio_room_id")
+      .references(() => studioRoom.id)
+      .notNull(),
+    startTime: t.timestamp("start_time", { mode: "string" }).notNull(),
+    endTime: t.timestamp("end_time", { mode: "string" }).notNull(),
+    ...timestamps,
+  },
+  (table) => [
+    t.uniqueIndex("uid_idx").on(table.uid),
+    t.uniqueIndex("name_idx").on(table.name),
+  ]
+);

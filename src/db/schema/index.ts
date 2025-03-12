@@ -3,6 +3,8 @@ export { address } from "./address.schema";
 export { brand } from "./brand.schema";
 export { city } from "./city.schema";
 export { mc } from "./mc.schema";
+export { platform } from "./platform.schema";
+export { show } from "./show.schema";
 export { studio } from "./studio.schema";
 export { studioRoom, roomTypeEnum } from "./studio-room.schema";
 export { user } from "./user.schema";
