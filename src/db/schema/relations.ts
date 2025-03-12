@@ -25,7 +25,7 @@ export const cityRelation = relations(city, ({ many }) => ({
 }));
 
 export const mcRelation = relations(mc, ({ one }) => ({
-  mc: one(user, {
+  user: one(user, {
     fields: [mc.userId],
     references: [user.id],
   }),
