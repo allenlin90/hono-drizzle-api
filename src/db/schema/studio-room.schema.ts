@@ -22,6 +22,6 @@ export const studioRoom = table(
   },
   (table) => [
     t.uniqueIndex("uid_idx").on(table.uid),
-    t.uniqueIndex("name_idx").on(table.name),
+    t.index("name_idx").on(table.name),
   ]
 );
