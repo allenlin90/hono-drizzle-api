@@ -10,7 +10,7 @@ export const show = table(
   {
     id: t.serial("id").primaryKey(),
     uid: brandedUid(PREFIX.SHOW),
-    name: t.varchar("name", { length: 255 }).unique().notNull(),
+    name: t.varchar("name", { length: 255 }).notNull(),
     brandId: t
       .integer("brand_id")
       .references(() => brand.id)
@@ -21,6 +21,6 @@ export const show = table(
   },
   (table) => [
     t.uniqueIndex("uid_idx").on(table.uid),
-    t.uniqueIndex("name_idx").on(table.name),
+    t.index("name_idx").on(table.name),
   ]
 );
