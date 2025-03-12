@@ -4,7 +4,6 @@ import * as t from "drizzle-orm/pg-core";
 import { PREFIX } from "@/constants";
 import { brandedUid, timestamps } from "../helpers/columns.helpers";
 import { brand } from "./brand.schema";
-import { studioRoom } from "./studio-room.schema";
 
 export const show = table(
   "show",
@@ -15,10 +14,6 @@ export const show = table(
     brandId: t
       .integer("brand_id")
       .references(() => brand.id)
-      .notNull(),
-    studioRoomId: t
-      .integer("studio_room_id")
-      .references(() => studioRoom.id)
       .notNull(),
     startTime: t.timestamp("start_time", { mode: "string" }).notNull(),
     endTime: t.timestamp("end_time", { mode: "string" }).notNull(),

@@ -8,6 +8,8 @@ import { show } from "./show.schema";
 import { studio } from "./studio.schema";
 import { studioRoom } from "./studio-room.schema";
 import { user } from "./user.schema";
+import { showPlatform } from "./show-platform";
+import { platform } from "./platform.schema";
 
 export const addressRelation = relations(address, ({ one }) => ({
   city: one(city, {
@@ -24,20 +26,36 @@ export const cityRelation = relations(city, ({ many }) => ({
   addresses: many(address),
 }));
 
-export const mcRelation = relations(mc, ({ one }) => ({
+export const mcRelation = relations(mc, ({ one, many }) => ({
   user: one(user, {
     fields: [mc.userId],
     references: [user.id],
   }),
 }));
 
-export const showRelation = relations(show, ({ one }) => ({
+export const platformRelation = relations(platform, ({ many }) => ({
+  showPlatforms: many(showPlatform),
+}));
+
+export const showRelation = relations(show, ({ one, many }) => ({
   brand: one(brand, {
     fields: [show.brandId],
     references: [brand.id],
   }),
+  showPlatforms: many(showPlatform),
+}));
+
+export const showPlatformRelation = relations(showPlatform, ({ one }) => ({
+  show: one(show, {
+    fields: [showPlatform.showId],
+    references: [show.id],
+  }),
+  platform: one(platform, {
+    fields: [showPlatform.platformId],
+    references: [platform.id],
+  }),
   studioRoom: one(studioRoom, {
-    fields: [show.studioRoomId],
+    fields: [showPlatform.studioRoomId],
     references: [studioRoom.id],
   }),
 }));
@@ -55,7 +73,7 @@ export const studioRoomRelation = relations(studioRoom, ({ one, many }) => ({
     fields: [studioRoom.studioId],
     references: [studio.id],
   }),
-  shows: many(show),
+  showPlatforms: many(showPlatform),
 }));
 
 export const userRelation = relations(user, ({ one }) => ({
