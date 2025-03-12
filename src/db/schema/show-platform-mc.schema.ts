@@ -2,7 +2,7 @@ import { pgTable as table } from "drizzle-orm/pg-core";
 import * as t from "drizzle-orm/pg-core";
 
 import { timestamps } from "../helpers/columns.helpers";
-import { showPlatform } from "./show-platform";
+import { showPlatform } from "./show-platform.schema";
 import { mc } from "./mc.schema";
 
 export const showPlatformMc = table(

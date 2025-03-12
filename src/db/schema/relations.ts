@@ -8,7 +8,7 @@ import { show } from "./show.schema";
 import { studio } from "./studio.schema";
 import { studioRoom } from "./studio-room.schema";
 import { user } from "./user.schema";
-import { showPlatform } from "./show-platform";
+import { showPlatform } from "./show-platform.schema";
 import { platform } from "./platform.schema";
 import { showPlatformMc } from "./show-platform-mc.schema";
 
