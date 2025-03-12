@@ -13,7 +13,7 @@ export const city = table(
     ...timestamps,
   },
   (table) => [
-    t.uniqueIndex("uid_idx").on(table.uid),
-    t.uniqueIndex("name_idx").on(table.name),
+    t.uniqueIndex("city_uid_idx").on(table.uid),
+    t.uniqueIndex("city_name_idx").on(table.name),
   ]
 );

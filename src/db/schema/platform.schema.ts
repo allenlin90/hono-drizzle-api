@@ -13,7 +13,7 @@ export const platform = table(
     ...timestamps,
   },
   (table) => [
-    t.uniqueIndex("uid_idx").on(table.uid),
-    t.uniqueIndex("name_idx").on(table.name),
+    t.uniqueIndex("platform_uid_idx").on(table.uid),
+    t.uniqueIndex("platform_name_idx").on(table.name),
   ]
 );

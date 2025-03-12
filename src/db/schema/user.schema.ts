@@ -22,9 +22,9 @@ export const user = table(
   },
   (table) => {
     return [
-      t.uniqueIndex("uid_idx").on(table.uid),
-      t.uniqueIndex("email_idx").on(table.email),
-      t.index("name_idx").on(table.name),
+      t.uniqueIndex("user_uid_idx").on(table.uid),
+      t.uniqueIndex("user_email_idx").on(table.email),
+      t.index("user_name_idx").on(table.name),
     ];
   }
 );

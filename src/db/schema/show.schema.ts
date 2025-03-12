@@ -20,7 +20,7 @@ export const show = table(
     ...timestamps,
   },
   (table) => [
-    t.uniqueIndex("uid_idx").on(table.uid),
-    t.index("name_idx").on(table.name),
+    t.uniqueIndex("show_uid_idx").on(table.uid),
+    t.index("show_name_idx").on(table.name),
   ]
 );

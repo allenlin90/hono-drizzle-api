@@ -17,7 +17,7 @@ export const mc = table(
     ...timestamps,
   },
   (table) => [
-    t.uniqueIndex("uid_idx").on(table.uid),
-    t.index("name_idx").on(table.name),
+    t.uniqueIndex("mc_uid_idx").on(table.uid),
+    t.index("mc_name_idx").on(table.name),
   ]
 );

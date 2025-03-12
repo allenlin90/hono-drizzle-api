@@ -21,7 +21,7 @@ export const studioRoom = table(
     ...timestamps,
   },
   (table) => [
-    t.uniqueIndex("uid_idx").on(table.uid),
-    t.index("name_idx").on(table.name),
+    t.uniqueIndex("studio_room_uid_idx").on(table.uid),
+    t.index("studio_room_name_idx").on(table.name),
   ]
 );

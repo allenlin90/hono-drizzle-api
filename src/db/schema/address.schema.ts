@@ -22,5 +22,5 @@ export const address = table(
     postcode: t.varchar("postcode", { length: 16 }).notNull(),
     ...timestamps,
   },
-  (table) => [t.uniqueIndex("uid_idx").on(table.uid)]
+  (table) => [t.uniqueIndex("address_uid_idx").on(table.uid)]
 );
