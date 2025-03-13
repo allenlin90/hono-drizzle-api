@@ -10,6 +10,7 @@ import { platform } from "./platform.schema";
 import { showMaterial } from "./show-material.schema";
 import { showPlatformMaterial } from "./show-platform-material.schema";
 import { showPlatformMc } from "./show-platform-mc.schema";
+import { showPlatformReview } from "./show-platform-review.schema";
 import { showPlatform } from "./show-platform.schema";
 import { show } from "./show.schema";
 import { studioRoom } from "./studio-room.schema";
@@ -127,6 +128,21 @@ export const showPlatformRelation = relations(
     showPlatformMcs: many(showPlatformMc),
     showPlatformMaterials: many(showPlatformMaterial),
     tasks: many(task),
+    showPlatformReviews: many(showPlatformReview),
+  })
+);
+
+export const showPlatformReviewRelation = relations(
+  showPlatformReview,
+  ({ one }) => ({
+    showPlatform: one(showPlatform, {
+      fields: [showPlatformReview.showPlatformId],
+      references: [showPlatform.id],
+    }),
+    reviewer: one(user, {
+      fields: [showPlatformReview.reviewerId],
+      references: [user.id],
+    }),
   })
 );
 
@@ -165,7 +181,8 @@ export const taskRelation = relations(task, ({ one }) => ({
   }),
 }));
 
-export const userRelation = relations(user, ({ one }) => ({
+export const userRelation = relations(user, ({ one, many }) => ({
+  mcShowReviews: many(mcShowReview),
   mc: one(mc, {
     fields: [user.id],
     references: [mc.userId],
@@ -174,4 +191,5 @@ export const userRelation = relations(user, ({ one }) => ({
     fields: [user.id],
     references: [operator.userId],
   }),
+  showPlatformReviews: many(showPlatformReview),
 }));

@@ -9,6 +9,7 @@ export { platform } from "./platform.schema";
 export { showMaterial, materialTypeEnum } from "./show-material.schema";
 export { showPlatformMaterial } from "./show-platform-material.schema";
 export { showPlatformMc } from "./show-platform-mc.schema";
+export { showPlatformReview } from "./show-platform-review.schema";
 export { showPlatform } from "./show-platform.schema";
 export { show } from "./show.schema";
 export { studioRoom, roomTypeEnum } from "./studio-room.schema";

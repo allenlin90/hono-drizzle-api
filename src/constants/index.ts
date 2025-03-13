@@ -7,6 +7,7 @@ export enum PREFIX {
   MC = "mc",
   OPERATOR = "opr",
   PLATFORM = "platform",
+  SHOW_REVIEW = "show_rev",
   SHOW = "show",
   STUDIO = "studio",
   STUDIO_ROOM = "std_room",
