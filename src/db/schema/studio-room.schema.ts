@@ -20,8 +20,5 @@ export const studioRoom = table(
     type: roomTypeEnum().default("s").notNull(),
     ...timestamps,
   },
-  (table) => [
-    t.uniqueIndex("studio_room_uid_idx").on(table.uid),
-    t.index("studio_room_name_idx").on(table.name),
-  ]
+  (table) => [t.index("studio_room_name_idx").on(table.name)]
 );

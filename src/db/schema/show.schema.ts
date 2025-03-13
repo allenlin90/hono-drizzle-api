@@ -19,8 +19,5 @@ export const show = table(
     endTime: t.timestamp("end_time", { mode: "string" }).notNull(),
     ...timestamps,
   },
-  (table) => [
-    t.uniqueIndex("show_uid_idx").on(table.uid),
-    t.index("show_name_idx").on(table.name),
-  ]
+  (table) => [t.index("show_name_idx").on(table.name)]
 );

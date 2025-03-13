@@ -16,8 +16,5 @@ export const mc = table(
       .references(() => user.id, { onDelete: "cascade" }),
     ...timestamps,
   },
-  (table) => [
-    t.uniqueIndex("mc_uid_idx").on(table.uid),
-    t.index("mc_name_idx").on(table.name),
-  ]
+  (table) => [t.index("mc_name_idx").on(table.name)]
 );

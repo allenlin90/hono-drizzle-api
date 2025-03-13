@@ -21,10 +21,6 @@ export const user = table(
     ...timestamps,
   },
   (table) => {
-    return [
-      t.uniqueIndex("user_uid_idx").on(table.uid),
-      t.uniqueIndex("user_email_idx").on(table.email),
-      t.index("user_name_idx").on(table.name),
-    ];
+    return [t.index("user_name_idx").on(table.name)];
   }
 );
