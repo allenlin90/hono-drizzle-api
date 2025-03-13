@@ -23,6 +23,6 @@ export const mcShowReview = table("mc_show_review", {
     .integer("show_platform_mc_id")
     .references(() => showPlatformMc.id)
     .notNull(),
-  note: t.varchar("review"),
+  note: t.varchar("note"),
   ...timestamps,
 });
