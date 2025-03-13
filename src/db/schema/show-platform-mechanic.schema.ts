@@ -3,6 +3,7 @@ import * as t from "drizzle-orm/pg-core";
 
 import { timestamps } from "../helpers/columns.helpers";
 import { showPlatform } from "./show-platform.schema";
+import { mechanic } from "./mechanic.schema";
 
 export const showPlatformMechanic = table(
   "show_platform_mechanic",
@@ -12,7 +13,10 @@ export const showPlatformMechanic = table(
       .integer("show_platform_id")
       .references(() => showPlatform.id)
       .notNull(),
-    mechanicId: t.integer("mechanic_id").notNull(),
+    mechanicId: t
+      .integer("mechanic_id")
+      .references(() => mechanic.id)
+      .notNull(),
     ...timestamps,
   },
   (table) => [t.unique().on(table.showPlatformId, table.mechanicId)]
