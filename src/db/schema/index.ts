@@ -13,4 +13,3 @@ export { showPlatformMaterial } from "./show-platform-material.schema";
 export { studio } from "./studio.schema";
 export { studioRoom, roomTypeEnum } from "./studio-room.schema";
 export { user } from "./user.schema";
-export { userRole } from "./user-role.schema";
