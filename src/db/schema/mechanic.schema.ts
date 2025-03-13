@@ -12,8 +12,9 @@ export const mechanic = table(
       .integer("brand_id")
       .references(() => brand.id)
       .notNull(),
-    name: t.varchar("name").notNull(),
     description: t.text("description"),
+    name: t.varchar("name").notNull(),
+    isActive: t.boolean("is_active").default(true).notNull(),
     resourceUrl: t.varchar("resource_url"),
     ...timestamps,
   },
