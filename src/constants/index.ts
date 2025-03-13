@@ -9,5 +9,6 @@ export enum PREFIX {
   SHOW = "show",
   STUDIO = "studio",
   STUDIO_ROOM = "std_room",
+  TASK = "task",
   USER = "usr",
 }

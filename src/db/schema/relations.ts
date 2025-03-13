@@ -4,15 +4,17 @@ import { address } from "./address.schema";
 import { brand } from "./brand.schema";
 import { city } from "./city.schema";
 import { mc } from "./mc.schema";
+import { platform } from "./platform.schema";
+import { operator } from "./operator.schema";
 import { show } from "./show.schema";
 import { studio } from "./studio.schema";
 import { studioRoom } from "./studio-room.schema";
-import { user } from "./user.schema";
 import { showPlatform } from "./show-platform.schema";
-import { platform } from "./platform.schema";
 import { showPlatformMc } from "./show-platform-mc.schema";
 import { showMaterial } from "./show-material.schema";
 import { showPlatformMaterial } from "./show-platform-material.schema";
+import { task } from "./task.schema";
+import { user } from "./user.schema";
 
 export const addressRelation = relations(address, ({ one }) => ({
   city: one(city, {
@@ -36,6 +38,14 @@ export const mcRelation = relations(mc, ({ one, many }) => ({
     fields: [mc.userId],
     references: [user.id],
   }),
+}));
+
+export const operatorRelation = relations(operator, ({ one, many }) => ({
+  user: one(user, {
+    fields: [operator.userId],
+    references: [user.id],
+  }),
+  tasks: many(task),
 }));
 
 export const platformRelation = relations(platform, ({ many }) => ({
@@ -78,6 +88,7 @@ export const showPlatformRelation = relations(
     }),
     showPlatformMcs: many(showPlatformMc),
     showPlatformMaterials: many(showPlatformMaterial),
+    tasks: many(task),
   })
 );
 
@@ -122,9 +133,24 @@ export const studioRoomRelation = relations(studioRoom, ({ one, many }) => ({
   showPlatforms: many(showPlatform),
 }));
 
-export const userRelation = relations(user, ({ one, many }) => ({
+export const taskRelation = relations(task, ({ one }) => ({
+  operator: one(operator, {
+    fields: [task.operatorId],
+    references: [operator.id],
+  }),
+  showPlatform: one(showPlatform, {
+    fields: [task.showPlatformId],
+    references: [showPlatform.id],
+  }),
+}));
+
+export const userRelation = relations(user, ({ one }) => ({
   mc: one(mc, {
     fields: [user.id],
     references: [mc.userId],
+  }),
+  operator: one(operator, {
+    fields: [user.id],
+    references: [operator.userId],
   }),
 }));

@@ -12,4 +12,5 @@ export { showPlatformMc } from "./show-platform-mc.schema";
 export { showPlatformMaterial } from "./show-platform-material.schema";
 export { studio } from "./studio.schema";
 export { studioRoom, roomTypeEnum } from "./studio-room.schema";
+export { task, taskTypeEnum } from "./task.schema";
 export { user } from "./user.schema";
