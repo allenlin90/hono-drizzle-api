@@ -18,7 +18,7 @@ export const showPlatform = table(
       .integer("platform_id")
       .references(() => platform.id)
       .notNull(),
-    is_active: t.boolean("is_active").default(true).notNull(),
+    isActive: t.boolean("is_active").default(true).notNull(),
     studioRoomId: t.integer("studio_room_id").references(() => studioRoom.id),
     ...timestamps,
   },
