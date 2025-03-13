@@ -2,6 +2,7 @@ export * from "./relations";
 export { address } from "./address.schema";
 export { brand } from "./brand.schema";
 export { city } from "./city.schema";
+export { mcShowReview } from "./mc-show-review.schema";
 export { mc } from "./mc.schema";
 export { operator } from "./operator.schema";
 export { platform } from "./platform.schema";

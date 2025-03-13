@@ -3,6 +3,7 @@ import { relations } from "drizzle-orm";
 import { address } from "./address.schema";
 import { brand } from "./brand.schema";
 import { city } from "./city.schema";
+import { mcShowReview } from "./mc-show-review.schema";
 import { mc } from "./mc.schema";
 import { operator } from "./operator.schema";
 import { platform } from "./platform.schema";
@@ -32,12 +33,28 @@ export const cityRelation = relations(city, ({ many }) => ({
   addresses: many(address),
 }));
 
+export const mcShowReviewRelation = relations(mcShowReview, ({ one }) => ({
+  mc: one(mc, {
+    fields: [mcShowReview.mcId],
+    references: [mc.id],
+  }),
+  reviewer: one(user, {
+    fields: [mcShowReview.reviewerId],
+    references: [user.id],
+  }),
+  showPlatformMc: one(showPlatformMc, {
+    fields: [mcShowReview.showPlatformMcId],
+    references: [showPlatformMc.id],
+  }),
+}));
+
 export const mcRelation = relations(mc, ({ one, many }) => ({
   showPlatformMcs: many(showPlatformMc),
   user: one(user, {
     fields: [mc.userId],
     references: [user.id],
   }),
+  showReviews: many(mcShowReview),
 }));
 
 export const operatorRelation = relations(operator, ({ one, many }) => ({
@@ -77,16 +94,20 @@ export const showMaterialRelation = relations(
   })
 );
 
-export const showPlatformMcRelation = relations(showPlatformMc, ({ one }) => ({
-  showPlatform: one(showPlatform, {
-    fields: [showPlatformMc.showPlatformId],
-    references: [showPlatform.id],
-  }),
-  mc: one(mc, {
-    fields: [showPlatformMc.mcId],
-    references: [mc.id],
-  }),
-}));
+export const showPlatformMcRelation = relations(
+  showPlatformMc,
+  ({ one, many }) => ({
+    showPlatform: one(showPlatform, {
+      fields: [showPlatformMc.showPlatformId],
+      references: [showPlatform.id],
+    }),
+    mc: one(mc, {
+      fields: [showPlatformMc.mcId],
+      references: [mc.id],
+    }),
+    mcShowReviews: many(mcShowReview),
+  })
+);
 
 export const showPlatformRelation = relations(
   showPlatform,

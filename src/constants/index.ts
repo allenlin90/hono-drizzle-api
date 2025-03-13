@@ -3,6 +3,7 @@ export enum PREFIX {
   BRAND = "brand",
   CITY = "city",
   MATERIAL = "material",
+  MC_SHOW_REVIEW = "mc_show_rev",
   MC = "mc",
   OPERATOR = "opr",
   PLATFORM = "platform",
