@@ -11,3 +11,4 @@ export { showPlatformMc } from "./show-platform-mc.schema";
 export { studio } from "./studio.schema";
 export { studioRoom, roomTypeEnum } from "./studio-room.schema";
 export { user } from "./user.schema";
+export { userRole } from "./user-role.schema";

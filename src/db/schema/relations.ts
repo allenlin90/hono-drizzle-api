@@ -11,6 +11,8 @@ import { user } from "./user.schema";
 import { showPlatform } from "./show-platform.schema";
 import { platform } from "./platform.schema";
 import { showPlatformMc } from "./show-platform-mc.schema";
+import { userRole } from "./user-role.schema";
+import { role } from "./role.schema";
 
 export const addressRelation = relations(address, ({ one }) => ({
   city: one(city, {
@@ -37,6 +39,10 @@ export const mcRelation = relations(mc, ({ one, many }) => ({
 
 export const platformRelation = relations(platform, ({ many }) => ({
   showPlatforms: many(showPlatform),
+}));
+
+export const roleRelation = relations(role, ({ many }) => ({
+  userRoles: many(userRole),
 }));
 
 export const showRelation = relations(show, ({ one, many }) => ({
@@ -93,9 +99,21 @@ export const studioRoomRelation = relations(studioRoom, ({ one, many }) => ({
   showPlatforms: many(showPlatform),
 }));
 
-export const userRelation = relations(user, ({ one }) => ({
+export const userRelation = relations(user, ({ one, many }) => ({
   mc: one(mc, {
     fields: [user.id],
     references: [mc.userId],
+  }),
+  userRoles: many(userRole),
+}));
+
+export const userRoleRelation = relations(userRole, ({ one }) => ({
+  user: one(user, {
+    fields: [userRole.userId],
+    references: [user.id],
+  }),
+  role: one(role, {
+    fields: [userRole.roleId],
+    references: [role.id],
   }),
 }));
