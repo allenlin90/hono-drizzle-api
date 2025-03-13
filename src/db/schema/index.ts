@@ -4,6 +4,7 @@ export { brand } from "./brand.schema";
 export { city } from "./city.schema";
 export { mc } from "./mc.schema";
 export { platform } from "./platform.schema";
+export { role } from "./role.schema";
 export { show } from "./show.schema";
 export { showPlatform } from "./show-platform.schema";
 export { showPlatformMc } from "./show-platform-mc.schema";
