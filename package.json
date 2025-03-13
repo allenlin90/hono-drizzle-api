@@ -5,7 +5,11 @@
     "build": "tsc && tsc-alias",
     "dev": "tsx watch src/index.ts",
     "start": "NODE_ENV=production node dist/src/index.js",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "db:check": "npx drizzle-kit check",
+    "db:generate": "npx drizzle-kit generate",
+    "db:migrate": "npx drizzle-kit migrate",
+    "studio": "npx drizzle-kit studio"
   },
   "dependencies": {
     "@hono/node-server": "^1.13.8",
