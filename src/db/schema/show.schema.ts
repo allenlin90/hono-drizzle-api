@@ -10,7 +10,7 @@ export const show = table(
   {
     id: t.serial("id").primaryKey(),
     uid: brandedUid(PREFIX.SHOW),
-    name: t.varchar("name", { length: 255 }).notNull(),
+    name: t.varchar("name").notNull(),
     brandId: t
       .integer("brand_id")
       .references(() => brand.id)

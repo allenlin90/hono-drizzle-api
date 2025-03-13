@@ -8,7 +8,7 @@ import { address } from "./address.schema";
 export const studio = table("studio", {
   id: t.serial("id").primaryKey(),
   uid: brandedUid(PREFIX.STUDIO),
-  name: t.varchar("name", { length: 255 }).unique().notNull(),
+  name: t.varchar("name").unique().notNull(),
   addressId: t.integer("address_id").references(() => address.id),
   ...timestamps,
 });

@@ -28,5 +28,8 @@ export const showMaterial = table(
     resourceUrl: t.varchar("resource_url"),
     ...timestamps,
   },
-  (table) => [t.unique().on(table.brandId, table.name)]
+  (table) => [
+    t.unique().on(table.brandId, table.name),
+    t.index().on(table.name),
+  ]
 );

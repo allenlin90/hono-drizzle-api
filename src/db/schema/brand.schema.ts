@@ -7,6 +7,6 @@ import { brandedUid, timestamps } from "../helpers/columns.helpers";
 export const brand = table("brand", {
   id: t.serial("id").primaryKey(),
   uid: brandedUid(PREFIX.BRAND),
-  name: t.varchar("name", { length: 255 }).unique().notNull(),
+  name: t.varchar("name").unique().notNull(),
   ...timestamps,
 });
