@@ -13,8 +13,8 @@ import { platform } from "./platform.schema";
 import { showPlatformMc } from "./show-platform-mc.schema";
 import { userRole } from "./user-role.schema";
 import { role } from "./role.schema";
-import { mechanic } from "./mechanic.schema";
-import { showPlatformMechanic } from "./show-platform-mechanic.schema";
+import { showMaterial } from "./show-material.schema";
+import { showPlatformMaterial } from "./show-platform-material.schema";
 
 export const addressRelation = relations(address, ({ one }) => ({
   city: one(city, {
@@ -24,7 +24,7 @@ export const addressRelation = relations(address, ({ one }) => ({
 }));
 
 export const brandRelation = relations(brand, ({ many }) => ({
-  mechanics: many(mechanic),
+  materials: many(showMaterial),
   shows: many(show),
 }));
 
@@ -38,14 +38,6 @@ export const mcRelation = relations(mc, ({ one, many }) => ({
     fields: [mc.userId],
     references: [user.id],
   }),
-}));
-
-export const mechanicRelation = relations(mechanic, ({ one, many }) => ({
-  brand: one(brand, {
-    fields: [mechanic.brandId],
-    references: [brand.id],
-  }),
-  showPlatformMechanics: many(showPlatformMechanic),
 }));
 
 export const platformRelation = relations(platform, ({ many }) => ({
@@ -64,6 +56,17 @@ export const showRelation = relations(show, ({ one, many }) => ({
   showPlatforms: many(showPlatform),
 }));
 
+export const showMaterialRelation = relations(
+  showMaterial,
+  ({ one, many }) => ({
+    brand: one(brand, {
+      fields: [showMaterial.brandId],
+      references: [brand.id],
+    }),
+    showPlatformMaterials: many(showPlatformMaterial),
+  })
+);
+
 export const showPlatformRelation = relations(
   showPlatform,
   ({ one, many }) => ({
@@ -80,7 +83,7 @@ export const showPlatformRelation = relations(
       references: [studioRoom.id],
     }),
     showPlatformMcs: many(showPlatformMc),
-    showPlatformMechanics: many(showPlatformMechanic),
+    showPlatformMaterials: many(showPlatformMaterial),
   })
 );
 
@@ -95,16 +98,16 @@ export const showPlatformMcRelation = relations(showPlatformMc, ({ one }) => ({
   }),
 }));
 
-export const showPlatformMechanicRelation = relations(
-  showPlatformMechanic,
+export const showPlatformMaterialRelation = relations(
+  showPlatformMaterial,
   ({ one }) => ({
     showPlatform: one(showPlatform, {
-      fields: [showPlatformMechanic.showPlatformId],
+      fields: [showPlatformMaterial.showPlatformId],
       references: [showPlatform.id],
     }),
-    mechanic: one(mechanic, {
-      fields: [showPlatformMechanic.mechanicId],
-      references: [mechanic.id],
+    material: one(showMaterial, {
+      fields: [showPlatformMaterial.showMaterialId],
+      references: [showMaterial.id],
     }),
   })
 );

@@ -3,21 +3,21 @@ import * as t from "drizzle-orm/pg-core";
 
 import { timestamps } from "../helpers/columns.helpers";
 import { showPlatform } from "./show-platform.schema";
-import { mechanic } from "./mechanic.schema";
+import { showMaterial } from "./show-material.schema";
 
-export const showPlatformMechanic = table(
-  "show_platform_mechanic",
+export const showPlatformMaterial = table(
+  "show_platform_material",
   {
     id: t.serial("id").primaryKey(),
     showPlatformId: t
       .integer("show_platform_id")
       .references(() => showPlatform.id)
       .notNull(),
-    mechanicId: t
-      .integer("mechanic_id")
-      .references(() => mechanic.id)
+    showMaterialId: t
+      .integer("show_material_id")
+      .references(() => showMaterial.id)
       .notNull(),
     ...timestamps,
   },
-  (table) => [t.unique().on(table.showPlatformId, table.mechanicId)]
+  (table) => [t.unique().on(table.showPlatformId, table.showMaterialId)]
 );
