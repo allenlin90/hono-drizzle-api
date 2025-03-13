@@ -9,6 +9,7 @@ export { role } from "./role.schema";
 export { show } from "./show.schema";
 export { showPlatform } from "./show-platform.schema";
 export { showPlatformMc } from "./show-platform-mc.schema";
+export { showPlatformMechanic } from "./show-platform-mechanic.schema";
 export { studio } from "./studio.schema";
 export { studioRoom, roomTypeEnum } from "./studio-room.schema";
 export { user } from "./user.schema";
