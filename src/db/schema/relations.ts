@@ -13,6 +13,7 @@ import { platform } from "./platform.schema";
 import { showPlatformMc } from "./show-platform-mc.schema";
 import { userRole } from "./user-role.schema";
 import { role } from "./role.schema";
+import { mechanic } from "./mechanic.schema";
 
 export const addressRelation = relations(address, ({ one }) => ({
   city: one(city, {
@@ -22,6 +23,7 @@ export const addressRelation = relations(address, ({ one }) => ({
 }));
 
 export const brandRelation = relations(brand, ({ many }) => ({
+  mechanics: many(mechanic),
   shows: many(show),
 }));
 
@@ -34,6 +36,13 @@ export const mcRelation = relations(mc, ({ one, many }) => ({
   user: one(user, {
     fields: [mc.userId],
     references: [user.id],
+  }),
+}));
+
+export const mechanicRelation = relations(mechanic, ({ one }) => ({
+  brand: one(brand, {
+    fields: [mechanic.brandId],
+    references: [brand.id],
   }),
 }));
 
