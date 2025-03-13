@@ -4,6 +4,7 @@ export enum PREFIX {
   CITY = "city",
   MATERIAL = "material",
   MC = "mc",
+  OPERATOR = "opr",
   PLATFORM = "platform",
   SHOW = "show",
   STUDIO = "studio",
