@@ -14,7 +14,7 @@ export const showPlatformMaterial = table(
       .references(() => showPlatform.id)
       .notNull(),
     brandMaterialId: t
-      .integer("show_material_id")
+      .integer("brand_material_id")
       .references(() => brandMaterial.id)
       .notNull(),
     ...timestamps,

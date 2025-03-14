@@ -13,7 +13,7 @@ export const materialTypeEnum = t.pgEnum("material_type", [
 ]);
 
 export const brandMaterial = table(
-  "show_material",
+  "brand_material",
   {
     id: t.serial("id").primaryKey(),
     uid: brandedUid(PREFIX.MATERIAL),
