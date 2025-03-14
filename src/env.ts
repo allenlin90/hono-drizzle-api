@@ -3,6 +3,11 @@ import { expand } from "dotenv-expand";
 import path from "node:path";
 import { z } from "zod";
 
+const stringBoolean = z.coerce
+  .string()
+  .transform((val) => val === "true")
+  .default("false");
+
 expand(
   config({
     path: path.resolve(
@@ -19,6 +24,8 @@ const EnvSchema = z.object({
     .enum(["fatal", "error", "warn", "info", "debug", "trace", "silent"])
     .default("debug"),
   DATABASE_URL: z.string().url(),
+  DB_MIGRATING: stringBoolean,
+  DB_SEEDING: stringBoolean,
 });
 
 export type env = z.infer<typeof EnvSchema>;

@@ -1,14 +1,18 @@
 import "dotenv/config";
+import pg from "pg";
 import { drizzle } from "drizzle-orm/node-postgres";
 
 import env from "@/env";
 import * as schema from "./schema";
 
-const db = drizzle({
+export const pool = new pg.Pool({
+  connectionString: env.DATABASE_URL,
+  max: env.DB_MIGRATING || env.DB_SEEDING ? 1 : undefined,
+});
+
+export const db = drizzle({
   casing: "snake_case",
-  connection: {
-    connectionString: env.DATABASE_URL,
-  },
+  client: pool,
   logger: true,
   schema,
 });

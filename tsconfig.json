@@ -12,11 +12,13 @@
     "outDir": "dist",
     "baseUrl": "./",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "$/*": ["./*"]
     }
   },
   "tsc-alias": {
-    "resolveFullPaths": true
+    "resolveFullPaths": true,
+    "verbose": true
   },
   "exclude": ["node_modules"]
 }

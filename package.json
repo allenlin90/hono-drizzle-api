@@ -8,11 +8,12 @@
     "type-check": "tsc --noEmit",
     "db:check": "npx drizzle-kit check",
     "db:generate": "npx drizzle-kit generate",
-    "db:migrate": "npx drizzle-kit migrate",
+    "db:migrate": "cross-env DB_MIGRATING=true tsx src/db/migrate.ts",
     "studio": "npx drizzle-kit studio"
   },
   "dependencies": {
     "@hono/node-server": "^1.13.8",
+    "cross-env": "^7.0.3",
     "dotenv": "^16.4.7",
     "dotenv-expand": "^12.0.1",
     "drizzle-orm": "^0.40.0",
