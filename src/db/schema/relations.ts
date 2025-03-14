@@ -1,13 +1,13 @@
 import { relations } from "drizzle-orm";
 
 import { address } from "./address.schema";
+import { brandMaterial } from "./brand-material.schema";
 import { brand } from "./brand.schema";
 import { city } from "./city.schema";
 import { mcShowReview } from "./mc-show-review.schema";
 import { mc } from "./mc.schema";
 import { operator } from "./operator.schema";
 import { platform } from "./platform.schema";
-import { showMaterial } from "./show-material.schema";
 import { showPlatformMaterial } from "./show-platform-material.schema";
 import { showPlatformMc } from "./show-platform-mc.schema";
 import { showPlatformReview } from "./show-platform-review.schema";
@@ -26,7 +26,7 @@ export const addressRelation = relations(address, ({ one }) => ({
 }));
 
 export const brandRelation = relations(brand, ({ many }) => ({
-  materials: many(showMaterial),
+  materials: many(brandMaterial),
   shows: many(show),
 }));
 
@@ -77,18 +77,18 @@ export const showPlatformMaterialRelation = relations(
       fields: [showPlatformMaterial.showPlatformId],
       references: [showPlatform.id],
     }),
-    material: one(showMaterial, {
-      fields: [showPlatformMaterial.showMaterialId],
-      references: [showMaterial.id],
+    material: one(brandMaterial, {
+      fields: [showPlatformMaterial.brandMaterialId],
+      references: [brandMaterial.id],
     }),
   })
 );
 
-export const showMaterialRelation = relations(
-  showMaterial,
+export const brandMaterialRelation = relations(
+  brandMaterial,
   ({ one, many }) => ({
     brand: one(brand, {
-      fields: [showMaterial.brandId],
+      fields: [brandMaterial.brandId],
       references: [brand.id],
     }),
     showPlatformMaterials: many(showPlatformMaterial),

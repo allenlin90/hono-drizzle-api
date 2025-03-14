@@ -12,7 +12,7 @@ export const materialTypeEnum = t.pgEnum("material_type", [
   "other",
 ]);
 
-export const showMaterial = table(
+export const brandMaterial = table(
   "show_material",
   {
     id: t.serial("id").primaryKey(),
