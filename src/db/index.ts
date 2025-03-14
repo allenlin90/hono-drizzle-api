@@ -5,11 +5,14 @@ import env from "@/env";
 import * as schema from "./schema";
 
 const db = drizzle({
+  casing: "snake_case",
   connection: {
     connectionString: env.DATABASE_URL,
   },
-  casing: "snake_case",
+  logger: true,
   schema,
 });
+
+export type DB = typeof db;
 
 export default db;
