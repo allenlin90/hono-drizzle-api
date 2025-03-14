@@ -11,9 +11,7 @@ export const mc = table(
     id: t.serial("id").primaryKey(),
     uid: brandedUid(PREFIX.MC),
     name: t.varchar("name"),
-    userId: t
-      .integer("user_id")
-      .references(() => user.id, { onDelete: "cascade" }),
+    userId: t.integer("user_id").references(() => user.id),
     ...timestamps,
   },
   (table) => [t.index("mc_name_idx").on(table.name)]

@@ -15,7 +15,7 @@ export const studioRoom = table(
     name: t.varchar("name", { length: 255 }).notNull(),
     studioId: t
       .integer("studio_id")
-      .references(() => studio.id, { onDelete: "cascade" })
+      .references(() => studio.id)
       .notNull(),
     type: roomTypeEnum().default("s").notNull(),
     ...timestamps,

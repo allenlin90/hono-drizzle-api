@@ -14,7 +14,7 @@ export const address = table("address", {
   district: t.varchar("district", { length: 255 }),
   cityId: t
     .integer("city_id")
-    .references(() => city.id, { onDelete: "set null" })
+    .references(() => city.id)
     .notNull(),
   province: t.varchar("province", { length: 255 }).notNull(),
   postcode: t.varchar("postcode", { length: 16 }).notNull(),

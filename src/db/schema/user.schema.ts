@@ -6,7 +6,7 @@ import { brandedUid, timestamps } from "../helpers/columns.helpers";
 import { generateRandomString } from "../helpers/random-string.helpers";
 
 export const user = table(
-  "user",
+  "users",
   {
     id: t.serial("id").primaryKey(),
     uid: brandedUid(PREFIX.USER),
