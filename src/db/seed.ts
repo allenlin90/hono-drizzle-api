@@ -35,4 +35,5 @@ for (const table of Object.values(tables)) {
 }
 
 console.log("seeding completes");
+// @ts-ignore
 db.$client.end();
