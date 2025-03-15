@@ -23,6 +23,9 @@ importers:
       drizzle-orm:
         specifier: ^0.40.0
         version: 0.40.0(@types/pg@8.11.11)(gel@2.0.1)(pg@8.13.3)
+      drizzle-seed:
+        specifier: ^0.3.1
+        version: 0.3.1(drizzle-orm@0.40.0(@types/pg@8.11.11)(gel@2.0.1)(pg@8.13.3))
       drizzle-zod:
         specifier: ^0.7.0
         version: 0.7.0(drizzle-orm@0.40.0(@types/pg@8.11.11)(gel@2.0.1)(pg@8.13.3))(zod@3.24.2)
@@ -665,6 +668,14 @@ packages:
       sqlite3:
         optional: true
 
+  drizzle-seed@0.3.1:
+    resolution: {integrity: sha512-F/0lgvfOAsqlYoHM/QAGut4xXIOXoE5VoAdv2FIl7DpGYVXlAzKuJO+IphkKUFK3Dz+rFlOsQLnMNrvoQ0cx7g==}
+    peerDependencies:
+      drizzle-orm: '>=0.36.4'
+    peerDependenciesMeta:
+      drizzle-orm:
+        optional: true
+
   drizzle-zod@0.7.0:
     resolution: {integrity: sha512-xgCRYYVEzRkeXTS33GSMgoowe3vKsMNBjSI+cwG1oLQVEhAWWbqtb/AAMlm7tkmV4fG/uJjEmWzdzlEmTgWOoQ==}
     peerDependencies:
@@ -872,6 +883,9 @@ packages:
 
   postgres-range@1.1.4:
     resolution: {integrity: sha512-i/hbxIE9803Alj/6ytL7UHQxRvZkI9O4Sy+J3HGc4F4oo/2eQAjTSNJ0bfxyse3bH0nuVesCk+3IRLaMtG3H6w==}
+
+  pure-rand@6.1.0:
+    resolution: {integrity: sha512-bVWawvoZoBYpp6yIoQtQXHZjmz35RSVHnUOTefl8Vcjr8snTPY1wnpSPMWekcFwbxI6gtmT7rSYPFvz71ldiOA==}
 
   queue-lit@1.5.2:
     resolution: {integrity: sha512-tLc36IOPeMAubu8BkW8YDBV+WyIgKlYU7zUNs0J5Vk9skSZ4JfGlPOqplP0aHdfv7HL0B2Pg6nwiq60Qc6M2Hw==}
@@ -1285,6 +1299,12 @@ snapshots:
       gel: 2.0.1
       pg: 8.13.3
 
+  drizzle-seed@0.3.1(drizzle-orm@0.40.0(@types/pg@8.11.11)(gel@2.0.1)(pg@8.13.3)):
+    dependencies:
+      pure-rand: 6.1.0
+    optionalDependencies:
+      drizzle-orm: 0.40.0(@types/pg@8.11.11)(gel@2.0.1)(pg@8.13.3)
+
   drizzle-zod@0.7.0(drizzle-orm@0.40.0(@types/pg@8.11.11)(gel@2.0.1)(pg@8.13.3))(zod@3.24.2):
     dependencies:
       drizzle-orm: 0.40.0(@types/pg@8.11.11)(gel@2.0.1)(pg@8.13.3)
@@ -1538,6 +1558,8 @@ snapshots:
   postgres-interval@3.0.0: {}
 
   postgres-range@1.1.4: {}
+
+  pure-rand@6.1.0: {}
 
   queue-lit@1.5.2: {}
 

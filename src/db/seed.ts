@@ -1,43 +1,38 @@
-import { type Table, getTableName, sql } from "drizzle-orm";
 import env from "@/env";
-import { db, pool as connection } from "@/db";
+import { db } from "@/db";
 import * as schema from "@/db/schema";
-// import * as seeds from "./seeds";
+import { reset, seed } from "drizzle-seed";
 
 if (!env.DB_SEEDING) {
   throw new Error('You must set DB_SEEDING to "true" when running seeds');
 }
 
-async function resetTable(db: db, table: Table) {
-  return db.execute(
-    sql.raw(`TRUNCATE TABLE ${getTableName(table)} RESTART IDENTITY CASCADE`)
-  );
+const tables = {
+  address: schema.address,
+  brand: schema.brand,
+  city: schema.city,
+  mcShowReview: schema.mcShowReview,
+  mc: schema.mc,
+  operator: schema.operator,
+  platform: schema.platform,
+  brandMaterial: schema.brandMaterial,
+  showPlatformMaterial: schema.showPlatformMaterial,
+  showPlatformMc: schema.showPlatformMc,
+  showPlatformReview: schema.showPlatformReview,
+  showPlatform: schema.showPlatform,
+  show: schema.show,
+  studioRoom: schema.studioRoom,
+  studio: schema.studio,
+  task: schema.task,
+  user: schema.user,
+};
+
+await reset(db, tables);
+await seed(db, tables);
+
+for (const table of Object.values(tables)) {
+  await db.update(table).set({ deletedAt: null });
 }
 
-for (const table of [
-  schema.address,
-  schema.brand,
-  schema.city,
-  schema.mcShowReview,
-  schema.mc,
-  schema.operator,
-  schema.platform,
-  schema.showMaterial,
-  schema.showPlatformMaterial,
-  schema.showPlatformMc,
-  schema.showPlatformReview,
-  schema.showPlatform,
-  schema.show,
-  schema.studioRoom,
-  schema.studio,
-  schema.task,
-  schema.user,
-]) {
-  // await db.delete(table); // clear tables without truncating / resetting ids
-  await resetTable(db, table);
-}
-
-// TODO: seeding to db
-// await seeds.brand(db);
-
-await connection.end();
+console.log("seeding completes");
+db.$client.end();
