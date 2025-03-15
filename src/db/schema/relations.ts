@@ -25,6 +25,17 @@ export const addressRelation = relations(address, ({ one }) => ({
   }),
 }));
 
+export const brandMaterialRelation = relations(
+  brandMaterial,
+  ({ one, many }) => ({
+    brand: one(brand, {
+      fields: [brandMaterial.brandId],
+      references: [brand.id],
+    }),
+    showPlatformMaterials: many(showPlatformMaterial),
+  })
+);
+
 export const brandRelation = relations(brand, ({ many }) => ({
   materials: many(brandMaterial),
   shows: many(show),
@@ -47,11 +58,11 @@ export const mcShowReviewRelation = relations(mcShowReview, ({ one }) => ({
 
 export const mcRelation = relations(mc, ({ one, many }) => ({
   showPlatformMcs: many(showPlatformMc),
+  showReviews: many(mcShowReview),
   user: one(user, {
     fields: [mc.userId],
     references: [user.id],
   }),
-  showReviews: many(mcShowReview),
 }));
 
 export const operatorRelation = relations(operator, ({ one, many }) => ({
@@ -69,72 +80,61 @@ export const platformRelation = relations(platform, ({ many }) => ({
 export const showPlatformMaterialRelation = relations(
   showPlatformMaterial,
   ({ one }) => ({
-    showPlatform: one(showPlatform, {
-      fields: [showPlatformMaterial.showPlatformId],
-      references: [showPlatform.id],
-    }),
     material: one(brandMaterial, {
       fields: [showPlatformMaterial.brandMaterialId],
       references: [brandMaterial.id],
     }),
-  })
-);
-
-export const brandMaterialRelation = relations(
-  brandMaterial,
-  ({ one, many }) => ({
-    brand: one(brand, {
-      fields: [brandMaterial.brandId],
-      references: [brand.id],
+    showPlatform: one(showPlatform, {
+      fields: [showPlatformMaterial.showPlatformId],
+      references: [showPlatform.id],
     }),
-    showPlatformMaterials: many(showPlatformMaterial),
   })
 );
 
 export const showPlatformMcRelation = relations(showPlatformMc, ({ one }) => ({
-  showPlatform: one(showPlatform, {
-    fields: [showPlatformMc.showPlatformId],
-    references: [showPlatform.id],
-  }),
   mc: one(mc, {
     fields: [showPlatformMc.mcId],
     references: [mc.id],
   }),
   review: one(mcShowReview),
+  showPlatform: one(showPlatform, {
+    fields: [showPlatformMc.showPlatformId],
+    references: [showPlatform.id],
+  }),
 }));
 
 export const showPlatformRelation = relations(
   showPlatform,
   ({ one, many }) => ({
-    show: one(show, {
-      fields: [showPlatform.showId],
-      references: [show.id],
-    }),
+    materials: many(showPlatformMaterial),
+    mcs: many(showPlatformMc),
     platform: one(platform, {
       fields: [showPlatform.platformId],
       references: [platform.id],
+    }),
+    review: one(showPlatformReview),
+    show: one(show, {
+      fields: [showPlatform.showId],
+      references: [show.id],
     }),
     studioRoom: one(studioRoom, {
       fields: [showPlatform.studioRoomId],
       references: [studioRoom.id],
     }),
-    showPlatformMcs: many(showPlatformMc),
-    showPlatformMaterials: many(showPlatformMaterial),
     tasks: many(task),
-    review: one(showPlatformReview),
   })
 );
 
 export const showPlatformReviewRelation = relations(
   showPlatformReview,
   ({ one }) => ({
-    showPlatform: one(showPlatform, {
-      fields: [showPlatformReview.showPlatformId],
-      references: [showPlatform.id],
-    }),
     reviewer: one(user, {
       fields: [showPlatformReview.reviewerId],
       references: [user.id],
+    }),
+    showPlatform: one(showPlatform, {
+      fields: [showPlatformReview.showPlatformId],
+      references: [showPlatform.id],
     }),
   })
 );
