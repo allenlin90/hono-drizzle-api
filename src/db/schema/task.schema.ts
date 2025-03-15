@@ -18,10 +18,7 @@ export const task = table("task", {
   items: t.jsonb("items"),
   type: taskTypeEnum().notNull(),
   isCompleted: t.boolean("is_completed").default(false),
-  operatorId: t
-    .integer("operator_id")
-    .references(() => operator.id)
-    .notNull(),
+  operatorId: t.integer("operator_id").references(() => operator.id),
   showPlatformId: t
     .integer("show_platform_id")
     .references(() => showPlatform.id)

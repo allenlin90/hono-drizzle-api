@@ -95,20 +95,17 @@ export const brandMaterialRelation = relations(
   })
 );
 
-export const showPlatformMcRelation = relations(
-  showPlatformMc,
-  ({ one, many }) => ({
-    showPlatform: one(showPlatform, {
-      fields: [showPlatformMc.showPlatformId],
-      references: [showPlatform.id],
-    }),
-    mc: one(mc, {
-      fields: [showPlatformMc.mcId],
-      references: [mc.id],
-    }),
-    mcShowReviews: many(mcShowReview),
-  })
-);
+export const showPlatformMcRelation = relations(showPlatformMc, ({ one }) => ({
+  showPlatform: one(showPlatform, {
+    fields: [showPlatformMc.showPlatformId],
+    references: [showPlatform.id],
+  }),
+  mc: one(mc, {
+    fields: [showPlatformMc.mcId],
+    references: [mc.id],
+  }),
+  review: one(mcShowReview),
+}));
 
 export const showPlatformRelation = relations(
   showPlatform,
@@ -128,7 +125,7 @@ export const showPlatformRelation = relations(
     showPlatformMcs: many(showPlatformMc),
     showPlatformMaterials: many(showPlatformMaterial),
     tasks: many(task),
-    showPlatformReviews: many(showPlatformReview),
+    review: one(showPlatformReview),
   })
 );
 
