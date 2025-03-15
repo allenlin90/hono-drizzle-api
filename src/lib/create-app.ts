@@ -1,13 +1,13 @@
-import { Hono } from "hono";
 import { requestId } from "hono/request-id";
 
+import { type AppBindings } from "@/lib/types";
 import { notFound } from "@/middlewares/not-found";
 import { onError } from "@/middlewares/on-error";
 import { pinoLogger } from "@/middlewares/pino-logger";
-import { type AppBindings } from "@/lib/types";
+import { OpenAPIHono } from "@hono/zod-openapi";
 
 export const createApp = () => {
-  const app = new Hono<AppBindings>({ strict: false });
+  const app = new OpenAPIHono<AppBindings>({ strict: false });
 
   app.use(requestId());
   app.use(pinoLogger());

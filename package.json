@@ -1,4 +1,5 @@
 {
+  "version": "1.0.0",
   "name": "hono-api-drizzle",
   "type": "module",
   "scripts": {
@@ -14,6 +15,7 @@
   },
   "dependencies": {
     "@hono/node-server": "^1.13.8",
+    "@hono/zod-openapi": "^0.19.2",
     "cross-env": "^7.0.3",
     "dotenv": "^16.4.7",
     "dotenv-expand": "^12.0.1",

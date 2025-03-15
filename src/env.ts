@@ -26,6 +26,7 @@ const EnvSchema = z.object({
   DATABASE_URL: z.string().url(),
   DB_MIGRATING: stringBoolean,
   DB_SEEDING: stringBoolean,
+  OPEN_API_DOC_TITLE: z.string().default("livestream studio"),
 });
 
 export type env = z.infer<typeof EnvSchema>;
