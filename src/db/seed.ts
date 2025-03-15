@@ -156,6 +156,15 @@ await seed(db, tables).refine((r) => {
         ...timestamps,
       },
     },
+    showPlatform: {
+      count: 20,
+      columns: {
+        showId: r.int({ minValue: 1, maxValue: 20, isUnique: true }),
+        platformId: r.int({ minValue: 1, maxValue: 3 }),
+        isActive: r.default({ defaultValue: true }),
+        ...timestamps,
+      },
+    },
     show: {
       count: 20,
       columns: {
