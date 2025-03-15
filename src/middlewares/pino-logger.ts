@@ -4,9 +4,9 @@ import pretty from "pino-pretty";
 import env from "@/env";
 
 export const pinoLogger = () => {
-  const options = env.NODE_ENV === "production" ? {} : pretty();
+  const options = env.NODE_ENV === "production" ? undefined : pretty();
 
   return logger({
-    pino: pino(options),
+    pino: pino({ level: env.LOG_LEVEL }, options),
   });
 };
