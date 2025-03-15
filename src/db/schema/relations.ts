@@ -35,10 +35,6 @@ export const cityRelation = relations(city, ({ many }) => ({
 }));
 
 export const mcShowReviewRelation = relations(mcShowReview, ({ one }) => ({
-  mc: one(mc, {
-    fields: [mcShowReview.mcId],
-    references: [mc.id],
-  }),
   reviewer: one(user, {
     fields: [mcShowReview.reviewerId],
     references: [user.id],
