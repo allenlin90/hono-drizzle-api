@@ -57,12 +57,11 @@ export const mcShowReviewRelation = relations(mcShowReview, ({ one }) => ({
 }));
 
 export const mcRelation = relations(mc, ({ one, many }) => ({
-  showPlatformMcs: many(showPlatformMc),
-  showReviews: many(mcShowReview),
   user: one(user, {
     fields: [mc.userId],
     references: [user.id],
   }),
+  showPlatformMcs: many(showPlatformMc),
 }));
 
 export const operatorRelation = relations(operator, ({ one, many }) => ({
@@ -91,17 +90,20 @@ export const showPlatformMaterialRelation = relations(
   })
 );
 
-export const showPlatformMcRelation = relations(showPlatformMc, ({ one }) => ({
-  mc: one(mc, {
-    fields: [showPlatformMc.mcId],
-    references: [mc.id],
-  }),
-  review: one(mcShowReview),
-  showPlatform: one(showPlatform, {
-    fields: [showPlatformMc.showPlatformId],
-    references: [showPlatform.id],
-  }),
-}));
+export const showPlatformMcRelation = relations(
+  showPlatformMc,
+  ({ one, many }) => ({
+    mc: one(mc, {
+      fields: [showPlatformMc.mcId],
+      references: [mc.id],
+    }),
+    reviews: many(mcShowReview),
+    showPlatform: one(showPlatform, {
+      fields: [showPlatformMc.showPlatformId],
+      references: [showPlatform.id],
+    }),
+  })
+);
 
 export const showPlatformRelation = relations(
   showPlatform,
@@ -112,7 +114,7 @@ export const showPlatformRelation = relations(
       fields: [showPlatform.platformId],
       references: [platform.id],
     }),
-    review: one(showPlatformReview),
+    reviews: many(showPlatformReview),
     show: one(show, {
       fields: [showPlatform.showId],
       references: [show.id],
@@ -148,19 +150,19 @@ export const showRelation = relations(show, ({ one, many }) => ({
 }));
 
 export const studioRoomRelation = relations(studioRoom, ({ one, many }) => ({
+  showPlatforms: many(showPlatform),
   studio: one(studio, {
     fields: [studioRoom.studioId],
     references: [studio.id],
   }),
-  showPlatforms: many(showPlatform),
 }));
 
 export const studioRelation = relations(studio, ({ one, many }) => ({
-  rooms: many(studioRoom),
   address: one(address, {
     fields: [studio.addressId],
     references: [address.id],
   }),
+  rooms: many(studioRoom),
 }));
 
 export const taskRelation = relations(task, ({ one }) => ({
