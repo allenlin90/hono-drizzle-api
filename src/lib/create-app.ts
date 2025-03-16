@@ -1,13 +1,17 @@
 import { requestId } from "hono/request-id";
 
+import { OpenAPIHono } from "@hono/zod-openapi";
 import { type AppBindings } from "@/lib/types";
 import { notFound } from "@/middlewares/not-found";
 import { onError } from "@/middlewares/on-error";
 import { pinoLogger } from "@/middlewares/pino-logger";
-import { OpenAPIHono } from "@hono/zod-openapi";
+import { defaultHook } from "@/openapi/default-hook";
 
 export const createRouter = () => {
-  return new OpenAPIHono<AppBindings>({ strict: false });
+  return new OpenAPIHono<AppBindings>({
+    strict: false,
+    defaultHook,
+  });
 };
 
 export const createApp = () => {
