@@ -2,8 +2,8 @@ import { pgTable as table } from "drizzle-orm/pg-core";
 import * as t from "drizzle-orm/pg-core";
 
 import { PREFIX } from "@/constants";
+import { generateRandomString } from "@/utils/generate-random-string";
 import { brandedUid, timestamps } from "../helpers/columns.helpers";
-import { generateRandomString } from "../helpers/random-string.helpers";
 
 export const user = table(
   "users",
