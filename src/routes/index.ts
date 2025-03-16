@@ -1,25 +1,23 @@
-import { createRouter } from "@/lib/create-app";
 import { createRoute, z } from "@hono/zod-openapi";
+import { createRouter } from "@/lib/create-app";
+import * as HttpStatus from "@/http-status-codes";
+import jsonContent from "@/openapi/helpers/json-content";
+import { createMessageObjectSchema } from "@/openapi/schemas/create-message-object";
 
 const router = createRouter().openapi(
   createRoute({
+    tags: ["Index"],
     method: "get",
     path: "/",
     responses: {
-      200: {
-        content: {
-          "application/json": {
-            schema: z.object({
-              message: z.string(),
-            }),
-          },
-        },
-        description: "Livestream Studio API Index",
-      },
+      [HttpStatus.OK]: jsonContent(
+        createMessageObjectSchema("Livestream Studio API"),
+        "Livestream Studio API Index"
+      ),
     },
   }),
   (c) => {
-    return c.json({ message: "Livestream Studio API" });
+    return c.json({ message: "Livestream Studio API" }, HttpStatus.OK);
   }
 );
 
