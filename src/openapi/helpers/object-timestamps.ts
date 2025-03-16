@@ -4,7 +4,7 @@ export const objectTimestamps = () => {
   return {
     createdAt: z.string().datetime(),
     updatedAt: z.string().datetime(),
-    deletedAt: z.string().datetime().optional(),
+    deletedAt: z.string().datetime().nullable(),
   };
 };
 
