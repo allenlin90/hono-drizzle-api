@@ -6,10 +6,12 @@ import createErrorSchema from "@/openapi/schemas/create-error-schema";
 import { IdParams } from "@/openapi/schemas/id-params";
 import {
   insertBrandSchema,
+  patchBrandSchema,
   selectBrandsSchema,
 } from "@/db/schema/brand.schema";
 import { PREFIX } from "@/constants";
 import notFoundSchema from "@/openapi/schemas/not-found";
+import jsonContentOneOf from "@/openapi/helpers/json-content-one-of";
 
 const tags = ["Brands"];
 
@@ -57,8 +59,29 @@ export const getOne = createRoute({
       "The requested brand"
     ),
     [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContent(
-      createErrorSchema(insertBrandSchema),
+      createErrorSchema(IdParams(PREFIX.BRAND)),
       "invalid id error"
+    ),
+    [HttpStatusCodes.NOT_FOUND]: jsonContent(notFoundSchema, "Brand not found"),
+  },
+});
+
+export const patch = createRoute({
+  tags,
+  path: "/brands/{id}",
+  method: "patch",
+  request: {
+    params: IdParams(PREFIX.BRAND),
+    body: jsonContentRequired(patchBrandSchema, "The brand updates"),
+  },
+  responses: {
+    [HttpStatusCodes.OK]: jsonContent(selectBrandsSchema, "The updated brand"),
+    [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContentOneOf(
+      [
+        createErrorSchema(patchBrandSchema),
+        createErrorSchema(IdParams(PREFIX.BRAND)),
+      ],
+      "The validation error"
     ),
     [HttpStatusCodes.NOT_FOUND]: jsonContent(notFoundSchema, "Brand not found"),
   },
@@ -67,3 +90,4 @@ export const getOne = createRoute({
 export type ListRoute = typeof list;
 export type CreateRoute = typeof create;
 export type GetOneRoute = typeof getOne;
+export type PatchRoute = typeof patch;
