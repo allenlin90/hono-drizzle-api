@@ -3,10 +3,12 @@ import * as HttpStatusCodes from "@/http-status-codes";
 import jsonContent from "@/openapi/helpers/json-content";
 import jsonContentRequired from "@/openapi/helpers/json-content-required";
 import createErrorSchema from "@/openapi/schemas/create-error-schema";
+import { IdParams } from "@/openapi/schemas/id-params";
 import {
   insertBrandSchema,
   selectBrandsSchema,
 } from "@/db/schema/brand.schema";
+import { PREFIX } from "@/constants";
 
 const tags = ["Brands"];
 
@@ -41,5 +43,31 @@ export const create = createRoute({
   },
 });
 
+export const getOne = createRoute({
+  tags,
+  path: "/brands/{id}",
+  method: "get",
+  request: {
+    params: IdParams(PREFIX.BRAND),
+  },
+  responses: {
+    [HttpStatusCodes.OK]: jsonContent(
+      selectBrandsSchema,
+      "The requested brand"
+    ),
+    [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContent(
+      createErrorSchema(insertBrandSchema),
+      "invalid id error"
+    ),
+    [HttpStatusCodes.NOT_FOUND]: jsonContent(
+      z.object({ message: z.string() }).openapi({
+        example: { message: "Brand not found" },
+      }),
+      "Brand not found"
+    ),
+  },
+});
+
 export type ListRoute = typeof list;
 export type CreateRoute = typeof create;
+export type GetOneRoute = typeof getOne;

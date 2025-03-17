@@ -12,7 +12,10 @@ export const brand = table("brand", {
   ...timestamps,
 });
 
-export const selectBrandsSchema = createSelectSchema(brand);
+export const selectBrandsSchema = createSelectSchema(brand).omit({
+  id: true,
+  deletedAt: true,
+});
 
 export const insertBrandSchema = createInsertSchema(brand, {
   name: (schema) => schema.min(1).max(255),
