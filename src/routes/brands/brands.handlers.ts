@@ -3,6 +3,7 @@ import type { CreateRoute, GetOneRoute, ListRoute } from "./brands.routes";
 import db from "@/db";
 import { brand } from "@/db/schema";
 import * as HttpStatusCodes from "@/http-status-codes";
+import * as HttpStatusPhrases from "@/http-status-phrases";
 
 export const list: AppRouteHandler<ListRoute> = async (c) => {
   const brands = await db.query.brand.findMany();
@@ -28,7 +29,7 @@ export const getOne: AppRouteHandler<GetOneRoute> = async (c) => {
   if (!brand) {
     return c.json(
       {
-        message: "Brand not found",
+        message: HttpStatusPhrases.NOT_FOUND,
       },
       HttpStatusCodes.NOT_FOUND
     );

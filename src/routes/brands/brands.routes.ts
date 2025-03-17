@@ -9,6 +9,7 @@ import {
   selectBrandsSchema,
 } from "@/db/schema/brand.schema";
 import { PREFIX } from "@/constants";
+import notFoundSchema from "@/openapi/schemas/not-found";
 
 const tags = ["Brands"];
 
@@ -59,12 +60,7 @@ export const getOne = createRoute({
       createErrorSchema(insertBrandSchema),
       "invalid id error"
     ),
-    [HttpStatusCodes.NOT_FOUND]: jsonContent(
-      z.object({ message: z.string() }).openapi({
-        example: { message: "Brand not found" },
-      }),
-      "Brand not found"
-    ),
+    [HttpStatusCodes.NOT_FOUND]: jsonContent(notFoundSchema, "Brand not found"),
   },
 });
 
