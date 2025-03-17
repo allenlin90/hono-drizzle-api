@@ -10,7 +10,9 @@ export const IdParams = (prefix: PREFIX) =>
         param: {
           name: "id",
           in: "path",
+          required: true,
         },
+        required: ["id"],
         example: `${prefix}_1234`,
       }),
   });
