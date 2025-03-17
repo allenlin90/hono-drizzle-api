@@ -10,10 +10,15 @@ import db from "@/db";
 import { brand } from "@/db/schema";
 import * as HttpStatusCodes from "@/http-status-codes";
 import * as HttpStatusPhrases from "@/http-status-phrases";
-import { eq } from "drizzle-orm";
+import { and, eq, isNull } from "drizzle-orm";
 
+// TODO: pagination
 export const list: AppRouteHandler<ListRoute> = async (c) => {
-  const brands = await db.query.brand.findMany();
+  const brands = await db.query.brand.findMany({
+    where: (fields, operators) => {
+      return operators.isNull(fields.deletedAt);
+    },
+  });
 
   return c.json(brands);
 };
@@ -29,7 +34,10 @@ export const getOne: AppRouteHandler<GetOneRoute> = async (c) => {
   const { id } = c.req.valid("param");
   const brand = await db.query.brand.findFirst({
     where: (fields, operators) => {
-      return operators.eq(fields.uid, id);
+      return operators.and(
+        operators.eq(fields.uid, id),
+        operators.isNull(fields.deletedAt)
+      );
     },
   });
 
@@ -50,8 +58,8 @@ export const patch: AppRouteHandler<PatchRoute> = async (c) => {
   const updates = c.req.valid("json");
   const [updated] = await db
     .update(brand)
-    .set(updates)
-    .where(eq(brand.uid, id))
+    .set({ ...updates, updatedAt: new Date().toISOString() })
+    .where(and(eq(brand.uid, id), isNull(brand.deletedAt)))
     .returning();
 
   if (!updated) {
