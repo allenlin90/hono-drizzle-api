@@ -4,6 +4,7 @@ import type {
   GetOneRoute,
   ListRoute,
   PatchRoute,
+  RemoveRoute,
 } from "./brands.routes";
 import db from "@/db";
 import { brand } from "@/db/schema";
@@ -63,4 +64,24 @@ export const patch: AppRouteHandler<PatchRoute> = async (c) => {
   }
 
   return c.json(updated, HttpStatusCodes.OK);
+};
+
+export const remove: AppRouteHandler<RemoveRoute> = async (c) => {
+  const { id } = c.req.valid("param");
+  const result = await db
+    .update(brand)
+    .set({ deletedAt: new Date().toISOString() })
+    .where(eq(brand.uid, id))
+    .returning();
+
+  if (!result) {
+    return c.json(
+      {
+        message: HttpStatusPhrases.NOT_FOUND,
+      },
+      HttpStatusCodes.NOT_FOUND
+    );
+  }
+
+  return c.body(null, HttpStatusCodes.NO_CONTENT);
 };
