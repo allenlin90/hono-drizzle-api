@@ -1,5 +1,7 @@
 import { pgTable as table } from "drizzle-orm/pg-core";
 import * as t from "drizzle-orm/pg-core";
+import { createSelectSchema } from "drizzle-zod";
+import { z } from "@hono/zod-openapi";
 
 import { PREFIX } from "@/constants";
 import { brandedUid, timestamps } from "../helpers/columns.helpers";
@@ -21,3 +23,13 @@ export const show = table(
   },
   (table) => [t.index("show_name_idx").on(table.name)]
 );
+
+export const selectShowSchema = createSelectSchema(show)
+  .extend({
+    brand_uid: z.string(),
+  })
+  .omit({
+    id: true,
+    brandId: true,
+    deletedAt: true,
+  });
