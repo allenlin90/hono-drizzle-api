@@ -6,21 +6,30 @@ import type {
   PatchRoute,
   RemoveRoute,
 } from "./brands.routes";
+import { and, count, eq, isNull } from "drizzle-orm";
 import db from "@/db";
 import { brand } from "@/db/schema";
 import * as HttpStatusCodes from "@/http-status-codes";
 import * as HttpStatusPhrases from "@/http-status-phrases";
-import { and, eq, isNull } from "drizzle-orm";
 
-// TODO: pagination
+// TODO: search objects by name
 export const list: AppRouteHandler<ListRoute> = async (c) => {
+  const { offset, limit } = c.req.valid("query");
   const brands = await db.query.brand.findMany({
-    where: (fields, operators) => {
-      return operators.isNull(fields.deletedAt);
-    },
+    limit,
+    offset,
+    orderBy: (brand, { asc }) => asc(brand.id),
+    where: (fields, operators) => operators.isNull(fields.deletedAt),
   });
+  const [{ count: total }] = await db
+    .select({ count: count() })
+    .from(brand)
+    .where(isNull(brand.deletedAt));
 
-  return c.json(brands);
+  return c.json(
+    { object: "brand", data: brands, limit, offset, total },
+    HttpStatusCodes.OK
+  );
 };
 
 export const create: AppRouteHandler<CreateRoute> = async (c) => {
@@ -33,12 +42,11 @@ export const create: AppRouteHandler<CreateRoute> = async (c) => {
 export const getOne: AppRouteHandler<GetOneRoute> = async (c) => {
   const { id } = c.req.valid("param");
   const brand = await db.query.brand.findFirst({
-    where: (fields, operators) => {
-      return operators.and(
+    where: (fields, operators) =>
+      operators.and(
         operators.eq(fields.uid, id),
         operators.isNull(fields.deletedAt)
-      );
-    },
+      ),
   });
 
   if (!brand) {
@@ -77,7 +85,7 @@ export const patch: AppRouteHandler<PatchRoute> = async (c) => {
 export const remove: AppRouteHandler<RemoveRoute> = async (c) => {
   const { id } = c.req.valid("param");
   const result = await db
-    .update(brand)
+    .update(brand) // soft delete
     .set({ deletedAt: new Date().toISOString() })
     .where(eq(brand.uid, id))
     .returning();

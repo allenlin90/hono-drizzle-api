@@ -4,6 +4,8 @@ import jsonContent from "@/openapi/helpers/json-content";
 import jsonContentRequired from "@/openapi/helpers/json-content-required";
 import createErrorSchema from "@/openapi/schemas/create-error-schema";
 import { IdParams } from "@/openapi/schemas/id-params";
+import { PageParams } from "@/openapi/schemas/page-params";
+import { PaginatedObjectsSchema } from "@/openapi/schemas/paginated-objects";
 import {
   insertBrandSchema,
   patchBrandSchema,
@@ -19,9 +21,15 @@ export const list = createRoute({
   tags,
   path: "/brands",
   method: "get",
+  request: {
+    query: PageParams(),
+  },
   responses: {
     [HttpStatusCodes.OK]: jsonContent(
-      z.array(selectBrandsSchema),
+      PaginatedObjectsSchema({
+        objectType: "brand",
+        objectSchema: selectBrandsSchema,
+      }),
       "List of brands"
     ),
   },
