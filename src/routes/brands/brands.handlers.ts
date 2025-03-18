@@ -22,6 +22,7 @@ export const list: AppRouteHandler<ListRoute> = async (c) => {
     orderBy: (brand, { asc }) => asc(brand.id),
     where: (fields, operators) => operators.isNull(fields.deletedAt),
   });
+  // TODO: optimize query for total count
   const [{ count: total }] = await db
     .select({ count: count() })
     .from(brand)
