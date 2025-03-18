@@ -11,6 +11,7 @@ import db from "@/db";
 import { brand } from "@/db/schema";
 import * as HttpStatusCodes from "@/http-status-codes";
 import * as HttpStatusPhrases from "@/http-status-phrases";
+import { brandSerializer } from "@/serializers/brand.serializer";
 
 // TODO: search objects by name
 export const list: AppRouteHandler<ListRoute> = async (c) => {
@@ -26,8 +27,16 @@ export const list: AppRouteHandler<ListRoute> = async (c) => {
     .from(brand)
     .where(isNull(brand.deletedAt));
 
+  const data = brands.map(brandSerializer);
+
   return c.json(
-    { object: "brand", data: brands, limit, offset, total },
+    {
+      object: "brand",
+      data,
+      limit,
+      offset,
+      total,
+    },
     HttpStatusCodes.OK
   );
 };
@@ -36,7 +45,7 @@ export const create: AppRouteHandler<CreateRoute> = async (c) => {
   const payload = c.req.valid("json");
   const [inserted] = await db.insert(brand).values(payload).returning();
 
-  return c.json(inserted, HttpStatusCodes.CREATED);
+  return c.json(brandSerializer(inserted), HttpStatusCodes.CREATED);
 };
 
 export const getOne: AppRouteHandler<GetOneRoute> = async (c) => {
@@ -58,7 +67,9 @@ export const getOne: AppRouteHandler<GetOneRoute> = async (c) => {
     );
   }
 
-  return c.json(brand, HttpStatusCodes.OK);
+  const data = brandSerializer(brand);
+
+  return c.json(data, HttpStatusCodes.OK);
 };
 
 export const patch: AppRouteHandler<PatchRoute> = async (c) => {
@@ -79,7 +90,9 @@ export const patch: AppRouteHandler<PatchRoute> = async (c) => {
     );
   }
 
-  return c.json(updated, HttpStatusCodes.OK);
+  const data = brandSerializer(updated);
+
+  return c.json(data, HttpStatusCodes.OK);
 };
 
 export const remove: AppRouteHandler<RemoveRoute> = async (c) => {
