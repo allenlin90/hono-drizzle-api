@@ -1,6 +1,6 @@
 import { pgTable as table } from "drizzle-orm/pg-core";
 import * as t from "drizzle-orm/pg-core";
-import { createSelectSchema } from "drizzle-zod";
+import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "@hono/zod-openapi";
 
 import { PREFIX } from "@/constants";
@@ -13,12 +13,12 @@ export const show = table(
     id: t.serial("id").primaryKey(),
     uid: brandedUid(PREFIX.SHOW),
     name: t.varchar("name").notNull(),
-    brandId: t
+    brand_id: t
       .integer("brand_id")
       .references(() => brand.id)
       .notNull(),
-    startTime: t.timestamp("start_time", { mode: "string" }).notNull(),
-    endTime: t.timestamp("end_time", { mode: "string" }).notNull(),
+    start_time: t.timestamp("start_time", { mode: "string" }).notNull(),
+    end_time: t.timestamp("end_time", { mode: "string" }).notNull(),
     ...timestamps,
   },
   (table) => [t.index("show_name_idx").on(table.name)]
@@ -27,39 +27,28 @@ export const show = table(
 export const selectShowSchema = createSelectSchema(show)
   .merge(
     z.object({
-      brand_id: z.string().optional(),
+      brand_uid: z.string(),
     })
   )
   .omit({
     id: true,
-    brandId: true,
-    deletedAt: true,
+    brand_id: true,
+    deleted_at: true,
   })
-  .transform((input) => ({
-    uid: input.uid,
-    brand_id: input.brand_id,
-    name: input.name,
-    start_time: input.startTime,
-    end_time: input.endTime,
-    created_at: input.createdAt,
-    updated_at: input.updatedAt,
+  .transform(({ uid, brand_uid, ...input }) => ({
+    uid,
+    brand_uid,
+    ...input,
   }));
 
-export const insertShowSchema = z
-  .object({
-    name: z.string().min(1).max(255),
-    brand_id: z
-      .string()
-      .startsWith(PREFIX.BRAND)
-      .openapi({
-        example: `${PREFIX.BRAND}_1234`,
-      }),
-    start_time: z.string().datetime(),
-    end_time: z.string().datetime(),
-  })
-  .transform((input) => ({
-    name: input.name,
-    brandId: input.brand_id,
-    startTime: input.start_time,
-    endTime: input.end_time,
-  }));
+export const insertShowSchema = createInsertSchema(show)
+  .merge(z.object({ brand_uid: z.string() }))
+  .omit({
+    id: true,
+    created_at: true,
+    updated_at: true,
+    deleted_at: true,
+  });
+
+export type SelectShowSchema = z.infer<typeof selectShowSchema>;
+export type InsertShowSchema = z.infer<typeof insertShowSchema>;

@@ -17,7 +17,7 @@ export const list: AppRouteHandler<ListRoute> = async (c) => {
   const { offset, limit, name } = c.req.valid("query");
 
   const ilikeByName = name ? ilike(brand.name, `%${name}%`) : undefined;
-  const filters = and(isNull(brand.deletedAt), ilikeByName);
+  const filters = and(isNull(brand.deleted_at), ilikeByName);
 
   const brands = await db
     .select({ ...getTableColumns(brand) })
@@ -45,6 +45,10 @@ export const list: AppRouteHandler<ListRoute> = async (c) => {
 
 export const create: AppRouteHandler<CreateRoute> = async (c) => {
   const payload = c.req.valid("json");
+  console.log(
+    "🚀 ~ constcreate:AppRouteHandler<CreateRoute>= ~ payload:",
+    payload
+  );
   const [inserted] = await db.insert(brand).values(payload).returning();
 
   return c.json(brandSerializer(inserted), HttpStatusCodes.CREATED);
@@ -56,7 +60,7 @@ export const getOne: AppRouteHandler<GetOneRoute> = async (c) => {
     where: (fields, operators) =>
       operators.and(
         operators.eq(fields.uid, id),
-        operators.isNull(fields.deletedAt)
+        operators.isNull(fields.deleted_at)
       ),
   });
 
@@ -79,8 +83,8 @@ export const patch: AppRouteHandler<PatchRoute> = async (c) => {
   const updates = c.req.valid("json");
   const [updated] = await db
     .update(brand)
-    .set({ ...updates, updatedAt: new Date().toISOString() })
-    .where(and(eq(brand.uid, id), isNull(brand.deletedAt)))
+    .set({ ...updates, updated_at: new Date().toISOString() })
+    .where(and(eq(brand.uid, id), isNull(brand.deleted_at)))
     .returning();
 
   if (!updated) {
@@ -101,7 +105,7 @@ export const remove: AppRouteHandler<RemoveRoute> = async (c) => {
   const { id } = c.req.valid("param");
   const result = await db
     .update(brand) // soft delete
-    .set({ deletedAt: new Date().toISOString() })
+    .set({ deleted_at: new Date().toISOString() })
     .where(eq(brand.uid, id))
     .returning();
 

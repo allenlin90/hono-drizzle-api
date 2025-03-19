@@ -3,7 +3,7 @@ import * as HttpStatusCodes from "@/http-status-codes";
 import {
   insertBrandSchema,
   patchBrandSchema,
-  selectBrandsSchema,
+  selectBrandSchema,
 } from "@/db/schema/brand.schema";
 import { PREFIX } from "@/constants";
 import jsonContent from "@/openapi/helpers/json-content";
@@ -29,7 +29,7 @@ export const list = createRoute({
     [HttpStatusCodes.OK]: jsonContent(
       PaginatedObjectsSchema({
         objectType: "brand",
-        objectSchema: selectBrandsSchema,
+        objectSchema: selectBrandSchema,
       }),
       "List of brands"
     ),
@@ -45,7 +45,7 @@ export const create = createRoute({
   },
   responses: {
     [HttpStatusCodes.CREATED]: jsonContent(
-      selectBrandsSchema,
+      selectBrandSchema,
       "The created brand"
     ),
     [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContent(
@@ -63,10 +63,7 @@ export const getOne = createRoute({
     params: IdParams(PREFIX.BRAND),
   },
   responses: {
-    [HttpStatusCodes.OK]: jsonContent(
-      selectBrandsSchema,
-      "The requested brand"
-    ),
+    [HttpStatusCodes.OK]: jsonContent(selectBrandSchema, "The requested brand"),
     [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContent(
       createErrorSchema(IdParams(PREFIX.BRAND)),
       "invalid id error"
@@ -84,7 +81,7 @@ export const patch = createRoute({
     body: jsonContentRequired(patchBrandSchema, "The brand updates"),
   },
   responses: {
-    [HttpStatusCodes.OK]: jsonContent(selectBrandsSchema, "The updated brand"),
+    [HttpStatusCodes.OK]: jsonContent(selectBrandSchema, "The updated brand"),
     [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContentOneOf(
       [
         createErrorSchema(patchBrandSchema),

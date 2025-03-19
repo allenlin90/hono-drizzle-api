@@ -1,9 +1,10 @@
-import { brand, selectBrandsSchema } from "@/db/schema/brand.schema";
+import {
+  selectBrandSchema,
+  type SelectBrandSchema,
+} from "@/db/schema/brand.schema";
 
-type Brand = typeof brand.$inferSelect;
-
-export const brandSerializer = (brand: Brand) => {
-  return selectBrandsSchema.parse(brand);
+export const brandSerializer = (brand: SelectBrandSchema) => {
+  return selectBrandSchema.parse(brand);
 };
 
 export default brandSerializer;

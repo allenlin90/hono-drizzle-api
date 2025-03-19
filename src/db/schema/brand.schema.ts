@@ -5,6 +5,7 @@ import {
   createSelectSchema,
   createUpdateSchema,
 } from "drizzle-zod";
+import { z } from "@hono/zod-openapi";
 
 import { PREFIX } from "@/constants";
 import { brandedUid, timestamps } from "../helpers/columns.helpers";
@@ -16,9 +17,9 @@ export const brand = table("brand", {
   ...timestamps,
 });
 
-export const selectBrandsSchema = createSelectSchema(brand).omit({
+export const selectBrandSchema = createSelectSchema(brand).omit({
   id: true,
-  deletedAt: true,
+  deleted_at: true,
 });
 
 export const insertBrandSchema = createInsertSchema(brand, {
@@ -26,9 +27,9 @@ export const insertBrandSchema = createInsertSchema(brand, {
 }).omit({
   id: true,
   uid: true,
-  createdAt: true,
-  updatedAt: true,
-  deletedAt: true,
+  created_at: true,
+  updated_at: true,
+  deleted_at: true,
 });
 
 export const patchBrandSchema = createUpdateSchema(brand, {
@@ -36,7 +37,9 @@ export const patchBrandSchema = createUpdateSchema(brand, {
 }).omit({
   id: true,
   uid: true,
-  createdAt: true,
-  updatedAt: true,
-  deletedAt: true,
+  created_at: true,
+  updated_at: true,
+  deleted_at: true,
 });
+
+export type SelectBrandSchema = z.infer<typeof selectBrandSchema>;

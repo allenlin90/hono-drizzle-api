@@ -4,10 +4,8 @@ import * as schema from "@/db/schema";
 import { reset, seed } from "drizzle-seed";
 
 import { PREFIX } from "@/constants";
-import {
-  generateRandomString,
-  generateBrandedUid,
-} from "./helpers/random-string.helpers";
+import { generateRandomString } from "@/utils/generate-random-string";
+import { generateBrandedUid } from "./helpers/random-string.helpers";
 
 if (!env.DB_SEEDING) {
   throw new Error('You must set DB_SEEDING to "true" when running seeds');
@@ -71,9 +69,9 @@ await reset(db, tables);
 await seed(db, tables).refine((r) => {
   const now = new Date().toISOString();
   const timestamps = {
-    createdAt: r.default({ defaultValue: now }),
-    updatedAt: r.default({ defaultValue: now }),
-    deletedAt: r.default({ defaultValue: null }),
+    created_at: r.default({ defaultValue: now }),
+    updated_at: r.default({ defaultValue: now }),
+    deleted_at: r.default({ defaultValue: null }),
   };
 
   return {
@@ -173,7 +171,7 @@ await seed(db, tables).refine((r) => {
             generateBrandedUid(PREFIX.SHOW)
           ),
         }),
-        brandId: r.int({ minValue: 1, maxValue: 5 }),
+        brand_id: r.int({ minValue: 1, maxValue: 5 }),
         name: r.valuesFromArray({ values: SHOW_NAMES }),
         ...timestamps,
       },

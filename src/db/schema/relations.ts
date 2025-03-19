@@ -143,7 +143,7 @@ export const showPlatformReviewRelation = relations(
 
 export const showRelation = relations(show, ({ one, many }) => ({
   brand: one(brand, {
-    fields: [show.brandId],
+    fields: [show.brand_id],
     references: [brand.id],
   }),
   showPlatforms: many(showPlatform),
