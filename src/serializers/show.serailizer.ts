@@ -1,12 +1,10 @@
-import type { brand } from "@/db/schema";
 import { show, selectShowSchema } from "@/db/schema/show.schema";
 
+// TODO: find a better way to extend associated data
 type ShowWithBrand = typeof show.$inferSelect & {
-  brand: Partial<typeof brand.$inferSelect>;
+  brand_id: string;
 };
 
 export const showSerializer = (show: ShowWithBrand) => {
-  const extendedShow = { brand_uid: show.brand.uid, ...show };
-
-  return selectShowSchema.parse(extendedShow);
+  return selectShowSchema.parse(show);
 };

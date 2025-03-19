@@ -24,10 +24,13 @@ export const show = table(
   (table) => [t.index("show_name_idx").on(table.name)]
 );
 
+// TODO: find a better way to extend associated data
 export const selectShowSchema = createSelectSchema(show)
-  .extend({
-    brand_uid: z.string(),
-  })
+  .merge(
+    z.object({
+      brand_id: z.string().optional(),
+    })
+  )
   .omit({
     id: true,
     brandId: true,
