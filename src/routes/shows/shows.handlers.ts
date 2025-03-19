@@ -25,16 +25,16 @@ export const list: AppRouteHandler<ListRoute> = async (c) => {
   const endTime = end_time ? gte(show.endTime, end_time) : undefined;
   const brandUid = brand_id ? eq(brand.uid, brand_id) : undefined;
   const activeBrands = isNull(brand.deletedAt);
+  const filters = and(activeBrands, ilikeByName, startTime, endTime, brandUid);
 
   const shows = await db
     .select({
       ...getTableColumns(show),
       brand_id: brand.uid,
-      count: sql`count(*)`.mapWith(Number),
     })
     .from(show)
     .innerJoin(brand, eq(show.brandId, brand.id))
-    .where(and(activeBrands, ilikeByName, startTime, endTime, brandUid))
+    .where(filters)
     .limit(limit)
     .offset(offset)
     .orderBy(desc(show.createdAt))
@@ -45,7 +45,7 @@ export const list: AppRouteHandler<ListRoute> = async (c) => {
     .select({ count: count() })
     .from(show)
     .innerJoin(brand, eq(show.brandId, brand.id))
-    .where(and(activeBrands, ilikeByName, startTime, endTime, brandUid));
+    .where(filters);
 
   const data = shows.map(showSerializer);
 
