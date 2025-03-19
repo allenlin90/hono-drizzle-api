@@ -24,7 +24,6 @@ export const show = table(
   (table) => [t.index("show_name_idx").on(table.name)]
 );
 
-// TODO: find a better way to extend associated data
 export const selectShowSchema = createSelectSchema(show)
   .merge(
     z.object({
@@ -35,4 +34,32 @@ export const selectShowSchema = createSelectSchema(show)
     id: true,
     brandId: true,
     deletedAt: true,
-  });
+  })
+  .transform((input) => ({
+    uid: input.uid,
+    brand_id: input.brand_id,
+    name: input.name,
+    start_time: input.startTime,
+    end_time: input.endTime,
+    created_at: input.createdAt,
+    updated_at: input.updatedAt,
+  }));
+
+export const insertShowSchema = z
+  .object({
+    name: z.string().min(1).max(255),
+    brand_id: z
+      .string()
+      .startsWith(PREFIX.BRAND)
+      .openapi({
+        example: `${PREFIX.BRAND}_1234`,
+      }),
+    start_time: z.string().datetime(),
+    end_time: z.string().datetime(),
+  })
+  .transform((input) => ({
+    name: input.name,
+    brandId: input.brand_id,
+    startTime: input.start_time,
+    endTime: input.end_time,
+  }));

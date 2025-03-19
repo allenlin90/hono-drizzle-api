@@ -1,5 +1,5 @@
 import type { AppRouteHandler } from "@/lib/types";
-import type { ListRoute } from "./shows.routes";
+import type { CreateRoute, ListRoute } from "./shows.routes";
 import {
   and,
   count,
@@ -55,5 +55,48 @@ export const list: AppRouteHandler<ListRoute> = async (c) => {
       total,
     },
     HttpStatusCodes.OK
+  );
+};
+
+export const create: AppRouteHandler<CreateRoute> = async (c) => {
+  const idempotencyKey = c.req.valid("header")["Idempotency-Key"];
+
+  if (!idempotencyKey) {
+    return c.json(
+      {
+        message: "idempotency key is required",
+      },
+      HttpStatusCodes.BAD_REQUEST
+    );
+  }
+
+  const payload = c.req.valid("json");
+
+  const [selectBrand] = await db
+    .select({ id: brand.id })
+    .from(brand)
+    .where(and(eq(brand.uid, payload.brandId), isNull(brand.deletedAt)))
+    .limit(1);
+
+  if (!selectBrand) {
+    return c.json(
+      {
+        message: "Brand not found",
+      },
+      HttpStatusCodes.NOT_FOUND
+    );
+  }
+
+  const [inserted] = await db
+    .insert(show)
+    .values({
+      ...payload,
+      brandId: selectBrand.id,
+    })
+    .returning();
+
+  return c.json(
+    showSerializer({ ...inserted, brand_id: payload.brandId }),
+    HttpStatusCodes.CREATED
   );
 };
