@@ -4,6 +4,9 @@ import * as handlers from "./shows.handlers";
 
 export const router = createRouter();
 
+/**
+ * allow only admin and manager users
+ */
 router.use(async (_c, next) => {
   // TODO: authenticate/authorize request
   await next();
