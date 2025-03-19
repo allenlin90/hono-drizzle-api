@@ -1,12 +1,11 @@
 import { z } from "@hono/zod-openapi";
-import { PREFIX } from "@/constants";
 import { NameParams } from "@/openapi/schemas/name-params";
 import DurationParams from "../duration-params";
-import IdQueryParams from "../id-query-params";
+import BrandIdQueryParams from "../brand-id-query-params";
 
 export const ShowParamFilters = z
   .object({})
-  .merge(IdQueryParams({ paramName: "brand_id", prefix: PREFIX.BRAND }))
+  .merge(BrandIdQueryParams())
   .merge(NameParams(["double-eleven", "black-friday"]))
   .merge(DurationParams("Show"));
 
