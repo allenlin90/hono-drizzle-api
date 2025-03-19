@@ -37,8 +37,7 @@ export const list: AppRouteHandler<ListRoute> = async (c) => {
     .where(filters)
     .limit(limit)
     .offset(offset)
-    .orderBy(desc(show.createdAt))
-    .groupBy(show.id, brand.uid);
+    .orderBy(desc(show.createdAt));
 
   // TODO: count from previous query result
   const [{ count: total }] = await db
