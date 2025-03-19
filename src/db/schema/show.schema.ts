@@ -44,6 +44,8 @@ export const selectShowSchema = createSelectSchema(show)
 export const insertShowSchema = createInsertSchema(show)
   .merge(z.object({ brand_uid: z.string() }))
   .omit({
+    uid: true,
+    brand_id: true,
     created_at: true,
     updated_at: true,
     deleted_at: true,
