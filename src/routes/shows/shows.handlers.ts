@@ -9,7 +9,6 @@ import {
   gte,
   ilike,
   isNull,
-  sql,
 } from "drizzle-orm";
 import * as HttpStatusCodes from "@/http-status-codes";
 import db from "@/db";
