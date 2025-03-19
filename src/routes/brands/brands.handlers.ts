@@ -6,27 +6,40 @@ import type {
   PatchRoute,
   RemoveRoute,
 } from "./brands.routes";
-import { and, count, eq, isNull } from "drizzle-orm";
+import {
+  and,
+  asc,
+  count,
+  eq,
+  getTableColumns,
+  ilike,
+  isNull,
+} from "drizzle-orm";
 import db from "@/db";
 import { brand } from "@/db/schema";
 import * as HttpStatusCodes from "@/http-status-codes";
 import * as HttpStatusPhrases from "@/http-status-phrases";
 import { brandSerializer } from "@/serializers/brand.serializer";
 
-// TODO: search objects by name
 export const list: AppRouteHandler<ListRoute> = async (c) => {
-  const { offset, limit } = c.req.valid("query");
-  const brands = await db.query.brand.findMany({
-    limit,
-    offset,
-    orderBy: (brand, { asc }) => asc(brand.id),
-    where: (fields, operators) => operators.isNull(fields.deletedAt),
-  });
+  const { offset, limit, name } = c.req.valid("query");
+
+  const ilikeByName = name ? ilike(brand.name, `%${name}%`) : undefined;
+  const filters = and(isNull(brand.deletedAt), ilikeByName);
+
+  const brands = await db
+    .select({ ...getTableColumns(brand) })
+    .from(brand)
+    .where(filters)
+    .orderBy(asc(brand.id))
+    .limit(limit)
+    .offset(offset);
+
   // TODO: optimize query for total count
   const [{ count: total }] = await db
     .select({ count: count() })
     .from(brand)
-    .where(isNull(brand.deletedAt));
+    .where(filters);
 
   const data = brands.map(brandSerializer);
 

@@ -1,19 +1,20 @@
 import { createRoute, z } from "@hono/zod-openapi";
 import * as HttpStatusCodes from "@/http-status-codes";
-import jsonContent from "@/openapi/helpers/json-content";
-import jsonContentRequired from "@/openapi/helpers/json-content-required";
-import createErrorSchema from "@/openapi/schemas/create-error-schema";
-import { IdParams } from "@/openapi/schemas/id-params";
-import { PageParams } from "@/openapi/schemas/page-params";
-import { PaginatedObjectsSchema } from "@/openapi/schemas/paginated-objects";
 import {
   insertBrandSchema,
   patchBrandSchema,
   selectBrandsSchema,
 } from "@/db/schema/brand.schema";
 import { PREFIX } from "@/constants";
-import notFoundSchema from "@/openapi/schemas/not-found";
+import jsonContent from "@/openapi/helpers/json-content";
+import jsonContentRequired from "@/openapi/helpers/json-content-required";
 import jsonContentOneOf from "@/openapi/helpers/json-content-one-of";
+import createErrorSchema from "@/openapi/schemas/create-error-schema";
+import { PageParams } from "@/openapi/schemas/page-params";
+import { PaginatedObjectsSchema } from "@/openapi/schemas/paginated-objects";
+import { IdParams } from "@/openapi/schemas/id-params";
+import { NameParams } from "@/openapi/schemas/name-params";
+import { NotFoundSchema } from "@/openapi/schemas/not-found";
 
 const tags = ["Brands"];
 
@@ -22,7 +23,7 @@ export const list = createRoute({
   path: "/brands",
   method: "get",
   request: {
-    query: PageParams(),
+    query: PageParams().merge(NameParams(["apple", "nike"])),
   },
   responses: {
     [HttpStatusCodes.OK]: jsonContent(
@@ -70,7 +71,7 @@ export const getOne = createRoute({
       createErrorSchema(IdParams(PREFIX.BRAND)),
       "invalid id error"
     ),
-    [HttpStatusCodes.NOT_FOUND]: jsonContent(notFoundSchema, "Brand not found"),
+    [HttpStatusCodes.NOT_FOUND]: jsonContent(NotFoundSchema, "Brand not found"),
   },
 });
 
@@ -91,7 +92,7 @@ export const patch = createRoute({
       ],
       "The validation error"
     ),
-    [HttpStatusCodes.NOT_FOUND]: jsonContent(notFoundSchema, "Brand not found"),
+    [HttpStatusCodes.NOT_FOUND]: jsonContent(NotFoundSchema, "Brand not found"),
   },
 });
 
@@ -110,7 +111,7 @@ export const remove = createRoute({
       createErrorSchema(IdParams(PREFIX.BRAND)),
       "invalid id error"
     ),
-    [HttpStatusCodes.NOT_FOUND]: jsonContent(notFoundSchema, "Brand not found"),
+    [HttpStatusCodes.NOT_FOUND]: jsonContent(NotFoundSchema, "Brand not found"),
   },
 });
 
