@@ -7,14 +7,14 @@ import { showPlatformMc } from "./show-platform-mc.schema";
 import { user } from "./user.schema";
 
 export const mcShowReview = table("mc_show_review", {
-  id: t.serial("id").primaryKey(),
+  id: t.integer("id").primaryKey().generatedAlwaysAsIdentity(),
   uid: brandedUid(PREFIX.MC_SHOW_REVIEW),
-  reviewItems: t.jsonb("review_items"),
-  reviewerId: t
+  review_items: t.jsonb("review_items"),
+  reviewer_id: t
     .integer("reviewer_id")
     .references(() => user.id)
     .notNull(),
-  showPlatformMcId: t
+  show_platform_mc_id: t
     .integer("show_platform_mc_id")
     .references(() => showPlatformMc.id)
     .notNull(),

@@ -7,17 +7,17 @@ import { user } from "./user.schema";
 import { showPlatform } from "./show-platform.schema";
 
 export const showPlatformReview = table("show_platform_review", {
-  id: t.serial("id").primaryKey(),
+  id: t.integer("id").primaryKey().generatedAlwaysAsIdentity(),
   uid: brandedUid(PREFIX.SHOW_REVIEW),
-  showPlatformId: t
+  show_platform_id: t
     .integer("show_platform_id")
     .references(() => showPlatform.id)
     .notNull(),
-  reviewerId: t
+  reviewer_id: t
     .integer("reviewer_id")
     .references(() => user.id)
     .notNull(),
-  reviewItems: t.jsonb("review_items"),
+  review_items: t.jsonb("review_items"),
   note: t.varchar("note"),
   ...timestamps,
 });

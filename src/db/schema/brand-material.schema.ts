@@ -15,7 +15,7 @@ export const materialTypeEnum = t.pgEnum("material_type", [
 export const brandMaterial = table(
   "brand_material",
   {
-    id: t.serial("id").primaryKey(),
+    id: t.integer("id").primaryKey().generatedAlwaysAsIdentity(),
     uid: brandedUid(PREFIX.MATERIAL),
     brandId: t
       .integer("brand_id")
@@ -24,8 +24,8 @@ export const brandMaterial = table(
     type: materialTypeEnum().notNull(),
     name: t.varchar("name").notNull(),
     description: t.text("description"),
-    isActive: t.boolean("is_active").default(true).notNull(),
-    resourceUrl: t.varchar("resource_url"),
+    is_active: t.boolean("is_active").default(true).notNull(),
+    resource_url: t.varchar("resource_url"),
     ...timestamps,
   },
   (table) => [

@@ -10,10 +10,10 @@ export const roomTypeEnum = t.pgEnum("studio_room_type", ["s", "m", "l"]);
 export const studioRoom = table(
   "studio_room",
   {
-    id: t.serial("id").primaryKey(),
+    id: t.integer("id").primaryKey().generatedAlwaysAsIdentity(),
     uid: brandedUid(PREFIX.STUDIO_ROOM),
     name: t.varchar("name", { length: 255 }).notNull(),
-    studioId: t
+    studio_id: t
       .integer("studio_id")
       .references(() => studio.id)
       .notNull(),

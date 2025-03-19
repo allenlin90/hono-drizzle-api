@@ -5,7 +5,7 @@ import { PREFIX } from "@/constants";
 import { brandedUid, timestamps } from "../helpers/columns.helpers";
 
 export const city = table("city", {
-  id: t.serial("id").primaryKey(),
+  id: t.integer("id").primaryKey().generatedAlwaysAsIdentity(),
   uid: brandedUid(PREFIX.CITY),
   name: t.varchar("name").unique().notNull(),
   ...timestamps,

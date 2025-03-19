@@ -6,8 +6,8 @@ import { showPlatform } from "./show-platform.schema";
 import { mc } from "./mc.schema";
 
 export const showPlatformMc = table("show_platform_mc", {
-  id: t.serial("id").primaryKey(),
-  showPlatformId: t
+  id: t.integer("id").primaryKey().generatedAlwaysAsIdentity(),
+  show_platform_id: t
     .integer("show_platform_id")
     .references(() => showPlatform.id)
     .notNull(),

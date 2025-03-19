@@ -8,16 +8,16 @@ import { brandMaterial } from "./brand-material.schema";
 export const showPlatformMaterial = table(
   "show_platform_material",
   {
-    id: t.serial("id").primaryKey(),
-    showPlatformId: t
+    id: t.integer("id").primaryKey().generatedAlwaysAsIdentity(),
+    show_platform_id: t
       .integer("show_platform_id")
       .references(() => showPlatform.id)
       .notNull(),
-    brandMaterialId: t
+    brand_material_id: t
       .integer("brand_material_id")
       .references(() => brandMaterial.id)
       .notNull(),
     ...timestamps,
   },
-  (table) => [t.unique().on(table.showPlatformId, table.brandMaterialId)]
+  (table) => [t.unique().on(table.show_platform_id, table.brand_material_id)]
 );

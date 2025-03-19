@@ -10,7 +10,7 @@ import { brand } from "./brand.schema";
 export const show = table(
   "show",
   {
-    id: t.serial("id").primaryKey(),
+    id: t.integer("id").primaryKey().generatedAlwaysAsIdentity(),
     uid: brandedUid(PREFIX.SHOW),
     name: t.varchar("name").notNull(),
     brand_id: t
@@ -44,7 +44,6 @@ export const selectShowSchema = createSelectSchema(show)
 export const insertShowSchema = createInsertSchema(show)
   .merge(z.object({ brand_uid: z.string() }))
   .omit({
-    id: true,
     created_at: true,
     updated_at: true,
     deleted_at: true,

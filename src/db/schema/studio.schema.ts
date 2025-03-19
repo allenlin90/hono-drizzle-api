@@ -6,9 +6,9 @@ import { brandedUid, timestamps } from "../helpers/columns.helpers";
 import { address } from "./address.schema";
 
 export const studio = table("studio", {
-  id: t.serial("id").primaryKey(),
+  id: t.integer("id").primaryKey().generatedAlwaysAsIdentity(),
   uid: brandedUid(PREFIX.STUDIO),
   name: t.varchar("name").unique().notNull(),
-  addressId: t.integer("address_id").references(() => address.id),
+  address_id: t.integer("address_id").references(() => address.id),
   ...timestamps,
 });

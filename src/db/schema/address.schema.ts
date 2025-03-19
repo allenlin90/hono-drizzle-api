@@ -7,12 +7,12 @@ import { brandedUid, timestamps } from "../helpers/columns.helpers";
 import { city } from "./city.schema";
 
 export const address = table("address", {
-  id: t.serial("id").primaryKey(),
+  id: t.integer("id").primaryKey().generatedAlwaysAsIdentity(),
   uid: brandedUid(PREFIX.ADDRESS),
   address: t.varchar("address").notNull(),
-  subDistrict: t.varchar("sub_district", { length: 255 }),
+  sub_district: t.varchar("sub_district", { length: 255 }),
   district: t.varchar("district", { length: 255 }),
-  cityId: t
+  city_id: t
     .integer("city_id")
     .references(() => city.id)
     .notNull(),

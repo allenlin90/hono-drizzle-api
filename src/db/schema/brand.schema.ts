@@ -11,7 +11,7 @@ import { PREFIX } from "@/constants";
 import { brandedUid, timestamps } from "../helpers/columns.helpers";
 
 export const brand = table("brand", {
-  id: t.serial("id").primaryKey(),
+  id: t.integer("id").primaryKey().generatedAlwaysAsIdentity(),
   uid: brandedUid(PREFIX.BRAND),
   name: t.varchar("name").unique().notNull(),
   ...timestamps,
@@ -25,7 +25,6 @@ export const selectBrandSchema = createSelectSchema(brand).omit({
 export const insertBrandSchema = createInsertSchema(brand, {
   name: (schema) => schema.min(1).max(255),
 }).omit({
-  id: true,
   uid: true,
   created_at: true,
   updated_at: true,
@@ -35,7 +34,6 @@ export const insertBrandSchema = createInsertSchema(brand, {
 export const patchBrandSchema = createUpdateSchema(brand, {
   name: (schema) => schema.min(1).max(255),
 }).omit({
-  id: true,
   uid: true,
   created_at: true,
   updated_at: true,

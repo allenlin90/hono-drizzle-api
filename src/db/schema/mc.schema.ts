@@ -8,10 +8,10 @@ import { user } from "./user.schema";
 export const mc = table(
   "mc",
   {
-    id: t.serial("id").primaryKey(),
+    id: t.integer("id").primaryKey().generatedAlwaysAsIdentity(),
     uid: brandedUid(PREFIX.MC),
     name: t.varchar("name"),
-    userId: t.integer("user_id").references(() => user.id),
+    user_id: t.integer("user_id").references(() => user.id),
     ...timestamps,
   },
   (table) => [t.index("mc_name_idx").on(table.name)]

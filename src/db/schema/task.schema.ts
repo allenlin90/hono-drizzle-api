@@ -13,13 +13,13 @@ export const taskTypeEnum = t.pgEnum("task_type", [
 ]);
 
 export const task = table("task", {
-  id: t.serial("id").primaryKey(),
+  id: t.integer("id").primaryKey().generatedAlwaysAsIdentity(),
   uid: brandedUid(PREFIX.TASK),
   items: t.jsonb("items"),
   type: taskTypeEnum().notNull(),
-  isCompleted: t.boolean("is_completed").default(false),
-  operatorId: t.integer("operator_id").references(() => operator.id),
-  showPlatformId: t
+  is_completed: t.boolean("is_completed").default(false),
+  operator_id: t.integer("operator_id").references(() => operator.id),
+  show_platform_id: t
     .integer("show_platform_id")
     .references(() => showPlatform.id)
     .notNull(),

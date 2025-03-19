@@ -8,9 +8,9 @@ import { brandedUid, timestamps } from "../helpers/columns.helpers";
 export const user = table(
   "users",
   {
-    id: t.serial("id").primaryKey(),
+    id: t.integer("id").primaryKey().generatedAlwaysAsIdentity(),
     uid: brandedUid(PREFIX.USER),
-    clerkUid: t.varchar("clerk_uid", { length: 255 }).unique(),
+    clerk_uid: t.varchar("clerk_uid", { length: 255 }).unique(),
     email: t.varchar("email", { length: 255 }).unique().notNull(),
     // TODO: proper hash and salt after changing auth module
     password: t // no use

@@ -9,12 +9,12 @@ import { studioRoom } from "./studio-room.schema";
 export const showPlatform = table(
   "show_platform",
   {
-    id: t.serial("id").primaryKey(),
-    showId: t
+    id: t.integer("id").primaryKey().generatedAlwaysAsIdentity(),
+    show_id: t
       .integer("show_id")
       .references(() => show.id)
       .notNull(),
-    platformId: t
+    platform_id: t
       .integer("platform_id")
       .references(() => platform.id)
       .notNull(),
@@ -22,5 +22,5 @@ export const showPlatform = table(
     studioRoomId: t.integer("studio_room_id").references(() => studioRoom.id),
     ...timestamps,
   },
-  (table) => [t.unique().on(table.showId, table.platformId)]
+  (table) => [t.unique().on(table.show_id, table.platform_id)]
 );

@@ -8,10 +8,10 @@ import { user } from "./user.schema";
 export const operator = table(
   "operator",
   {
-    id: t.serial("id").primaryKey(),
+    id: t.integer("id").primaryKey().generatedAlwaysAsIdentity(),
     uid: brandedUid(PREFIX.OPERATOR),
     name: t.varchar("name").notNull(),
-    userId: t.integer("user_id").references(() => user.id),
+    user_id: t.integer("user_id").references(() => user.id),
     ...timestamps,
   },
   (table) => [t.index("operator_name_idx").on(table.name)]
