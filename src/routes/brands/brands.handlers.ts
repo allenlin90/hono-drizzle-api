@@ -35,11 +35,7 @@ export const list: AppRouteHandler<ListRoute> = async (c) => {
     .limit(limit)
     .offset(offset);
 
-  // TODO: optimize query for total count
-  const [{ count: total }] = await db
-    .select({ count: count() })
-    .from(brand)
-    .where(filters);
+  const total = await db.$count(brand, filters);
 
   const data = brands.map(brandSerializer);
 

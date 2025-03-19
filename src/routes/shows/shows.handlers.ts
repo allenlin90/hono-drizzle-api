@@ -38,7 +38,6 @@ export const list: AppRouteHandler<ListRoute> = async (c) => {
     .offset(offset)
     .orderBy(desc(show.createdAt));
 
-  // TODO: count from previous query result
   const [{ count: total }] = await db
     .select({ count: count() })
     .from(show)
