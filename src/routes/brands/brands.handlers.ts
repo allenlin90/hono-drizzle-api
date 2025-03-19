@@ -6,15 +6,7 @@ import type {
   PatchRoute,
   RemoveRoute,
 } from "./brands.routes";
-import {
-  and,
-  asc,
-  count,
-  eq,
-  getTableColumns,
-  ilike,
-  isNull,
-} from "drizzle-orm";
+import { and, asc, eq, getTableColumns, ilike, isNull } from "drizzle-orm";
 import db from "@/db";
 import { brand } from "@/db/schema";
 import * as HttpStatusCodes from "@/http-status-codes";
