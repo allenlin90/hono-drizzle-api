@@ -5,7 +5,7 @@ import * as HttpStatusPhrases from "@/http-status-phrases";
 import db from "@/db";
 import { platform } from "@/db/schema";
 import platformSerializer from "@/serializers/platform.serializer";
-import type { ListRoute } from "./platforms.routes";
+import type { CreateRoute, ListRoute } from "./platforms.routes";
 
 export const list: AppRouteHandler<ListRoute> = async (c) => {
   const { offset, limit, name } = c.req.valid("query");
@@ -35,4 +35,12 @@ export const list: AppRouteHandler<ListRoute> = async (c) => {
     },
     HttpStatusCodes.OK
   );
+};
+
+export const create: AppRouteHandler<CreateRoute> = async (c) => {
+  const payload = c.req.valid("json");
+
+  const [inserted] = await db.insert(platform).values(payload).returning();
+
+  return c.json(platformSerializer(inserted), HttpStatusCodes.CREATED);
 };

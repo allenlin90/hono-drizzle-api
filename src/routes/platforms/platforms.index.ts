@@ -9,6 +9,8 @@ router.use(async (_c, next) => {
   await next();
 });
 
-router.openapi(routes.list, handlers.list);
+router
+  .openapi(routes.list, handlers.list)
+  .openapi(routes.create, handlers.create);
 
 export default router;

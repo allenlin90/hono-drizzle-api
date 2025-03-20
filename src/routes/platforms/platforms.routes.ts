@@ -1,6 +1,9 @@
 import { createRoute, z } from "@hono/zod-openapi";
 import * as HttpStatusCodes from "@/http-status-codes";
-import { selectPlatformSchema } from "@/db/schema/platform.schema";
+import {
+  insertPlatformSchema,
+  selectPlatformSchema,
+} from "@/db/schema/platform.schema";
 import { PREFIX } from "@/constants";
 import jsonContent from "@/openapi/helpers/json-content";
 import jsonContentRequired from "@/openapi/helpers/json-content-required";
@@ -32,4 +35,24 @@ export const list = createRoute({
   },
 });
 
+export const create = createRoute({
+  tags,
+  path: "/platforms",
+  method: "post",
+  request: {
+    body: jsonContentRequired(insertPlatformSchema, "Platform to create"),
+  },
+  responses: {
+    [HttpStatusCodes.CREATED]: jsonContent(
+      selectPlatformSchema,
+      "Platform created successfully"
+    ),
+    [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContent(
+      createErrorSchema(insertPlatformSchema),
+      "Validation error"
+    ),
+  },
+});
+
 export type ListRoute = typeof list;
+export type CreateRoute = typeof create;
