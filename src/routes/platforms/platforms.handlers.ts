@@ -10,6 +10,7 @@ import type {
   GetOneRoute,
   ListRoute,
   PatchRoute,
+  RemoveRoute,
 } from "./platforms.routes";
 
 export const list: AppRouteHandler<ListRoute> = async (c) => {
@@ -95,4 +96,26 @@ export const patch: AppRouteHandler<PatchRoute> = async (c) => {
   const data = platformSerializer(updated);
 
   return c.json(data, HttpStatusCodes.OK);
+};
+
+export const remove: AppRouteHandler<RemoveRoute> = async (c) => {
+  const { id } = c.req.valid("param");
+
+  // TODO: remove associated data, e.g. shows
+  const result = await db
+    .update(platform) // soft delete
+    .set({ deleted_at: new Date().toISOString() })
+    .where(eq(platform.uid, id))
+    .returning();
+
+  if (!result.length) {
+    return c.json(
+      {
+        message: HttpStatusPhrases.NOT_FOUND,
+      },
+      HttpStatusCodes.NOT_FOUND
+    );
+  }
+
+  return c.body(null, HttpStatusCodes.NO_CONTENT);
 };
