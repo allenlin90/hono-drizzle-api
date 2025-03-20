@@ -187,12 +187,15 @@ export const patch: AppRouteHandler<PatchRoute> = async (c) => {
 
 export const remove: AppRouteHandler<RemoveRoute> = async (c) => {
   const { id: show_uid } = c.req.valid("param");
+
+  // TODO: remove associated data, e.g. show_platform
   const result = await db
     .update(show)
     .set({ deleted_at: new Date().toISOString() })
-    .where(and(eq(show.uid, show_uid), isNull(show.deleted_at)));
+    .where(and(eq(show.uid, show_uid), isNull(show.deleted_at)))
+    .returning();
 
-  if (!result) {
+  if (!result.length) {
     return c.json(
       {
         message: "Show not found",

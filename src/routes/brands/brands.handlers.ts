@@ -108,7 +108,7 @@ export const remove: AppRouteHandler<RemoveRoute> = async (c) => {
     .where(eq(brand.uid, id))
     .returning();
 
-  if (!result) {
+  if (!result.length) {
     return c.json(
       {
         message: HttpStatusPhrases.NOT_FOUND,
