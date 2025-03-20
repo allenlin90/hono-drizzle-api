@@ -1,6 +1,10 @@
 import { pgTable as table } from "drizzle-orm/pg-core";
 import * as t from "drizzle-orm/pg-core";
-import { createInsertSchema, createSelectSchema } from "drizzle-zod";
+import {
+  createInsertSchema,
+  createSelectSchema,
+  createUpdateSchema,
+} from "drizzle-zod";
 import { z } from "@hono/zod-openapi";
 
 import { PREFIX } from "@/constants";
@@ -51,5 +55,22 @@ export const insertShowSchema = createInsertSchema(show)
     deleted_at: true,
   });
 
+export const patchShowSchema = createUpdateSchema(show, {
+  name: (schema) => schema.min(1).optional(),
+})
+  .merge(
+    z.object({
+      brand_uid: z.string().startsWith(PREFIX.BRAND).optional(),
+    })
+  )
+  .omit({
+    uid: true,
+    brand_id: true,
+    created_at: true,
+    updated_at: true,
+    deleted_at: true,
+  });
+
 export type SelectShowSchema = z.infer<typeof selectShowSchema>;
 export type InsertShowSchema = z.infer<typeof insertShowSchema>;
+export type PatchShowSchema = z.infer<typeof patchShowSchema>;

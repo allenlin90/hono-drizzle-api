@@ -1,6 +1,10 @@
 import { createRoute, z } from "@hono/zod-openapi";
 import * as HttpStatusCodes from "@/http-status-codes";
-import { insertShowSchema, selectShowSchema } from "@/db/schema/show.schema";
+import {
+  insertShowSchema,
+  patchShowSchema,
+  selectShowSchema,
+} from "@/db/schema/show.schema";
 import jsonContent from "@/openapi/helpers/json-content";
 import jsonContentRequired from "@/openapi/helpers/json-content-required";
 import jsonContentOneOf from "@/openapi/helpers/json-content-one-of";
@@ -92,6 +96,28 @@ export const getOne = createRoute({
   },
 });
 
+export const patch = createRoute({
+  tags,
+  path: "/shows/{id}",
+  method: "patch",
+  request: {
+    params: IdParams(PREFIX.SHOW),
+    body: jsonContentRequired(patchShowSchema, "The show to update"),
+  },
+  responses: {
+    [HttpStatusCodes.OK]: jsonContent(
+      selectShowSchema,
+      "The updated show object"
+    ),
+    [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContent(
+      createErrorSchema(patchShowSchema),
+      "The validation error"
+    ),
+    [HttpStatusCodes.NOT_FOUND]: jsonContent(notFoundSchema, "Show not found"),
+  },
+});
+
 export type ListRoute = typeof list;
 export type CreateRoute = typeof create;
 export type GetOneRoute = typeof getOne;
+export type PatchRoute = typeof patch;

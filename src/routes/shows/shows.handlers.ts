@@ -1,5 +1,10 @@
 import type { AppRouteHandler } from "@/lib/types";
-import type { CreateRoute, GetOneRoute, ListRoute } from "./shows.routes";
+import type {
+  CreateRoute,
+  GetOneRoute,
+  ListRoute,
+  PatchRoute,
+} from "./shows.routes";
 import {
   and,
   count,
@@ -124,4 +129,57 @@ export const getOne: AppRouteHandler<GetOneRoute> = async (c) => {
   }
 
   return c.json(showSerializer(showData), HttpStatusCodes.OK);
+};
+
+export const patch: AppRouteHandler<PatchRoute> = async (c) => {
+  const { id: show_uid } = c.req.valid("param");
+  const payload = c.req.valid("json");
+
+  let selectBrand: { id: number } | null = null;
+  let byBrandUid = payload.brand_uid
+    ? eq(brand.uid, payload.brand_uid)
+    : undefined;
+
+  if (payload.brand_uid) {
+    const result = await db
+      .select({ id: brand.id })
+      .from(brand)
+      .where(and(byBrandUid, isNull(brand.deleted_at)))
+      .limit(1);
+
+    selectBrand = result[0];
+
+    if (!selectBrand) {
+      return c.json(
+        {
+          message: "Brand not found",
+        },
+        HttpStatusCodes.NOT_FOUND
+      );
+    }
+  }
+
+  const [updated] = await db
+    .update(show)
+    .set({
+      ...payload,
+      ...(selectBrand && { brand_id: selectBrand?.id }),
+    })
+    .from(brand)
+    .where(and(eq(show.uid, show_uid), byBrandUid, isNull(show.deleted_at)))
+    .returning({
+      ...getTableColumns(show),
+      brand_uid: brand.uid,
+    });
+
+  if (!updated) {
+    return c.json(
+      {
+        message: "Show not found",
+      },
+      HttpStatusCodes.NOT_FOUND
+    );
+  }
+
+  return c.json(showSerializer(updated), HttpStatusCodes.OK);
 };

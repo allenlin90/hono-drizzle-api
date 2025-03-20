@@ -18,8 +18,8 @@ router.use(async (_c, next) => {
 router
   .openapi(routes.list, handlers.list)
   .openapi(routes.create, handlers.create)
-  .openapi(routes.getOne, handlers.getOne);
-// TODO: update one
+  .openapi(routes.getOne, handlers.getOne)
+  .openapi(routes.patch, handlers.patch);
 // TODO: delete
 
 export default router;
