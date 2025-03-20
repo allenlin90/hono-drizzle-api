@@ -1,5 +1,5 @@
 import type { AppRouteHandler } from "@/lib/types";
-import type { CreateRoute, ListRoute } from "./shows.routes";
+import type { CreateRoute, GetOneRoute, ListRoute } from "./shows.routes";
 import {
   and,
   count,
@@ -99,4 +99,29 @@ export const create: AppRouteHandler<CreateRoute> = async (c) => {
     showSerializer({ ...inserted, brand_uid: payload.brand_uid }),
     HttpStatusCodes.CREATED
   );
+};
+
+export const getOne: AppRouteHandler<GetOneRoute> = async (c) => {
+  const { id } = c.req.valid("param");
+
+  const [showData] = await db
+    .select({
+      ...getTableColumns(show),
+      brand_uid: brand.uid,
+    })
+    .from(show)
+    .innerJoin(brand, eq(show.brand_id, brand.id))
+    .where(and(eq(show.uid, id), isNull(brand.deleted_at)))
+    .limit(1);
+
+  if (!showData) {
+    return c.json(
+      {
+        message: "Show not found",
+      },
+      HttpStatusCodes.NOT_FOUND
+    );
+  }
+
+  return c.json(showSerializer(showData), HttpStatusCodes.OK);
 };

@@ -12,6 +12,7 @@ import notFoundSchema from "@/openapi/schemas/not-found";
 import createMessageObjectSchema from "@/openapi/schemas/create-message-object";
 import { PaginatedObjectsSchema } from "@/openapi/schemas/paginated-objects";
 import { ShowParamFilters } from "@/openapi/schemas/shows/show-param-filters";
+import { PREFIX } from "@/constants";
 
 const tags = ["Shows"];
 
@@ -74,5 +75,23 @@ export const create = createRoute({
   },
 });
 
+export const getOne = createRoute({
+  tags,
+  path: "/shows/{id}",
+  method: "get",
+  request: {
+    params: IdParams(PREFIX.SHOW),
+  },
+  responses: {
+    [HttpStatusCodes.OK]: jsonContent(selectShowSchema, "The requested show"),
+    [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContent(
+      createErrorSchema(IdParams(PREFIX.SHOW)),
+      "invalid id error"
+    ),
+    [HttpStatusCodes.NOT_FOUND]: jsonContent(notFoundSchema, "Show not found"),
+  },
+});
+
 export type ListRoute = typeof list;
 export type CreateRoute = typeof create;
+export type GetOneRoute = typeof getOne;
