@@ -5,7 +5,7 @@ import * as HttpStatusPhrases from "@/http-status-phrases";
 import db from "@/db";
 import { platform } from "@/db/schema";
 import platformSerializer from "@/serializers/platform.serializer";
-import type { CreateRoute, ListRoute } from "./platforms.routes";
+import type { CreateRoute, GetOneRoute, ListRoute } from "./platforms.routes";
 
 export const list: AppRouteHandler<ListRoute> = async (c) => {
   const { offset, limit, name } = c.req.valid("query");
@@ -43,4 +43,28 @@ export const create: AppRouteHandler<CreateRoute> = async (c) => {
   const [inserted] = await db.insert(platform).values(payload).returning();
 
   return c.json(platformSerializer(inserted), HttpStatusCodes.CREATED);
+};
+
+export const getOne: AppRouteHandler<GetOneRoute> = async (c) => {
+  const { id } = c.req.valid("param");
+  const platform = await db.query.platform.findFirst({
+    where: (fields, operators) =>
+      operators.and(
+        operators.eq(fields.uid, id),
+        operators.isNull(fields.deleted_at)
+      ),
+  });
+
+  if (!platform) {
+    return c.json(
+      {
+        message: HttpStatusPhrases.NOT_FOUND,
+      },
+      HttpStatusCodes.NOT_FOUND
+    );
+  }
+
+  const data = platformSerializer(platform);
+
+  return c.json(data, HttpStatusCodes.OK);
 };

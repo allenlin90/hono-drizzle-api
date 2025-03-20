@@ -54,5 +54,26 @@ export const create = createRoute({
   },
 });
 
+export const getOne = createRoute({
+  tags,
+  path: "/platforms/{id}",
+  method: "get",
+  request: {
+    params: IdParams(PREFIX.PLATFORM),
+  },
+  responses: {
+    [HttpStatusCodes.OK]: jsonContent(selectPlatformSchema, "Platform found"),
+    [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContent(
+      createErrorSchema(IdParams(PREFIX.PLATFORM)),
+      "invalid id error"
+    ),
+    [HttpStatusCodes.NOT_FOUND]: jsonContent(
+      NotFoundSchema,
+      "Platform not found"
+    ),
+  },
+});
+
 export type ListRoute = typeof list;
 export type CreateRoute = typeof create;
+export type GetOneRoute = typeof getOne;
