@@ -1,11 +1,16 @@
 import type { AppRouteHandler } from "@/lib/types";
-import { and, asc, getTableColumns, ilike, isNull } from "drizzle-orm";
+import { and, asc, eq, getTableColumns, ilike, isNull } from "drizzle-orm";
 import * as HttpStatusCodes from "@/http-status-codes";
 import * as HttpStatusPhrases from "@/http-status-phrases";
 import db from "@/db";
 import { platform } from "@/db/schema";
 import platformSerializer from "@/serializers/platform.serializer";
-import type { CreateRoute, GetOneRoute, ListRoute } from "./platforms.routes";
+import type {
+  CreateRoute,
+  GetOneRoute,
+  ListRoute,
+  PatchRoute,
+} from "./platforms.routes";
 
 export const list: AppRouteHandler<ListRoute> = async (c) => {
   const { offset, limit, name } = c.req.valid("query");
@@ -65,6 +70,29 @@ export const getOne: AppRouteHandler<GetOneRoute> = async (c) => {
   }
 
   const data = platformSerializer(platform);
+
+  return c.json(data, HttpStatusCodes.OK);
+};
+
+export const patch: AppRouteHandler<PatchRoute> = async (c) => {
+  const { id } = c.req.valid("param");
+  const updates = c.req.valid("json");
+  const [updated] = await db
+    .update(platform)
+    .set({ ...updates, updated_at: new Date().toISOString() })
+    .where(and(eq(platform.uid, id), isNull(platform.deleted_at)))
+    .returning();
+
+  if (!updated) {
+    return c.json(
+      {
+        message: HttpStatusPhrases.NOT_FOUND,
+      },
+      HttpStatusCodes.NOT_FOUND
+    );
+  }
+
+  const data = platformSerializer(updated);
 
   return c.json(data, HttpStatusCodes.OK);
 };

@@ -2,6 +2,7 @@ import { createRoute, z } from "@hono/zod-openapi";
 import * as HttpStatusCodes from "@/http-status-codes";
 import {
   insertPlatformSchema,
+  patchPlatformSchema,
   selectPlatformSchema,
 } from "@/db/schema/platform.schema";
 import { PREFIX } from "@/constants";
@@ -74,6 +75,34 @@ export const getOne = createRoute({
   },
 });
 
+export const patch = createRoute({
+  tags,
+  path: "/platforms/{id}",
+  method: "patch",
+  request: {
+    params: IdParams(PREFIX.PLATFORM),
+    body: jsonContentRequired(patchPlatformSchema, "Platform to update"),
+  },
+  responses: {
+    [HttpStatusCodes.OK]: jsonContent(
+      selectPlatformSchema,
+      "Platform updated successfully"
+    ),
+    [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContentOneOf(
+      [
+        createErrorSchema(patchPlatformSchema),
+        createErrorSchema(IdParams(PREFIX.PLATFORM)),
+      ],
+      "The validation error"
+    ),
+    [HttpStatusCodes.NOT_FOUND]: jsonContent(
+      NotFoundSchema,
+      "Platform not found"
+    ),
+  },
+});
+
 export type ListRoute = typeof list;
 export type CreateRoute = typeof create;
 export type GetOneRoute = typeof getOne;
+export type PatchRoute = typeof patch;
