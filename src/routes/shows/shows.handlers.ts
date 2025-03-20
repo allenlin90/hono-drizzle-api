@@ -4,6 +4,7 @@ import type {
   GetOneRoute,
   ListRoute,
   PatchRoute,
+  RemoveRoute,
 } from "./shows.routes";
 import {
   and,
@@ -182,4 +183,23 @@ export const patch: AppRouteHandler<PatchRoute> = async (c) => {
   }
 
   return c.json(showSerializer(updated), HttpStatusCodes.OK);
+};
+
+export const remove: AppRouteHandler<RemoveRoute> = async (c) => {
+  const { id: show_uid } = c.req.valid("param");
+  const result = await db
+    .update(show)
+    .set({ deleted_at: new Date().toISOString() })
+    .where(and(eq(show.uid, show_uid), isNull(show.deleted_at)));
+
+  if (!result) {
+    return c.json(
+      {
+        message: "Show not found",
+      },
+      HttpStatusCodes.NOT_FOUND
+    );
+  }
+
+  return c.body(null, HttpStatusCodes.NO_CONTENT);
 };

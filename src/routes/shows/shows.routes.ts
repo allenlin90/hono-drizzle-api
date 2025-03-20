@@ -12,7 +12,7 @@ import { createErrorSchema } from "@/openapi/schemas/create-error-schema";
 import { IdParams } from "@/openapi/schemas/id-params";
 import { UnauthorizedSchema } from "@/openapi/schemas/unauthorized";
 import { PageParams } from "@/openapi/schemas/page-params";
-import notFoundSchema from "@/openapi/schemas/not-found";
+import notFoundSchema, { NotFoundSchema } from "@/openapi/schemas/not-found";
 import createMessageObjectSchema from "@/openapi/schemas/create-message-object";
 import { PaginatedObjectsSchema } from "@/openapi/schemas/paginated-objects";
 import { ShowParamFilters } from "@/openapi/schemas/shows/show-param-filters";
@@ -109,11 +109,33 @@ export const patch = createRoute({
       selectShowSchema,
       "The updated show object"
     ),
-    [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContent(
-      createErrorSchema(patchShowSchema),
+    [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContentOneOf(
+      [
+        createErrorSchema(patchShowSchema),
+        createErrorSchema(IdParams(PREFIX.SHOW)),
+      ],
       "The validation error"
     ),
     [HttpStatusCodes.NOT_FOUND]: jsonContent(notFoundSchema, "Show not found"),
+  },
+});
+
+export const remove = createRoute({
+  tags,
+  path: "/shows/{id}",
+  method: "delete",
+  request: {
+    params: IdParams(PREFIX.SHOW),
+  },
+  responses: {
+    [HttpStatusCodes.NO_CONTENT]: {
+      description: "The show was deleted",
+    },
+    [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContent(
+      createErrorSchema(IdParams(PREFIX.SHOW)),
+      "invalid id error"
+    ),
+    [HttpStatusCodes.NOT_FOUND]: jsonContent(NotFoundSchema, "Show not found"),
   },
 });
 
@@ -121,3 +143,4 @@ export type ListRoute = typeof list;
 export type CreateRoute = typeof create;
 export type GetOneRoute = typeof getOne;
 export type PatchRoute = typeof patch;
+export type RemoveRoute = typeof remove;
