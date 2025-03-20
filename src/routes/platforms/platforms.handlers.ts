@@ -101,7 +101,7 @@ export const patch: AppRouteHandler<PatchRoute> = async (c) => {
 export const remove: AppRouteHandler<RemoveRoute> = async (c) => {
   const { id } = c.req.valid("param");
 
-  // TODO: remove associated data, e.g. shows
+  // TODO: remove associated data, e.g. show_platform
   const result = await db
     .update(platform) // soft delete
     .set({ deleted_at: new Date().toISOString() })
