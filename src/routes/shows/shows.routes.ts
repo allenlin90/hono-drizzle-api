@@ -40,7 +40,7 @@ export const list = createRoute({
       "Unauthorized"
     ),
     [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContentOneOf(
-      [notFoundSchema],
+      [createErrorSchema(ShowParamFilters), notFoundSchema],
       "Provided query params are not processable"
     ),
   },
