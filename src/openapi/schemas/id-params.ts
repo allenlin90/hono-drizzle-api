@@ -6,6 +6,7 @@ export const IdParams = (prefix: PREFIX) =>
     id: z
       .string()
       .startsWith(prefix)
+      .min(1)
       .openapi({
         param: {
           name: "id",
