@@ -29,7 +29,7 @@ export const brandMaterialRelation = relations(
   brandMaterial,
   ({ one, many }) => ({
     brand: one(brand, {
-      fields: [brandMaterial.brandId],
+      fields: [brandMaterial.brand_id],
       references: [brand.id],
     }),
     showPlatformMaterials: many(showPlatformMaterial),

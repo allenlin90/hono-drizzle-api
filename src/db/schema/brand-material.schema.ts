@@ -17,7 +17,7 @@ export const brandMaterial = table(
   {
     id: t.integer("id").primaryKey().generatedAlwaysAsIdentity(),
     uid: brandedUid(PREFIX.MATERIAL),
-    brandId: t
+    brand_id: t
       .integer("brand_id")
       .references(() => brand.id)
       .notNull(),
@@ -29,7 +29,7 @@ export const brandMaterial = table(
     ...timestamps,
   },
   (table) => [
-    t.unique().on(table.brandId, table.name),
+    t.unique().on(table.brand_id, table.name),
     t.index().on(table.name),
   ]
 );
