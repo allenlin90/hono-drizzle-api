@@ -45,10 +45,7 @@ export const list: AppRouteHandler<ListRoute> = async (c) => {
 
 export const create: AppRouteHandler<CreateRoute> = async (c) => {
   const payload = c.req.valid("json");
-  console.log(
-    "🚀 ~ constcreate:AppRouteHandler<CreateRoute>= ~ payload:",
-    payload
-  );
+
   const [inserted] = await db.insert(brand).values(payload).returning();
 
   return c.json(brandSerializer(inserted), HttpStatusCodes.CREATED);
