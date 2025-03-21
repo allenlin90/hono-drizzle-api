@@ -93,6 +93,22 @@ await seed(db, tables).refine((r) => {
         ...timestamps,
       },
     },
+    brandMaterial: {
+      count: 30,
+      columns: {
+        uid: r.valuesFromArray({
+          values: Array.from({ length: 30 }, () =>
+            generateBrandedUid(PREFIX.MATERIAL)
+          ),
+        }),
+        brand_id: r.int({ minValue: 1, maxValue: 5 }),
+        type: r.valuesFromArray({
+          values: ["mechanic", "scene", "script", "other"],
+        }),
+        description: r.loremIpsum(),
+        ...timestamps,
+      },
+    },
     brand: {
       count: 5,
       columns: {
