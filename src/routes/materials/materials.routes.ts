@@ -135,7 +135,30 @@ export const patch = createRoute({
   },
 });
 
+export const remove = createRoute({
+  tags,
+  path: "/brand-materials/{id}",
+  method: "delete",
+  request: {
+    params: IdParams(PREFIX.MATERIAL),
+  },
+  responses: {
+    [HttpStatusCodes.NO_CONTENT]: {
+      description: "The brand material was deleted",
+    },
+    [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContent(
+      createErrorSchema(IdParams(PREFIX.MATERIAL)),
+      "invalid id error"
+    ),
+    [HttpStatusCodes.NOT_FOUND]: jsonContent(
+      NotFoundSchema,
+      "Brand material not found"
+    ),
+  },
+});
+
 export type ListRoute = typeof list;
 export type CreateRoute = typeof create;
 export type GetOneRoute = typeof getOne;
 export type PatchRoute = typeof patch;
+export type RemoveRoute = typeof remove;

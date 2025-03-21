@@ -4,6 +4,7 @@ import type {
   GetOneRoute,
   ListRoute,
   PatchRoute,
+  RemoveRoute,
 } from "./materials.routes";
 import { and, count, eq, getTableColumns, ilike, isNull } from "drizzle-orm";
 import * as HttpStatusCodes from "@/http-status-codes";
@@ -182,4 +183,28 @@ export const patch: AppRouteHandler<PatchRoute> = async (c) => {
   }
 
   return c.json(brandMaterialSerializer(updated), HttpStatusCodes.OK);
+};
+
+export const remove: AppRouteHandler<RemoveRoute> = async (c) => {
+  const { id: show_uid } = c.req.valid("param");
+
+  // TODO: remove associated data, e.g. show_platform_material
+  const result = await db
+    .update(brandMaterial)
+    .set({ deleted_at: new Date().toISOString() })
+    .where(
+      and(eq(brandMaterial.uid, show_uid), isNull(brandMaterial.deleted_at))
+    )
+    .returning();
+
+  if (!result.length) {
+    return c.json(
+      {
+        message: "Brand material not found",
+      },
+      HttpStatusCodes.NOT_FOUND
+    );
+  }
+
+  return c.body(null, HttpStatusCodes.NO_CONTENT);
 };
