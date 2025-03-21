@@ -1,5 +1,10 @@
 import type { AppRouteHandler } from "@/lib/types";
-import type { CreateRoute, GetOneRoute, ListRoute } from "./materials.routes";
+import type {
+  CreateRoute,
+  GetOneRoute,
+  ListRoute,
+  PatchRoute,
+} from "./materials.routes";
 import { and, count, eq, getTableColumns, ilike, isNull } from "drizzle-orm";
 import * as HttpStatusCodes from "@/http-status-codes";
 import db from "@/db";
@@ -118,4 +123,63 @@ export const getOne: AppRouteHandler<GetOneRoute> = async (c) => {
   }
 
   return c.json(brandMaterialSerializer(brandMaterialData), HttpStatusCodes.OK);
+};
+
+export const patch: AppRouteHandler<PatchRoute> = async (c) => {
+  const { id: brand_material_uid } = c.req.valid("param");
+  const payload = c.req.valid("json");
+
+  let selectBrand: { id: number } | null = null;
+  let byBrandUid = payload.brand_uid
+    ? eq(brand.uid, payload.brand_uid)
+    : undefined;
+
+  if (payload.brand_uid) {
+    const result = await db
+      .select({ id: brand.id })
+      .from(brand)
+      .where(and(byBrandUid, isNull(brand.deleted_at)))
+      .limit(1);
+
+    selectBrand = result[0];
+
+    if (!selectBrand) {
+      return c.json(
+        {
+          message: "Brand not found",
+        },
+        HttpStatusCodes.NOT_FOUND
+      );
+    }
+  }
+
+  const [updated] = await db
+    .update(brandMaterial)
+    .set({
+      ...payload,
+      ...(selectBrand && { brand_id: selectBrand?.id }),
+    })
+    .from(brand)
+    .where(
+      and(
+        eq(brandMaterial.uid, brand_material_uid),
+        byBrandUid,
+        isNull(brandMaterial.deleted_at)
+      )
+    )
+    .returning({
+      ...getTableColumns(brandMaterial),
+      brand_uid: brand.uid,
+    });
+
+  if (!updated) {
+    return c.json(
+      {
+        message: "Brand material not found",
+      },
+      HttpStatusCodes.NOT_FOUND
+    );
+  }
+
+  return c.json(brandMaterialSerializer(updated), HttpStatusCodes.OK);
 };

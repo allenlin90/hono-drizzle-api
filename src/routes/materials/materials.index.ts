@@ -18,6 +18,7 @@ router.use(async (_c, next) => {
 router
   .openapi(routes.list, handlers.list)
   .openapi(routes.create, handlers.create)
-  .openapi(routes.getOne, handlers.getOne);
+  .openapi(routes.getOne, handlers.getOne)
+  .openapi(routes.patch, handlers.patch);
 
 export default router;

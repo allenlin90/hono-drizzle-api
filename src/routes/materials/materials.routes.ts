@@ -3,6 +3,7 @@ import * as HttpStatusCodes from "@/http-status-codes";
 import { PREFIX } from "@/constants";
 import {
   insertBrandMaterialSchema,
+  patchBrandMaterialSchema,
   selectBrandMaterialSchema,
 } from "@/db/schema/brand-material.schema";
 import jsonContent from "@/openapi/helpers/json-content";
@@ -104,6 +105,37 @@ export const getOne = createRoute({
   },
 });
 
+export const patch = createRoute({
+  tags,
+  path: "/brand-materials/{id}",
+  method: "patch",
+  request: {
+    params: IdParams(PREFIX.MATERIAL),
+    body: jsonContentRequired(
+      patchBrandMaterialSchema,
+      "The brand material to update"
+    ),
+  },
+  responses: {
+    [HttpStatusCodes.OK]: jsonContent(
+      selectBrandMaterialSchema,
+      "The updated show object"
+    ),
+    [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContentOneOf(
+      [
+        createErrorSchema(patchBrandMaterialSchema),
+        createErrorSchema(IdParams(PREFIX.MATERIAL)),
+      ],
+      "The validation error"
+    ),
+    [HttpStatusCodes.NOT_FOUND]: jsonContent(
+      notFoundSchema,
+      "Brand material not found"
+    ),
+  },
+});
+
 export type ListRoute = typeof list;
 export type CreateRoute = typeof create;
 export type GetOneRoute = typeof getOne;
+export type PatchRoute = typeof patch;
