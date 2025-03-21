@@ -1,6 +1,6 @@
 import type { AppRouteHandler } from "@/lib/types";
-import type { ListRoute } from "./materials.routes";
-import { and, count, eq, getTableColumns, ilike } from "drizzle-orm";
+import type { CreateRoute, ListRoute } from "./materials.routes";
+import { and, count, eq, getTableColumns, ilike, isNull } from "drizzle-orm";
 import * as HttpStatusCodes from "@/http-status-codes";
 import db from "@/db";
 import { brand, brandMaterial } from "@/db/schema";
@@ -49,5 +49,48 @@ export const list: AppRouteHandler<ListRoute> = async (c) => {
       total,
     },
     HttpStatusCodes.OK
+  );
+};
+
+export const create: AppRouteHandler<CreateRoute> = async (c) => {
+  const idempotencyKey = c.req.valid("header")["Idempotency-Key"];
+
+  if (!idempotencyKey) {
+    return c.json(
+      {
+        message: "idempotency key is required",
+      },
+      HttpStatusCodes.BAD_REQUEST
+    );
+  }
+
+  const payload = c.req.valid("json");
+
+  const [selectBrand] = await db
+    .select({ id: brand.id })
+    .from(brand)
+    .where(and(eq(brand.uid, payload.brand_uid), isNull(brand.deleted_at)))
+    .limit(1);
+
+  if (!selectBrand) {
+    return c.json(
+      {
+        message: "Brand not found",
+      },
+      HttpStatusCodes.NOT_FOUND
+    );
+  }
+
+  const [inserted] = await db
+    .insert(brandMaterial)
+    .values({
+      ...payload,
+      brand_id: selectBrand.id,
+    })
+    .returning();
+
+  return c.json(
+    brandMaterialSerializer({ ...inserted, brand_uid: payload.brand_uid }),
+    HttpStatusCodes.CREATED
   );
 };

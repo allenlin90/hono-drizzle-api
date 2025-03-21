@@ -1,7 +1,10 @@
 import { createRoute, z } from "@hono/zod-openapi";
 import * as HttpStatusCodes from "@/http-status-codes";
 import { PREFIX } from "@/constants";
-import { selectBrandMaterialSchema } from "@/db/schema/brand-material.schema";
+import {
+  insertBrandMaterialSchema,
+  selectBrandMaterialSchema,
+} from "@/db/schema/brand-material.schema";
 import jsonContent from "@/openapi/helpers/json-content";
 import jsonContentOneOf from "@/openapi/helpers/json-content-one-of";
 import jsonContentRequired from "@/openapi/helpers/json-content-required";
@@ -42,4 +45,41 @@ export const list = createRoute({
   },
 });
 
+export const create = createRoute({
+  tags,
+  path: "/brand-materials",
+  method: "post",
+  request: {
+    headers: z.object({
+      "Idempotency-Key": z.string().openapi({
+        description: "key to ensure idempotency",
+        example: "123e4567-e89b-12d3-a456-426614174000",
+      }),
+    }),
+    body: jsonContentRequired(
+      insertBrandMaterialSchema,
+      "The brand material to create"
+    ),
+  },
+  responses: {
+    [HttpStatusCodes.CREATED]: jsonContent(
+      selectBrandMaterialSchema,
+      "The created brand material"
+    ),
+    [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContent(
+      createErrorSchema(insertBrandMaterialSchema),
+      "The validation error"
+    ),
+    [HttpStatusCodes.BAD_REQUEST]: jsonContent(
+      createMessageObjectSchema("Invalid idempotency key"),
+      "Invalid idempotency key"
+    ),
+    [HttpStatusCodes.NOT_FOUND]: jsonContent(
+      createMessageObjectSchema("Brand not found"),
+      "Brand not found"
+    ),
+  },
+});
+
 export type ListRoute = typeof list;
+export type CreateRoute = typeof create;
