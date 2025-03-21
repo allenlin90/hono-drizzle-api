@@ -81,5 +81,29 @@ export const create = createRoute({
   },
 });
 
+export const getOne = createRoute({
+  tags,
+  path: "/brand-materials/{id}",
+  method: "get",
+  request: {
+    params: IdParams(PREFIX.MATERIAL),
+  },
+  responses: {
+    [HttpStatusCodes.OK]: jsonContent(
+      selectBrandMaterialSchema,
+      "The requested brand material"
+    ),
+    [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContent(
+      createErrorSchema(IdParams(PREFIX.MATERIAL)),
+      "invalid id error"
+    ),
+    [HttpStatusCodes.NOT_FOUND]: jsonContent(
+      notFoundSchema,
+      "Brand material not found"
+    ),
+  },
+});
+
 export type ListRoute = typeof list;
 export type CreateRoute = typeof create;
+export type GetOneRoute = typeof getOne;

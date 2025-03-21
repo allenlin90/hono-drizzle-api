@@ -1,5 +1,5 @@
 import type { AppRouteHandler } from "@/lib/types";
-import type { CreateRoute, ListRoute } from "./materials.routes";
+import type { CreateRoute, GetOneRoute, ListRoute } from "./materials.routes";
 import { and, count, eq, getTableColumns, ilike, isNull } from "drizzle-orm";
 import * as HttpStatusCodes from "@/http-status-codes";
 import db from "@/db";
@@ -93,4 +93,29 @@ export const create: AppRouteHandler<CreateRoute> = async (c) => {
     brandMaterialSerializer({ ...inserted, brand_uid: payload.brand_uid }),
     HttpStatusCodes.CREATED
   );
+};
+
+export const getOne: AppRouteHandler<GetOneRoute> = async (c) => {
+  const { id } = c.req.valid("param");
+
+  const [brandMaterialData] = await db
+    .select({
+      ...getTableColumns(brandMaterial),
+      brand_uid: brand.uid,
+    })
+    .from(brandMaterial)
+    .innerJoin(brand, eq(brandMaterial.brand_id, brand.id))
+    .where(and(eq(brandMaterial.uid, id), isNull(brand.deleted_at)))
+    .limit(1);
+
+  if (!brandMaterialData) {
+    return c.json(
+      {
+        message: "Show not found",
+      },
+      HttpStatusCodes.NOT_FOUND
+    );
+  }
+
+  return c.json(brandMaterialSerializer(brandMaterialData), HttpStatusCodes.OK);
 };
