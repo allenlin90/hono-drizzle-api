@@ -4,12 +4,13 @@ import index from "@/routes/index";
 import brands from "@/routes/brands/brands.index";
 import shows from "@/routes/shows/shows.index";
 import platforms from "@/routes/platforms/platforms.index";
+import materials from "@/routes/materials/materials.index";
 
 const app = createApp();
 
 configureOpenAPI(app);
 
-const routes = [index, brands, shows, platforms];
+const routes = [index, brands, shows, platforms, materials];
 
 routes.forEach((route) => app.route("/", route));
 

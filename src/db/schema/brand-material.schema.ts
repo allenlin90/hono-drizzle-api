@@ -1,9 +1,11 @@
 import { pgTable as table } from "drizzle-orm/pg-core";
 import * as t from "drizzle-orm/pg-core";
+import { z } from "@hono/zod-openapi";
 
 import { brandedUid, timestamps } from "../helpers/columns.helpers";
 import { brand } from "./brand.schema";
 import { PREFIX } from "@/constants";
+import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 
 export const materialTypeEnum = t.pgEnum("material_type", [
   "mechanic",
@@ -33,3 +35,31 @@ export const brandMaterial = table(
     t.index().on(table.name),
   ]
 );
+
+export const selectBrandMaterialSchema = createSelectSchema(brandMaterial)
+  .merge(z.object({ brand_uid: z.string() }))
+  .omit({
+    id: true,
+    brand_id: true,
+    deleted_at: true,
+  });
+
+export const insertBrandMaterialSchema = createInsertSchema(brandMaterial)
+  .merge(z.object({ brand_uid: z.string() }))
+  .omit({
+    uid: true,
+    brand_id: true,
+    created_at: true,
+    updated_at: true,
+    deleted_at: true,
+  });
+
+export const brandMaterialTypeEnum = createSelectSchema(materialTypeEnum);
+
+export type SelectBrandMaterialSchema = z.infer<
+  typeof selectBrandMaterialSchema
+>;
+
+export type InsertBrandMaterialSchema = z.infer<
+  typeof insertBrandMaterialSchema
+>;
