@@ -22,7 +22,9 @@ export const selectPlatformSchema = createSelectSchema(platform).omit({
   deleted_at: true,
 });
 
-export const insertPlatformSchema = createInsertSchema(platform).omit({
+export const insertPlatformSchema = createInsertSchema(platform, {
+  name: (schema) => schema.min(1),
+}).omit({
   uid: true,
   created_at: true,
   updated_at: true,
@@ -30,7 +32,7 @@ export const insertPlatformSchema = createInsertSchema(platform).omit({
 });
 
 export const patchPlatformSchema = createUpdateSchema(platform, {
-  name: z.string().min(1),
+  name: (schema) => schema.min(1),
 }).omit({
   uid: true,
   created_at: true,
