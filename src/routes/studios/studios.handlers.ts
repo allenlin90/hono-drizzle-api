@@ -126,7 +126,7 @@ export const getOne: AppRouteHandler<GetOneRoute> = async (c) => {
 };
 
 export const patch: AppRouteHandler<PatchRoute> = async (c) => {
-  const { id: address_id } = c.req.valid("param");
+  const { id: studio_id } = c.req.valid("param");
   const payload = c.req.valid("json");
 
   let selectAddress: { id: number } | null = null;
@@ -163,7 +163,7 @@ export const patch: AppRouteHandler<PatchRoute> = async (c) => {
     })
     .from(address)
     .where(
-      and(eq(address.uid, address_id), byAddressUid, isNull(address.deleted_at))
+      and(eq(studio.uid, studio_id), byAddressUid, isNull(address.deleted_at))
     )
     .returning({
       ...getTableColumns(studio),
