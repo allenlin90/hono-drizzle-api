@@ -18,13 +18,13 @@ configureOpenAPI(app);
 const routes = [
   index,
   addresses,
+  materials,
   brands,
   cities,
   shows,
   studioRooms,
   studios,
   platforms,
-  materials,
   users,
 ];
 

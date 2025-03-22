@@ -48,7 +48,12 @@ export const selectBrandMaterialSchema = createSelectSchema(brandMaterial)
     deleted_at: true,
   });
 
-export const insertBrandMaterialSchema = createInsertSchema(brandMaterial)
+export const insertBrandMaterialSchema = createInsertSchema(brandMaterial, {
+  name: z.string().min(1).optional(),
+  type: z.enum(materialTypeEnum.enumValues).optional(),
+  description: z.string().min(1).optional(),
+  resource_url: z.string().url().optional(),
+})
   .merge(z.object({ brand_uid: z.string() }))
   .omit({
     uid: true,
@@ -58,7 +63,12 @@ export const insertBrandMaterialSchema = createInsertSchema(brandMaterial)
     deleted_at: true,
   });
 
-export const patchBrandMaterialSchema = createUpdateSchema(brandMaterial)
+export const patchBrandMaterialSchema = createUpdateSchema(brandMaterial, {
+  name: z.string().min(1).optional(),
+  type: z.enum(materialTypeEnum.enumValues).optional(),
+  description: z.string().min(1).optional(),
+  resource_url: z.string().url().optional(),
+})
   .merge(
     z.object({
       brand_uid: z.string().startsWith(PREFIX.BRAND).optional(),

@@ -8,7 +8,7 @@ import PageParams from "../page-params";
 export const MaterialParamFilters = PageParams()
   .merge(
     z.object({
-      type: brandMaterialTypeEnum,
+      type: brandMaterialTypeEnum.optional(),
       is_active: coerceBoolean.optional().openapi({
         default: true,
         examples: [true, false, "1", "0"],
