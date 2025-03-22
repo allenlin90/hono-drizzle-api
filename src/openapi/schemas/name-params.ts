@@ -4,6 +4,7 @@ export const NameParams = (nameExamples = ["object"]) =>
   z.object({
     name: z
       .string()
+      .min(1)
       .optional()
       .openapi({
         param: {
