@@ -2,6 +2,7 @@ import { createApp } from "@/lib/create-app";
 import configureOpenAPI from "@/lib/configure-open-api";
 import index from "@/routes/index";
 import brands from "@/routes/brands/brands.index";
+import cities from "@/routes/cities/cities.index";
 import shows from "@/routes/shows/shows.index";
 import platforms from "@/routes/platforms/platforms.index";
 import materials from "@/routes/materials/materials.index";
@@ -10,7 +11,7 @@ const app = createApp();
 
 configureOpenAPI(app);
 
-const routes = [index, brands, shows, platforms, materials];
+const routes = [index, brands, cities, shows, platforms, materials];
 
 routes.forEach((route) => app.route("/", route));
 
