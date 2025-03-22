@@ -41,7 +41,9 @@ export const selectStudioRoomSchema = createSelectSchema(studioRoom)
     deleted_at: true,
   });
 
-export const insertStudioRoomSchema = createInsertSchema(studioRoom)
+export const insertStudioRoomSchema = createInsertSchema(studioRoom, {
+  name: (schema) => schema.min(1),
+})
   .merge(
     z.object({
       studio_uid: z.string().startsWith(PREFIX.STUDIO),
@@ -55,7 +57,9 @@ export const insertStudioRoomSchema = createInsertSchema(studioRoom)
     deleted_at: true,
   });
 
-export const patchStudioRoomSchema = createUpdateSchema(studioRoom)
+export const patchStudioRoomSchema = createUpdateSchema(studioRoom, {
+  name: (schema) => schema.min(1),
+})
   .merge(
     z.object({
       studio_uid: z.string().startsWith(PREFIX.STUDIO),
