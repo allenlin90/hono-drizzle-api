@@ -23,7 +23,7 @@ export const selectBrandSchema = createSelectSchema(brand).omit({
 });
 
 export const insertBrandSchema = createInsertSchema(brand, {
-  name: (schema) => schema.min(1).max(255),
+  name: (schema) => schema.min(1),
 }).omit({
   uid: true,
   created_at: true,
@@ -32,7 +32,7 @@ export const insertBrandSchema = createInsertSchema(brand, {
 });
 
 export const patchBrandSchema = createUpdateSchema(brand, {
-  name: (schema) => schema.min(1).max(255),
+  name: (schema) => schema.min(1),
 }).omit({
   uid: true,
   created_at: true,
