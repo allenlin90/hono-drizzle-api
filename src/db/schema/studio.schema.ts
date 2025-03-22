@@ -32,7 +32,7 @@ export const selectStudioSchema = createSelectSchema(studio)
   });
 
 export const insertStudioSchema = createInsertSchema(studio, {
-  name: (schema) => schema.min(1).optional(),
+  name: (schema) => schema.min(1),
 })
   .merge(
     z.object({
@@ -48,7 +48,7 @@ export const insertStudioSchema = createInsertSchema(studio, {
   });
 
 export const patchStudioSchema = createUpdateSchema(studio, {
-  name: (schema) => schema.min(1).optional(),
+  name: (schema) => schema.min(1),
 })
   .merge(
     z.object({

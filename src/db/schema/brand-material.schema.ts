@@ -49,8 +49,8 @@ export const selectBrandMaterialSchema = createSelectSchema(brandMaterial)
   });
 
 export const insertBrandMaterialSchema = createInsertSchema(brandMaterial, {
-  name: z.string().min(1).optional(),
-  type: z.enum(materialTypeEnum.enumValues).optional(),
+  name: z.string().min(1),
+  type: z.enum(materialTypeEnum.enumValues),
   description: z.string().min(1).optional(),
   resource_url: z.string().url().optional(),
 })

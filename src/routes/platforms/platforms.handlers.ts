@@ -105,7 +105,7 @@ export const remove: AppRouteHandler<RemoveRoute> = async (c) => {
   const result = await db
     .update(platform) // soft delete
     .set({ deleted_at: new Date().toISOString() })
-    .where(eq(platform.uid, id))
+    .where(and(eq(platform.uid, id), isNull(platform.deleted_at)))
     .returning();
 
   if (!result.length) {
