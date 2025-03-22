@@ -19,7 +19,7 @@ import {
 import * as HttpStatusCodes from "@/http-status-codes";
 import db from "@/db";
 import { brand, show } from "@/db/schema";
-import { showSerializer } from "@/serializers/show.serailizer";
+import { showSerializer } from "@/serializers/show.serializer";
 
 export const list: AppRouteHandler<ListRoute> = async (c) => {
   const { offset, limit, brand_id, name, start_time, end_time } =
