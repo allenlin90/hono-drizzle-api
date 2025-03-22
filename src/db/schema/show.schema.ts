@@ -57,6 +57,8 @@ export const insertShowSchema = createInsertSchema(show)
 
 export const patchShowSchema = createUpdateSchema(show, {
   name: (schema) => schema.min(1).optional(),
+  start_time: (schema) => schema.datetime().optional(),
+  end_time: (schema) => schema.datetime().optional(),
 })
   .merge(
     z.object({
