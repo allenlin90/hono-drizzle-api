@@ -10,6 +10,7 @@ import studios from "@/routes/studios/studios.index";
 import platforms from "@/routes/platforms/platforms.index";
 import materials from "@/routes/materials/materials.index";
 import mcs from "@/routes/mcs/mcs.index";
+import operators from "@/routes/operators/operators.index";
 import users from "@/routes/users/users.index";
 
 const app = createApp();
@@ -27,6 +28,7 @@ const routes = [
   studios,
   platforms,
   mcs,
+  operators,
   users,
 ];
 
