@@ -53,8 +53,6 @@ export const insertAddressSchema = createInsertSchema(address, {
   address: z.string().min(1),
   sub_district: z.string().min(1).optional(),
   district: z.string().min(1).optional(),
-  province: z.string().min(1),
-  postcode: z.string().min(1),
 })
   .merge(
     z.object({
