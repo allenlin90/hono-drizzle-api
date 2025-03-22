@@ -29,8 +29,16 @@ export const list: AppRouteHandler<ListRoute> = async (c) => {
   const startTime = start_time ? gte(show.start_time, start_time) : undefined;
   const endTime = end_time ? gte(show.end_time, end_time) : undefined;
   const brandUid = brand_id ? eq(brand.uid, brand_id) : undefined;
+  const activeShows = isNull(show.deleted_at);
   const activeBrands = isNull(brand.deleted_at);
-  const filters = and(activeBrands, ilikeByName, startTime, endTime, brandUid);
+  const filters = and(
+    activeShows,
+    activeBrands,
+    ilikeByName,
+    startTime,
+    endTime,
+    brandUid
+  );
 
   const shows = await db
     .select({
@@ -117,7 +125,9 @@ export const getOne: AppRouteHandler<GetOneRoute> = async (c) => {
     })
     .from(show)
     .innerJoin(brand, eq(show.brand_id, brand.id))
-    .where(and(eq(show.uid, id), isNull(brand.deleted_at)))
+    .where(
+      and(eq(show.uid, id), isNull(brand.deleted_at), isNull(show.deleted_at))
+    )
     .limit(1);
 
   if (!showData) {
