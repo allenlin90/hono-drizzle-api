@@ -9,6 +9,7 @@ import studioRooms from "@/routes/studio-rooms/studio-rooms.index";
 import studios from "@/routes/studios/studios.index";
 import platforms from "@/routes/platforms/platforms.index";
 import materials from "@/routes/materials/materials.index";
+import users from "@/routes/users/users.index";
 
 const app = createApp();
 
@@ -24,6 +25,7 @@ const routes = [
   studios,
   platforms,
   materials,
+  users,
 ];
 
 routes.forEach((route) => app.route("/", route));
