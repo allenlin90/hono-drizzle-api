@@ -31,7 +31,9 @@ export const selectStudioSchema = createSelectSchema(studio)
     deleted_at: true,
   });
 
-export const insertStudioSchema = createInsertSchema(studio)
+export const insertStudioSchema = createInsertSchema(studio, {
+  name: (schema) => schema.min(1).optional(),
+})
   .merge(
     z.object({
       address_uid: z.string().startsWith(PREFIX.ADDRESS),
@@ -45,7 +47,9 @@ export const insertStudioSchema = createInsertSchema(studio)
     deleted_at: true,
   });
 
-export const patchStudioSchema = createUpdateSchema(studio)
+export const patchStudioSchema = createUpdateSchema(studio, {
+  name: (schema) => schema.min(1).optional(),
+})
   .merge(
     z.object({
       address_uid: z.string().startsWith(PREFIX.ADDRESS),
