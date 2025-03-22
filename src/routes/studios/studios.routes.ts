@@ -12,11 +12,9 @@ import jsonContentOneOf from "@/openapi/helpers/json-content-one-of";
 import { createErrorSchema } from "@/openapi/schemas/create-error-schema";
 import { IdParams } from "@/openapi/schemas/id-params";
 import { UnauthorizedSchema } from "@/openapi/schemas/unauthorized";
-import { PageParams } from "@/openapi/schemas/page-params";
-import notFoundSchema, { NotFoundSchema } from "@/openapi/schemas/not-found";
+import notFoundSchema from "@/openapi/schemas/not-found";
 import createMessageObjectSchema from "@/openapi/schemas/create-message-object";
 import { PaginatedObjectsSchema } from "@/openapi/schemas/paginated-objects";
-import { NameParams } from "@/openapi/schemas/name-params";
 import { StudioParamFilters } from "@/openapi/schemas/studios/studio-param-filter";
 
 const tags = ["Studios"];
@@ -26,7 +24,7 @@ export const list = createRoute({
   path: "/studios",
   method: "get",
   request: {
-    query: PageParams().merge(StudioParamFilters()),
+    query: StudioParamFilters,
   },
   responses: {
     [HttpStatusCodes.OK]: jsonContent(
@@ -41,7 +39,7 @@ export const list = createRoute({
       "Unauthorized"
     ),
     [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContentOneOf(
-      [createErrorSchema(NameParams(["onnut studio"])), notFoundSchema],
+      [createErrorSchema(StudioParamFilters), notFoundSchema],
       "Provided query params are not processable"
     ),
   },
@@ -136,7 +134,7 @@ export const remove = createRoute({
       "invalid id error"
     ),
     [HttpStatusCodes.NOT_FOUND]: jsonContent(
-      NotFoundSchema,
+      notFoundSchema,
       "Address not found"
     ),
   },

@@ -10,7 +10,6 @@ import jsonContent from "@/openapi/helpers/json-content";
 import jsonContentOneOf from "@/openapi/helpers/json-content-one-of";
 import jsonContentRequired from "@/openapi/helpers/json-content-required";
 import { IdParams } from "@/openapi/schemas/id-params";
-import { PageParams } from "@/openapi/schemas/page-params";
 import { createErrorSchema } from "@/openapi/schemas/create-error-schema";
 import { UnauthorizedSchema } from "@/openapi/schemas/unauthorized";
 import notFoundSchema, { NotFoundSchema } from "@/openapi/schemas/not-found";
@@ -25,7 +24,7 @@ export const list = createRoute({
   path: "/brand-materials",
   method: "get",
   request: {
-    query: PageParams().merge(MaterialParamFilters),
+    query: MaterialParamFilters,
   },
   responses: {
     [HttpStatusCodes.OK]: jsonContent(

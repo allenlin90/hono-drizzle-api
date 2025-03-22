@@ -1,11 +1,10 @@
 import { z } from "@hono/zod-openapi";
-import { AddressIdQueryParams } from "../address-id-query-params";
+import { addressIdSchema } from "../id-query-params";
 import { NameParams } from "../name-params";
+import PageParams from "../page-params";
 
-export const StudioParamFilters = () =>
-  z
-    .object({})
-    .merge(NameParams(["onnut"]))
-    .merge(AddressIdQueryParams());
+export const StudioParamFilters = PageParams()
+  .merge(NameParams(["onnut"]))
+  .merge(addressIdSchema);
 
 export default StudioParamFilters;

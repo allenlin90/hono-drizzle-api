@@ -12,7 +12,6 @@ import jsonContentOneOf from "@/openapi/helpers/json-content-one-of";
 import { createErrorSchema } from "@/openapi/schemas/create-error-schema";
 import { IdParams } from "@/openapi/schemas/id-params";
 import { UnauthorizedSchema } from "@/openapi/schemas/unauthorized";
-import { PageParams } from "@/openapi/schemas/page-params";
 import notFoundSchema, { NotFoundSchema } from "@/openapi/schemas/not-found";
 import createMessageObjectSchema from "@/openapi/schemas/create-message-object";
 import { PaginatedObjectsSchema } from "@/openapi/schemas/paginated-objects";
@@ -25,7 +24,7 @@ export const list = createRoute({
   path: "/addresses",
   method: "get",
   request: {
-    query: PageParams().merge(AddressParamFilters),
+    query: AddressParamFilters,
   },
   responses: {
     [HttpStatusCodes.OK]: jsonContent(
