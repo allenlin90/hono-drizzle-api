@@ -27,7 +27,9 @@ export const insertCitySchema = createInsertSchema(city, {
   deleted_at: true,
 });
 
-export const patchCitySchema = createInsertSchema(city).omit({
+export const patchCitySchema = createInsertSchema(city, {
+  name: z.string().min(1),
+}).omit({
   uid: true,
   created_at: true,
   updated_at: true,
