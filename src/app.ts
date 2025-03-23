@@ -4,6 +4,7 @@ import index from "@/routes/index";
 import addresses from "@/routes/addresses/addresses.index";
 import brands from "@/routes/brands/brands.index";
 import cities from "@/routes/cities/cities.index";
+import showPlatforms from "@/routes/show-platforms/show-platforms.index";
 import shows from "@/routes/shows/shows.index";
 import studioRooms from "@/routes/studio-rooms/studio-rooms.index";
 import studios from "@/routes/studios/studios.index";
@@ -23,6 +24,7 @@ const routes = [
   materials,
   brands,
   cities,
+  showPlatforms,
   shows,
   studioRooms,
   studios,

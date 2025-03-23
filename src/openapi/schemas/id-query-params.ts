@@ -126,7 +126,7 @@ export const studioIdSchema = z.object({
   }),
 });
 
-export const studio_roomIdSchema = z.object({
+export const studioRoomIdSchema = z.object({
   studio_room_id: z
     .optional(z.string().startsWith(PREFIX.STUDIO_ROOM))
     .openapi({

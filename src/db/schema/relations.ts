@@ -120,7 +120,7 @@ export const showPlatformRelation = relations(
       references: [show.id],
     }),
     studioRoom: one(studioRoom, {
-      fields: [showPlatform.studioRoomId],
+      fields: [showPlatform.studio_room_id],
       references: [studioRoom.id],
     }),
     tasks: many(task),
