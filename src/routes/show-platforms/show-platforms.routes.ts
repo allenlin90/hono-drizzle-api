@@ -12,10 +12,7 @@ import { UnauthorizedSchema } from "@/openapi/schemas/unauthorized";
 import { createErrorSchema } from "@/openapi/schemas/create-error-schema";
 import { createMessageObjectSchema } from "@/openapi/schemas/create-message-object";
 import { PaginatedObjectsSchema } from "@/openapi/schemas/paginated-objects";
-import {
-  insertShowPlatformSchema,
-  selectShowPlatformSchema,
-} from "@/db/schema/show-platform.schema";
+import { selectShowPlatformSchema } from "@/db/schema/show-platform.schema";
 import { ShowPlatformPayloadSchema } from "@/openapi/schemas/show-platforms/show-platform-payload";
 import { ShowPlatformParamFiltersSchema } from "@/openapi/schemas/show-platforms/show-platform-param-filters";
 
