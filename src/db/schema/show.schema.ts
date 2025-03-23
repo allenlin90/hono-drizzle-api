@@ -46,7 +46,7 @@ export const selectShowSchema = createSelectSchema(show)
   }));
 
 export const insertShowSchema = createInsertSchema(show)
-  .merge(z.object({ brand_uid: z.string() }))
+  .merge(z.object({ brand_uid: z.string().startsWith(PREFIX.BRAND) }))
   .omit({
     uid: true,
     brand_id: true,

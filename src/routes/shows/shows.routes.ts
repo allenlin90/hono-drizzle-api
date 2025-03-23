@@ -11,7 +11,7 @@ import jsonContentOneOf from "@/openapi/helpers/json-content-one-of";
 import { createErrorSchema } from "@/openapi/schemas/create-error-schema";
 import { IdParams } from "@/openapi/schemas/id-params";
 import { UnauthorizedSchema } from "@/openapi/schemas/unauthorized";
-import notFoundSchema, { NotFoundSchema } from "@/openapi/schemas/not-found";
+import { NotFoundSchema } from "@/openapi/schemas/not-found";
 import createMessageObjectSchema from "@/openapi/schemas/create-message-object";
 import { PaginatedObjectsSchema } from "@/openapi/schemas/paginated-objects";
 import { ShowParamFilters } from "@/openapi/schemas/shows/show-param-filters";
@@ -39,7 +39,7 @@ export const list = createRoute({
       "Unauthorized"
     ),
     [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContentOneOf(
-      [createErrorSchema(ShowParamFilters), notFoundSchema],
+      [createErrorSchema(ShowParamFilters), NotFoundSchema],
       "Provided query params are not processable"
     ),
   },
@@ -91,7 +91,7 @@ export const getOne = createRoute({
       createErrorSchema(IdParams(PREFIX.SHOW)),
       "invalid id error"
     ),
-    [HttpStatusCodes.NOT_FOUND]: jsonContent(notFoundSchema, "Show not found"),
+    [HttpStatusCodes.NOT_FOUND]: jsonContent(NotFoundSchema, "Show not found"),
   },
 });
 
@@ -115,7 +115,7 @@ export const patch = createRoute({
       ],
       "The validation error"
     ),
-    [HttpStatusCodes.NOT_FOUND]: jsonContent(notFoundSchema, "Show not found"),
+    [HttpStatusCodes.NOT_FOUND]: jsonContent(NotFoundSchema, "Show not found"),
   },
 });
 
