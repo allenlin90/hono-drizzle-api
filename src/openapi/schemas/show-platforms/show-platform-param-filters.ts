@@ -14,6 +14,10 @@ export const ShowPlatformParamFiltersSchema = PageParams()
   .merge(
     z.object({
       is_active: coerceBoolean.optional(),
+      brand_name: z.string().min(1).optional(),
+      platform_name: z.string().min(1).optional(),
+      show_name: z.string().min(1).optional(),
+      studio_room_name: z.string().min(1).optional(),
     })
   );
 

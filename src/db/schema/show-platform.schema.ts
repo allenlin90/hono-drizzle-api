@@ -13,6 +13,7 @@ import {
 } from "drizzle-zod";
 import { PREFIX } from "@/constants";
 
+// TODO: full text search with ts_vector
 export const showPlatform = table(
   "show_platform",
   {
@@ -32,6 +33,7 @@ export const showPlatform = table(
   (table) => [t.unique().on(table.show_id, table.platform_id)]
 );
 
+// basic schema without expand
 export const selectShowPlatformSchema = createSelectSchema(showPlatform)
   .merge(
     z.object({

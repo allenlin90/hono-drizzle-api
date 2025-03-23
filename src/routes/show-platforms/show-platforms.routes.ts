@@ -1,7 +1,7 @@
 import { createRoute, z } from "@hono/zod-openapi";
 
 import * as HttpStatusCodes from "@/http-status-codes";
-import { selectShowPlatformSchema } from "@/db/schema/show-platform.schema";
+import { showPlatformSchema } from "@/serializers/show-platform.serializer";
 
 import { jsonContent } from "@/openapi/helpers/json-content";
 import { jsonContentOneOf } from "@/openapi/helpers/json-content-one-of";
@@ -25,7 +25,7 @@ export const list = createRoute({
     [HttpStatusCodes.OK]: jsonContent(
       PaginatedObjectsSchema({
         objectType: "show-platform",
-        objectSchema: selectShowPlatformSchema,
+        objectSchema: showPlatformSchema,
       }),
       "List of show platforms"
     ),
@@ -34,7 +34,7 @@ export const list = createRoute({
       "Unauthorized"
     ),
     [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContentOneOf(
-      [createErrorSchema(selectShowPlatformSchema), NotFoundSchema],
+      [createErrorSchema(showPlatformSchema), NotFoundSchema],
       "Provided query params are not processable"
     ),
   },
