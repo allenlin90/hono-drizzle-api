@@ -18,7 +18,7 @@ export const createApp = () => {
   const app = createRouter();
 
   app.use(requestId());
-  app.use(pinoLogger());
+  // app.use(pinoLogger());
 
   app.notFound(notFound);
   app.onError(onError);

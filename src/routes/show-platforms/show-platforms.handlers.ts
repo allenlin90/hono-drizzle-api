@@ -1,5 +1,5 @@
 import type { AppRouteHandler } from "@/lib/types";
-import type { ListRoute } from "./show-platforms.routes";
+import type { CreateRoute, ListRoute } from "./show-platforms.routes";
 import {
   and,
   count,
@@ -20,6 +20,8 @@ import {
   brand,
 } from "@/db/schema";
 import { showPlatformSerializer } from "@/serializers/show-platform.serializer";
+import { union } from "drizzle-orm/pg-core";
+import { selectShowPlatformSchema } from "@/db/schema/show-platform.schema";
 
 export const list: AppRouteHandler<ListRoute> = async (c) => {
   const {
@@ -115,4 +117,27 @@ export const list: AppRouteHandler<ListRoute> = async (c) => {
     },
     HttpStatusCodes.OK
   );
+};
+
+export const create: AppRouteHandler<CreateRoute> = async (c) => {
+  const { is_active, show, studio_room, platform } = c.req.valid("json");
+
+  const [inserted] = await db
+    .insert(showPlatform)
+    .values({
+      show_id: show.id,
+      studio_room_id: studio_room.id,
+      platform_id: platform.id,
+      ...(is_active && { is_active }),
+    })
+    .returning();
+
+  const data = {
+    ...inserted,
+    platform_uid: platform.uid,
+    show_uid: show.uid,
+    studio_room_uid: studio_room.uid,
+  };
+
+  return c.json(selectShowPlatformSchema.parse(data), HttpStatusCodes.CREATED);
 };
