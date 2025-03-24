@@ -73,17 +73,6 @@ export const list: AppRouteHandler<ListRoute> = async (c) => {
 };
 
 export const create: AppRouteHandler<CreateRoute> = async (c) => {
-  const idempotencyKey = c.req.valid("header")["Idempotency-Key"];
-
-  if (!idempotencyKey) {
-    return c.json(
-      {
-        message: "idempotency key is required",
-      },
-      HttpStatusCodes.BAD_REQUEST
-    );
-  }
-
   const payload = c.req.valid("json");
 
   const [selectBrand] = await db
