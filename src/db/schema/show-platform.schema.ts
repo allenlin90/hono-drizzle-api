@@ -2,7 +2,7 @@ import { pgTable as table } from "drizzle-orm/pg-core";
 import * as t from "drizzle-orm/pg-core";
 import { z } from "@hono/zod-openapi";
 
-import { timestamps } from "../helpers/columns.helpers";
+import { brandedUid, timestamps } from "../helpers/columns.helpers";
 import { platform } from "./platform.schema";
 import { show } from "./show.schema";
 import { studioRoom } from "./studio-room.schema";
@@ -18,6 +18,7 @@ export const showPlatform = table(
   "show_platform",
   {
     id: t.integer("id").primaryKey().generatedAlwaysAsIdentity(),
+    uid: brandedUid(PREFIX.SHOW_PLATFORM),
     show_id: t
       .integer("show_id")
       .references(() => show.id)

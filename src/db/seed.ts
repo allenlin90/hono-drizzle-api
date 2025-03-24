@@ -173,6 +173,11 @@ await seed(db, tables).refine((r) => {
     showPlatform: {
       count: 20,
       columns: {
+        uid: r.valuesFromArray({
+          values: Array.from({ length: 20 }, () =>
+            generateBrandedUid(PREFIX.SHOW_PLATFORM)
+          ),
+        }),
         show_id: r.int({ minValue: 1, maxValue: 20, isUnique: true }),
         platform_id: r.int({ minValue: 1, maxValue: 3 }),
         is_active: r.default({ defaultValue: true }),
