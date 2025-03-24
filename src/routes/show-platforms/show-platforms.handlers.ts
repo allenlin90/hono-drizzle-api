@@ -1,5 +1,9 @@
 import type { AppRouteHandler } from "@/lib/types";
-import type { CreateRoute, ListRoute } from "./show-platforms.routes";
+import type {
+  CreateRoute,
+  GetOneRoute,
+  ListRoute,
+} from "./show-platforms.routes";
 import {
   and,
   count,
@@ -19,9 +23,8 @@ import {
   studio,
   brand,
 } from "@/db/schema";
-import { showPlatformSerializer } from "@/serializers/show-platform.serializer";
-import { union } from "drizzle-orm/pg-core";
 import { selectShowPlatformSchema } from "@/db/schema/show-platform.schema";
+import { showPlatformSerializer } from "@/serializers/show-platform.serializer";
 
 export const list: AppRouteHandler<ListRoute> = async (c) => {
   const {
@@ -140,4 +143,37 @@ export const create: AppRouteHandler<CreateRoute> = async (c) => {
   };
 
   return c.json(selectShowPlatformSchema.parse(data), HttpStatusCodes.CREATED);
+};
+
+export const getOne: AppRouteHandler<GetOneRoute> = async (c) => {
+  const { id: show_platform_uid } = c.req.valid("param");
+
+  const [showPlatformData] = await db
+    .select({
+      ...getTableColumns(showPlatform),
+      platform: { ...getTableColumns(platform) },
+      show: { ...getTableColumns(show), brand_uid: brand.uid },
+      studio_room: { ...getTableColumns(studioRoom), studio_uid: studio.uid },
+    })
+    .from(showPlatform)
+    .innerJoin(show, eq(showPlatform.show_id, show.id))
+    .innerJoin(brand, eq(show.brand_id, brand.id))
+    .innerJoin(platform, eq(showPlatform.platform_id, platform.id))
+    .innerJoin(studioRoom, eq(showPlatform.studio_room_id, studioRoom.id))
+    .innerJoin(studio, eq(studioRoom.studio_id, studio.id))
+    .where(
+      and(
+        eq(showPlatform.uid, show_platform_uid),
+        isNull(showPlatform.deleted_at)
+      )
+    );
+
+  if (!showPlatformData) {
+    return c.json(
+      { message: "Show-platform not found" },
+      HttpStatusCodes.NOT_FOUND
+    );
+  }
+
+  return c.json(showPlatformSerializer(showPlatformData), HttpStatusCodes.OK);
 };

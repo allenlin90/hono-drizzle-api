@@ -1,7 +1,9 @@
 import { createRoute, z } from "@hono/zod-openapi";
 
+import { PREFIX } from "@/constants";
 import * as HttpStatusCodes from "@/http-status-codes";
 import { showPlatformSchema } from "@/serializers/show-platform.serializer";
+import { selectShowPlatformSchema } from "@/db/schema/show-platform.schema";
 
 import { jsonContent } from "@/openapi/helpers/json-content";
 import { jsonContentOneOf } from "@/openapi/helpers/json-content-one-of";
@@ -11,8 +13,8 @@ import { NotFoundSchema } from "@/openapi/schemas/not-found";
 import { UnauthorizedSchema } from "@/openapi/schemas/unauthorized";
 import { createErrorSchema } from "@/openapi/schemas/create-error-schema";
 import { createMessageObjectSchema } from "@/openapi/schemas/create-message-object";
+import { IdParams } from "@/openapi/schemas/id-params";
 import { PaginatedObjectsSchema } from "@/openapi/schemas/paginated-objects";
-import { selectShowPlatformSchema } from "@/db/schema/show-platform.schema";
 import { ShowPlatformPayloadSchema } from "@/openapi/schemas/show-platforms/show-platform-payload";
 import { ShowPlatformParamFiltersSchema } from "@/openapi/schemas/show-platforms/show-platform-param-filters";
 
@@ -84,5 +86,29 @@ export const create = createRoute({
   },
 });
 
+export const getOne = createRoute({
+  tags,
+  path: "/show-platforms/{id}",
+  method: "get",
+  request: {
+    params: IdParams(PREFIX.SHOW_PLATFORM),
+  },
+  responses: {
+    [HttpStatusCodes.OK]: jsonContent(
+      showPlatformSchema,
+      "The requested show-platform"
+    ),
+    [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContent(
+      createErrorSchema(IdParams(PREFIX.SHOW_PLATFORM)),
+      "invalid id error"
+    ),
+    [HttpStatusCodes.NOT_FOUND]: jsonContent(
+      NotFoundSchema,
+      "Show-platform not found"
+    ),
+  },
+});
+
 export type ListRoute = typeof list;
 export type CreateRoute = typeof create;
+export type GetOneRoute = typeof getOne;
