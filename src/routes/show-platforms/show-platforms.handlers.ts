@@ -86,14 +86,36 @@ export const list: AppRouteHandler<ListRoute> = async (c) => {
       ...getTableColumns(showPlatform),
       platform: { ...getTableColumns(platform) },
       show: { ...getTableColumns(show), brand_uid: brand.uid },
-      studio_room: { ...getTableColumns(studioRoom), studio_uid: studio.uid },
+      studio_room: { ...getTableColumns(studioRoom) },
+      studio: { ...getTableColumns(studio) },
     })
     .from(showPlatform)
-    .innerJoin(show, eq(showPlatform.show_id, show.id))
-    .innerJoin(brand, eq(show.brand_id, brand.id))
-    .innerJoin(platform, eq(showPlatform.platform_id, platform.id))
-    .innerJoin(studioRoom, eq(showPlatform.studio_room_id, studioRoom.id))
-    .innerJoin(studio, eq(studioRoom.studio_id, studio.id))
+    .innerJoin(
+      show,
+      and(eq(showPlatform.show_id, show.id), isNull(show.deleted_at))
+    )
+    .innerJoin(
+      brand,
+      and(eq(show.brand_id, brand.id), isNull(brand.deleted_at))
+    )
+    .innerJoin(
+      platform,
+      and(
+        eq(showPlatform.platform_id, platform.id),
+        isNull(platform.deleted_at)
+      )
+    )
+    .leftJoin(
+      studioRoom,
+      and(
+        eq(showPlatform.studio_room_id, studioRoom.id),
+        isNull(studioRoom.deleted_at)
+      )
+    )
+    .leftJoin(
+      studio,
+      and(eq(studioRoom.studio_id, studio.id), isNull(studio.deleted_at))
+    )
     .where(filters)
     .limit(limit)
     .offset(offset)
@@ -102,11 +124,32 @@ export const list: AppRouteHandler<ListRoute> = async (c) => {
   const [{ count: total }] = await db
     .select({ count: count() })
     .from(showPlatform)
-    .innerJoin(show, eq(showPlatform.show_id, show.id))
-    .innerJoin(brand, eq(show.brand_id, brand.id))
-    .innerJoin(platform, eq(showPlatform.platform_id, platform.id))
-    .innerJoin(studioRoom, eq(showPlatform.studio_room_id, studioRoom.id))
-    .innerJoin(studio, eq(studioRoom.studio_id, studio.id))
+    .innerJoin(
+      show,
+      and(eq(showPlatform.show_id, show.id), isNull(show.deleted_at))
+    )
+    .innerJoin(
+      brand,
+      and(eq(show.brand_id, brand.id), isNull(brand.deleted_at))
+    )
+    .innerJoin(
+      platform,
+      and(
+        eq(showPlatform.platform_id, platform.id),
+        isNull(platform.deleted_at)
+      )
+    )
+    .leftJoin(
+      studioRoom,
+      and(
+        eq(showPlatform.studio_room_id, studioRoom.id),
+        isNull(studioRoom.deleted_at)
+      )
+    )
+    .leftJoin(
+      studio,
+      and(eq(studioRoom.studio_id, studio.id), isNull(studio.deleted_at))
+    )
     .where(filters);
 
   const data = showPlatforms.map(showPlatformSerializer);
@@ -158,14 +201,15 @@ export const getOne: AppRouteHandler<GetOneRoute> = async (c) => {
       ...getTableColumns(showPlatform),
       platform: { ...getTableColumns(platform) },
       show: { ...getTableColumns(show), brand_uid: brand.uid },
-      studio_room: { ...getTableColumns(studioRoom), studio_uid: studio.uid },
+      studio_room: { ...getTableColumns(studioRoom) },
+      studio: { ...getTableColumns(studio) },
     })
     .from(showPlatform)
     .innerJoin(show, eq(showPlatform.show_id, show.id))
     .innerJoin(brand, eq(show.brand_id, brand.id))
     .innerJoin(platform, eq(showPlatform.platform_id, platform.id))
-    .innerJoin(studioRoom, eq(showPlatform.studio_room_id, studioRoom.id))
-    .innerJoin(studio, eq(studioRoom.studio_id, studio.id))
+    .leftJoin(studioRoom, eq(showPlatform.studio_room_id, studioRoom.id))
+    .leftJoin(studio, eq(studioRoom.studio_id, studio.id))
     .where(
       and(
         eq(showPlatform.uid, show_platform_uid),
