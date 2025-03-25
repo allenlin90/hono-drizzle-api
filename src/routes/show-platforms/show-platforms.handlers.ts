@@ -4,6 +4,7 @@ import type {
   GetOneRoute,
   ListRoute,
   PatchRoute,
+  RemoveRoute,
 } from "./show-platforms.routes";
 import {
   and,
@@ -173,6 +174,7 @@ export const create: AppRouteHandler<CreateRoute> = async (c) => {
   const studio_room = payload.studio_room!;
   const platform = payload.platform!;
 
+  // TODO: should upsert if the show-platform already exists but is soft-deleted
   const [inserted] = await db
     .insert(showPlatform)
     .values({
@@ -268,4 +270,29 @@ export const patch: AppRouteHandler<PatchRoute> = async (c) => {
   };
 
   return c.json(selectShowPlatformSchema.parse(data), HttpStatusCodes.OK);
+};
+
+export const remove: AppRouteHandler<RemoveRoute> = async (c) => {
+  const { id: show_platform_id } = c.req.valid("param");
+
+  // TODO: remove associated data, e.g. show_platform_mc
+  const [showPlatformData] = await db
+    .update(showPlatform)
+    .set({ deleted_at: new Date().toISOString() })
+    .where(
+      and(
+        eq(showPlatform.uid, show_platform_id),
+        isNull(showPlatform.deleted_at)
+      )
+    )
+    .returning();
+
+  if (!showPlatformData) {
+    return c.json(
+      { message: "Show-platform not found" },
+      HttpStatusCodes.NOT_FOUND
+    );
+  }
+
+  return c.body(null, HttpStatusCodes.NO_CONTENT);
 };
