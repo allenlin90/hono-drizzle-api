@@ -42,7 +42,10 @@ export const list: AppRouteHandler<ListRoute> = async (c) => {
       studio_uid: studio.uid,
     })
     .from(studioRoom)
-    .innerJoin(studioRoom, eq(studioRoom.studio_id, studio.id))
+    .innerJoin(
+      studio,
+      and(eq(studioRoom.studio_id, studio.id), isNull(studio.deleted_at))
+    )
     .where(filters)
     .limit(limit)
     .offset(offset)
