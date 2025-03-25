@@ -1,3 +1,5 @@
+import type { ReturningObjectType } from "@/openapi/schemas/helpers/uid-validators";
+
 import { createRoute, z } from "@hono/zod-openapi";
 
 import { PREFIX } from "@/constants";
@@ -14,8 +16,12 @@ import { UnauthorizedSchema } from "@/openapi/schemas/unauthorized";
 import { createErrorSchema } from "@/openapi/schemas/create-error-schema";
 import { createMessageObjectSchema } from "@/openapi/schemas/create-message-object";
 import { IdParams } from "@/openapi/schemas/id-params";
+import { PatchIdParams } from "@/openapi/schemas/patch-id-params";
 import { PaginatedObjectsSchema } from "@/openapi/schemas/paginated-objects";
-import { ShowPlatformPayloadSchema } from "@/openapi/schemas/show-platforms/show-platform-payload";
+import {
+  createShowPlatformPayloadSchema,
+  updateShowPlatformPayloadSchema,
+} from "@/openapi/schemas/show-platforms/show-platform-payload";
 import { ShowPlatformParamFiltersSchema } from "@/openapi/schemas/show-platforms/show-platform-param-filters";
 
 const tags = ["Show Platforms"];
@@ -58,7 +64,7 @@ export const create = createRoute({
       }),
     }),
     body: jsonContentRequired(
-      ShowPlatformPayloadSchema,
+      createShowPlatformPayloadSchema,
       "The show platform to create"
     ),
   },
@@ -68,7 +74,7 @@ export const create = createRoute({
       "The created show-platform"
     ),
     [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContent(
-      createErrorSchema(ShowPlatformPayloadSchema),
+      createErrorSchema(createShowPlatformPayloadSchema),
       "The validation error"
     ),
     [HttpStatusCodes.BAD_REQUEST]: jsonContent(
@@ -109,6 +115,39 @@ export const getOne = createRoute({
   },
 });
 
+export const patch = createRoute({
+  tags,
+  path: "/show-platforms/{id}",
+  method: "patch",
+  request: {
+    params: PatchIdParams<ReturningObjectType<"show_platform">>({
+      object: "show_platform",
+    }),
+    body: jsonContentRequired(
+      updateShowPlatformPayloadSchema,
+      "The show-platform to update"
+    ),
+  },
+  responses: {
+    [HttpStatusCodes.OK]: jsonContent(
+      selectShowPlatformSchema,
+      "The updated show-platform object"
+    ),
+    [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContentOneOf(
+      [
+        createErrorSchema(updateShowPlatformPayloadSchema),
+        createErrorSchema(IdParams(PREFIX.SHOW_PLATFORM)),
+      ],
+      "The validation error"
+    ),
+    [HttpStatusCodes.NOT_FOUND]: jsonContent(
+      NotFoundSchema,
+      "Show-platform not found"
+    ),
+  },
+});
+
 export type ListRoute = typeof list;
 export type CreateRoute = typeof create;
 export type GetOneRoute = typeof getOne;
+export type PatchRoute = typeof patch;

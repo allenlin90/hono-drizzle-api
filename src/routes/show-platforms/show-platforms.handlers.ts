@@ -3,6 +3,7 @@ import type {
   CreateRoute,
   GetOneRoute,
   ListRoute,
+  PatchRoute,
 } from "./show-platforms.routes";
 import {
   and,
@@ -123,7 +124,11 @@ export const list: AppRouteHandler<ListRoute> = async (c) => {
 };
 
 export const create: AppRouteHandler<CreateRoute> = async (c) => {
-  const { is_active, show, studio_room, platform } = c.req.valid("json");
+  const { is_active, ...payload } = c.req.valid("json");
+
+  const show = payload.show!;
+  const studio_room = payload.studio_room!;
+  const platform = payload.platform!;
 
   const [inserted] = await db
     .insert(showPlatform)
@@ -176,4 +181,41 @@ export const getOne: AppRouteHandler<GetOneRoute> = async (c) => {
   }
 
   return c.json(showPlatformSerializer(showPlatformData), HttpStatusCodes.OK);
+};
+
+export const patch: AppRouteHandler<PatchRoute> = async (c) => {
+  const { id: show_platform_id, ...searchData } = c.req.valid("param");
+
+  const { show, studio_room, platform, params, ...payload } =
+    c.req.valid("json");
+  const platform_id = platform?.id;
+  const show_id = show?.id;
+
+  // TODO: validate if studio_room is pass as empty to remove associated record
+  const studio_room_id = studio_room?.id;
+
+  const [showPlatformData] = await db
+    .update(showPlatform)
+    .set({
+      ...payload,
+      ...(show_id && { show_id }),
+      ...(platform_id && { platform_id }),
+      ...(studio_room_id && { studio_room_id }),
+    })
+    .where(
+      and(
+        eq(showPlatform.id, show_platform_id),
+        isNull(showPlatform.deleted_at)
+      )
+    )
+    .returning();
+
+  const data = {
+    ...showPlatformData,
+    platform_uid: platform?.uid ?? searchData.platform_uid,
+    show_uid: show?.uid ?? searchData.show_uid,
+    studio_room_uid: studio_room?.uid ?? searchData.studio_room_uid,
+  };
+
+  return c.json(selectShowPlatformSchema.parse(data), HttpStatusCodes.OK);
 };

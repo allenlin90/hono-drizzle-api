@@ -40,7 +40,7 @@ export const selectShowPlatformSchema = createSelectSchema(showPlatform)
     z.object({
       show_uid: z.string().startsWith(PREFIX.SHOW),
       platform_uid: z.string().startsWith(PREFIX.PLATFORM),
-      studio_room_uid: z.string().startsWith(PREFIX.STUDIO_ROOM),
+      studio_room_uid: z.string().startsWith(PREFIX.STUDIO_ROOM).nullable(),
     })
   )
   .omit({
@@ -62,6 +62,7 @@ export const insertShowPlatformSchema = createInsertSchema(showPlatform)
     })
   )
   .omit({
+    uid: true,
     show_id: true,
     platform_id: true,
     studio_room_id: true,
@@ -75,10 +76,15 @@ export const patchShowPlatformSchema = createUpdateSchema(showPlatform)
     z.object({
       show_uid: z.string().startsWith(PREFIX.SHOW).optional(),
       platform_uid: z.string().startsWith(PREFIX.PLATFORM).optional(),
-      studio_room_uid: z.string().startsWith(PREFIX.STUDIO_ROOM).optional(),
+      studio_room_uid: z
+        .string()
+        .startsWith(PREFIX.STUDIO_ROOM)
+        .or(z.literal(""))
+        .optional(),
     })
   )
   .omit({
+    uid: true,
     show_id: true,
     platform_id: true,
     studio_room_id: true,
@@ -90,3 +96,5 @@ export const patchShowPlatformSchema = createUpdateSchema(showPlatform)
 export type SelectShowPlatformSchema = z.infer<typeof selectShowPlatformSchema>;
 export type InsertShowPlatformSchema = z.infer<typeof insertShowPlatformSchema>;
 export type PatchShowPlatformSchema = z.infer<typeof patchShowPlatformSchema>;
+
+export type ShowPlatformSchema = typeof showPlatform.$inferSelect;
