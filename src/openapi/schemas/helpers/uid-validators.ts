@@ -63,7 +63,7 @@ const showPlatformQuery = (show_platform_uid: string) =>
     .from(showPlatform)
     .innerJoin(show, eq(showPlatform.show_id, show.id))
     .innerJoin(platform, eq(showPlatform.platform_id, platform.id))
-    .innerJoin(studioRoom, eq(showPlatform.studio_room_id, studioRoom.id))
+    .leftJoin(studioRoom, eq(showPlatform.studio_room_id, studioRoom.id))
     .where(
       and(
         eq(showPlatform.uid, show_platform_uid),

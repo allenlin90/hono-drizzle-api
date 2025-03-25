@@ -188,11 +188,11 @@ export const patch: AppRouteHandler<PatchRoute> = async (c) => {
 
   const { show, studio_room, platform, params, ...payload } =
     c.req.valid("json");
-  const platform_id = platform?.id;
-  const show_id = show?.id;
 
-  // TODO: validate if studio_room is pass as empty to remove associated record
-  const studio_room_id = studio_room?.id;
+  const removeStudioRoom = params.studio_room_uid === null;
+  const studio_room_id = removeStudioRoom ? null : studio_room?.id;
+  const show_id = show?.id;
+  const platform_id = platform?.id;
 
   const [showPlatformData] = await db
     .update(showPlatform)
@@ -200,7 +200,7 @@ export const patch: AppRouteHandler<PatchRoute> = async (c) => {
       ...payload,
       ...(show_id && { show_id }),
       ...(platform_id && { platform_id }),
-      ...(studio_room_id && { studio_room_id }),
+      ...((studio_room_id || removeStudioRoom) && { studio_room_id }),
     })
     .where(
       and(
@@ -210,11 +210,17 @@ export const patch: AppRouteHandler<PatchRoute> = async (c) => {
     )
     .returning();
 
+  const platform_uid = platform?.uid ?? searchData.platform_uid;
+  const show_uid = show?.uid ?? searchData.show_uid;
+  const studio_room_uid = removeStudioRoom
+    ? null
+    : studio_room?.uid ?? searchData.studio_room_uid;
+
   const data = {
     ...showPlatformData,
-    platform_uid: platform?.uid ?? searchData.platform_uid,
-    show_uid: show?.uid ?? searchData.show_uid,
-    studio_room_uid: studio_room?.uid ?? searchData.studio_room_uid,
+    platform_uid,
+    show_uid,
+    studio_room_uid,
   };
 
   return c.json(selectShowPlatformSchema.parse(data), HttpStatusCodes.OK);

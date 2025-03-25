@@ -79,7 +79,7 @@ export const patchShowPlatformSchema = createUpdateSchema(showPlatform)
       studio_room_uid: z
         .string()
         .startsWith(PREFIX.STUDIO_ROOM)
-        .or(z.literal(""))
+        .nullable()
         .optional(),
     })
   )
