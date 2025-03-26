@@ -49,13 +49,12 @@ export const selectAddressSchema = createSelectSchema(address)
     deleted_at: true,
   });
 
-export const insertAddressSchema = createInsertSchema(address, {
-  address: z.string().min(1),
-  sub_district: z.string().min(1).optional(),
-  district: z.string().min(1).optional(),
-})
+export const insertAddressSchema = createInsertSchema(address)
   .merge(
     z.object({
+      address: z.string().min(1),
+      sub_district: z.string().min(1).optional(),
+      district: z.string().min(1).optional(),
       city_uid: z.string().startsWith(PREFIX.CITY),
     })
   )

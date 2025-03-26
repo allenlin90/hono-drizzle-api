@@ -41,11 +41,10 @@ export const selectStudioRoomSchema = createSelectSchema(studioRoom)
     deleted_at: true,
   });
 
-export const insertStudioRoomSchema = createInsertSchema(studioRoom, {
-  name: (schema) => schema.min(1),
-})
+export const insertStudioRoomSchema = createInsertSchema(studioRoom)
   .merge(
     z.object({
+      name: z.string().min(1),
       studio_uid: z.string().startsWith(PREFIX.STUDIO),
     })
   )
@@ -57,12 +56,11 @@ export const insertStudioRoomSchema = createInsertSchema(studioRoom, {
     deleted_at: true,
   });
 
-export const patchStudioRoomSchema = createUpdateSchema(studioRoom, {
-  name: (schema) => schema.min(1),
-})
+export const patchStudioRoomSchema = createUpdateSchema(studioRoom)
   .merge(
     z.object({
-      studio_uid: z.string().startsWith(PREFIX.STUDIO),
+      name: z.string().min(1).optional(),
+      studio_uid: z.string().startsWith(PREFIX.STUDIO).optional(),
     })
   )
   .omit({

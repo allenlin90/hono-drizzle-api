@@ -31,11 +31,10 @@ export const selectOperatorSchema = createSelectSchema(operator)
   )
   .omit({ id: true, user_id: true, deleted_at: true });
 
-export const insertOperatorSchema = createInsertSchema(operator, {
-  name: (schema) => schema.min(1),
-})
+export const insertOperatorSchema = createInsertSchema(operator)
   .merge(
     z.object({
+      name: z.string().min(1),
       user_uid: z.string().startsWith(PREFIX.USER).nullable(),
     })
   )
@@ -47,11 +46,10 @@ export const insertOperatorSchema = createInsertSchema(operator, {
     deleted_at: true,
   });
 
-export const patchOperatorSchema = createUpdateSchema(operator, {
-  name: (schema) => schema.min(1),
-})
+export const patchOperatorSchema = createUpdateSchema(operator)
   .merge(
     z.object({
+      name: z.string().min(1).optional(),
       user_uid: z.string().startsWith(PREFIX.USER).optional(),
     })
   )

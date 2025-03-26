@@ -31,11 +31,10 @@ export const selectMcSchema = createSelectSchema(mc)
   )
   .omit({ id: true, user_id: true, deleted_at: true });
 
-export const insertMcSchema = createInsertSchema(mc, {
-  name: (schema) => schema.min(1),
-})
+export const insertMcSchema = createInsertSchema(mc)
   .merge(
     z.object({
+      name: z.string().min(1),
       user_uid: z.string().startsWith(PREFIX.USER).nullable(),
     })
   )
@@ -47,11 +46,10 @@ export const insertMcSchema = createInsertSchema(mc, {
     deleted_at: true,
   });
 
-export const patchMcSchema = createUpdateSchema(mc, {
-  name: (schema) => schema.min(1),
-})
+export const patchMcSchema = createUpdateSchema(mc)
   .merge(
     z.object({
+      name: z.string().min(1),
       user_uid: z.string().startsWith(PREFIX.USER).optional(),
     })
   )

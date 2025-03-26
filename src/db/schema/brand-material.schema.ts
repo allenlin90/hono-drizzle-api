@@ -48,13 +48,16 @@ export const selectBrandMaterialSchema = createSelectSchema(brandMaterial)
     deleted_at: true,
   });
 
-export const insertBrandMaterialSchema = createInsertSchema(brandMaterial, {
-  name: z.string().min(1),
-  type: z.enum(materialTypeEnum.enumValues),
-  description: z.string().min(1).optional(),
-  resource_url: z.string().url().optional(),
-})
-  .merge(z.object({ brand_uid: z.string() }))
+export const insertBrandMaterialSchema = createInsertSchema(brandMaterial)
+  .merge(
+    z.object({
+      brand_uid: z.string(),
+      name: z.string().min(1),
+      type: z.enum(materialTypeEnum.enumValues),
+      description: z.string().min(1).optional(),
+      resource_url: z.string().url().optional(),
+    })
+  )
   .omit({
     uid: true,
     brand_id: true,
@@ -63,15 +66,14 @@ export const insertBrandMaterialSchema = createInsertSchema(brandMaterial, {
     deleted_at: true,
   });
 
-export const patchBrandMaterialSchema = createUpdateSchema(brandMaterial, {
-  name: z.string().min(1).optional(),
-  type: z.enum(materialTypeEnum.enumValues).optional(),
-  description: z.string().min(1).optional(),
-  resource_url: z.string().url().optional(),
-})
+export const patchBrandMaterialSchema = createUpdateSchema(brandMaterial)
   .merge(
     z.object({
       brand_uid: z.string().startsWith(PREFIX.BRAND).optional(),
+      name: z.string().min(1).optional(),
+      type: z.enum(materialTypeEnum.enumValues).optional(),
+      description: z.string().min(1).optional(),
+      resource_url: z.string().url().optional(),
     })
   )
   .omit({
