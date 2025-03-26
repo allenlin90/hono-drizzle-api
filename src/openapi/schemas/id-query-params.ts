@@ -104,6 +104,19 @@ export const show_reviewIdSchema = z.object({
     }),
 });
 
+export const showPlatformIdSchema = z.object({
+  show_platform_id: z
+    .optional(z.string().startsWith(PREFIX.SHOW_PLATFORM))
+    .openapi({
+      param: {
+        name: "show_platform_id",
+        in: "query",
+        required: false,
+      },
+      example: `${PREFIX.SHOW_PLATFORM}_1234`,
+    }),
+});
+
 export const showIdSchema = z.object({
   show_id: z.optional(z.string().startsWith(PREFIX.SHOW)).openapi({
     param: {

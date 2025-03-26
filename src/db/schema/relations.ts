@@ -94,7 +94,7 @@ export const showPlatformMcRelation = relations(
   showPlatformMc,
   ({ one, many }) => ({
     mc: one(mc, {
-      fields: [showPlatformMc.mcId],
+      fields: [showPlatformMc.mc_id],
       references: [mc.id],
     }),
     reviews: many(mcShowReview),
