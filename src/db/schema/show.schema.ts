@@ -38,12 +38,7 @@ export const selectShowSchema = createSelectSchema(show)
     id: true,
     brand_id: true,
     deleted_at: true,
-  })
-  .transform(({ uid, brand_uid, ...input }) => ({
-    uid,
-    brand_uid,
-    ...input,
-  }));
+  });
 
 export const insertShowSchema = createInsertSchema(show)
   .merge(z.object({ brand_uid: z.string().startsWith(PREFIX.BRAND) }))
