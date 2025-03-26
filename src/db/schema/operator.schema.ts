@@ -26,7 +26,7 @@ export const operator = table(
 export const selectOperatorSchema = createSelectSchema(operator)
   .merge(
     z.object({
-      user_uid: z.string().startsWith(PREFIX.USER),
+      user_uid: z.string().startsWith(PREFIX.USER).nullable(),
     })
   )
   .omit({ id: true, user_id: true, deleted_at: true });
@@ -36,7 +36,7 @@ export const insertOperatorSchema = createInsertSchema(operator, {
 })
   .merge(
     z.object({
-      user_uid: z.string().startsWith(PREFIX.USER),
+      user_uid: z.string().startsWith(PREFIX.USER).nullable(),
     })
   )
   .omit({
