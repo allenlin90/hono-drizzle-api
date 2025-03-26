@@ -36,7 +36,10 @@ export const list: AppRouteHandler<ListRoute> = async (c) => {
       address_uid: address.uid,
     })
     .from(studio)
-    .innerJoin(address, eq(studio.address_id, address.id))
+    .leftJoin(
+      address,
+      and(eq(studio.address_id, address.id), isNull(address.deleted_at))
+    )
     .where(filters)
     .limit(limit)
     .offset(offset)
@@ -45,7 +48,10 @@ export const list: AppRouteHandler<ListRoute> = async (c) => {
   const [{ count: total }] = await db
     .select({ count: count() })
     .from(studio)
-    .innerJoin(address, eq(studio.address_id, address.id))
+    .leftJoin(
+      address,
+      and(eq(studio.address_id, address.id), isNull(address.deleted_at))
+    )
     .where(filters);
 
   const data = studios.map(studioSerializer);
@@ -107,7 +113,10 @@ export const getOne: AppRouteHandler<GetOneRoute> = async (c) => {
       address_uid: address.uid,
     })
     .from(studio)
-    .innerJoin(address, eq(studio.address_id, address.id))
+    .leftJoin(
+      address,
+      and(eq(studio.address_id, address.id), isNull(address.deleted_at))
+    )
     .where(and(eq(studio.uid, id), isNull(address.deleted_at)))
     .limit(1);
 

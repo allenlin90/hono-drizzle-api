@@ -22,7 +22,7 @@ export const studio = table("studio", {
 export const selectStudioSchema = createSelectSchema(studio)
   .merge(
     z.object({
-      address_uid: z.string().startsWith(PREFIX.ADDRESS),
+      address_uid: z.string().startsWith(PREFIX.ADDRESS).nullable(),
     })
   )
   .omit({
