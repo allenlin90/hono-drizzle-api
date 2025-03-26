@@ -1,4 +1,4 @@
-import { createRoute } from "@hono/zod-openapi";
+import { createRoute, z } from "@hono/zod-openapi";
 import * as HttpStatusCodes from "@/http-status-codes";
 import {
   insertStudioSchema,
@@ -57,10 +57,17 @@ export const create = createRoute({
       selectStudioSchema,
       "The created studio"
     ),
-    [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContent(
-      createErrorSchema(insertStudioSchema),
-      "The validation error"
-    ),
+    [HttpStatusCodes.UNPROCESSABLE_ENTITY]: {
+      content: {
+        "application/json": {
+          schema: z.union([
+            createErrorSchema(insertStudioSchema),
+            createMessageObjectSchema("The studio exists"),
+          ]),
+        },
+      },
+      description: "The validation error",
+    },
     [HttpStatusCodes.NOT_FOUND]: jsonContent(
       createMessageObjectSchema("Address not found"),
       "Address not found"

@@ -13,6 +13,7 @@ import {
   eq,
   getTableColumns,
   ilike,
+  isNotNull,
   isNull,
 } from "drizzle-orm";
 import * as HttpStatusCodes from "@/http-status-codes";
@@ -71,30 +72,53 @@ export const list: AppRouteHandler<ListRoute> = async (c) => {
 export const create: AppRouteHandler<CreateRoute> = async (c) => {
   const payload = c.req.valid("json");
 
-  const [selectAddress] = await db
-    .select({ id: address.id })
-    .from(address)
-    .where(
-      and(eq(address.uid, payload.address_uid), isNull(address.deleted_at))
-    )
-    .limit(1);
+  let selectAddress: { id: number } | null = null;
 
-  if (!selectAddress) {
-    return c.json(
-      {
-        message: "Address not found",
-      },
-      HttpStatusCodes.NOT_FOUND
-    );
+  if (payload.address_uid) {
+    const queryResult = await db
+      .select({ id: address.id })
+      .from(address)
+      .where(
+        and(eq(address.uid, payload.address_uid), isNull(address.deleted_at))
+      )
+      .limit(1);
+
+    selectAddress = queryResult[0];
+
+    if (!selectAddress) {
+      return c.json(
+        {
+          message: "Address not found",
+        },
+        HttpStatusCodes.NOT_FOUND
+      );
+    }
   }
 
   const [inserted] = await db
     .insert(studio)
     .values({
       ...payload,
-      address_id: selectAddress.id,
+      address_id: selectAddress?.id,
+    })
+    .onConflictDoUpdate({
+      target: [studio.name],
+      set: {
+        ...payload,
+        address_id: selectAddress?.id,
+      },
+      setWhere: isNotNull(studio.deleted_at),
     })
     .returning();
+
+  if (!inserted) {
+    return c.json(
+      {
+        message: "The studio exists",
+      },
+      HttpStatusCodes.UNPROCESSABLE_ENTITY
+    );
+  }
 
   const data = studioSerializer({
     ...inserted,
