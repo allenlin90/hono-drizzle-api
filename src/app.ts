@@ -28,9 +28,9 @@ const routes = [
   shows,
   studioRooms,
   studios,
-  platforms,
   mcs,
   operators,
+  platforms,
   users,
 ];
 
