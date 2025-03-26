@@ -73,20 +73,23 @@ export const create = createRoute({
       selectShowPlatformSchema,
       "The created show-platform"
     ),
-    [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContent(
-      createErrorSchema(createShowPlatformPayloadSchema),
-      "The validation error"
-    ),
+    [HttpStatusCodes.UNPROCESSABLE_ENTITY]: {
+      content: {
+        "application/json": {
+          schema: z.union([
+            createErrorSchema(createShowPlatformPayloadSchema),
+            createMessageObjectSchema("The show-platform exists"),
+          ]),
+        },
+      },
+      description: "The validation error",
+    },
     [HttpStatusCodes.BAD_REQUEST]: jsonContent(
       createMessageObjectSchema("Invalid idempotency key"),
       "Invalid idempotency key"
     ),
-    [HttpStatusCodes.NOT_FOUND]: jsonContentOneOf(
-      [
-        createMessageObjectSchema("Platform not found"),
-        createMessageObjectSchema("Show not found"),
-        createMessageObjectSchema("Studio room not found"),
-      ],
+    [HttpStatusCodes.NOT_FOUND]: jsonContent(
+      createMessageObjectSchema("platform/show/studio-room not found"),
       "Associated entity not found"
     ),
   },

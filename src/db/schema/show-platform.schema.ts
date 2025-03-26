@@ -58,7 +58,7 @@ export const insertShowPlatformSchema = createInsertSchema(showPlatform)
     z.object({
       show_uid: z.string().startsWith(PREFIX.SHOW),
       platform_uid: z.string().startsWith(PREFIX.PLATFORM),
-      studio_room_uid: z.string().startsWith(PREFIX.STUDIO_ROOM),
+      studio_room_uid: z.string().startsWith(PREFIX.STUDIO_ROOM).nullable(),
     })
   )
   .omit({

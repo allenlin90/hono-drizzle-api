@@ -13,6 +13,7 @@ import {
   eq,
   getTableColumns,
   ilike,
+  isNotNull,
   isNull,
 } from "drizzle-orm";
 import * as HttpStatusCodes from "@/http-status-codes";
@@ -171,25 +172,41 @@ export const create: AppRouteHandler<CreateRoute> = async (c) => {
   const { is_active, ...payload } = c.req.valid("json");
 
   const show = payload.show!;
-  const studio_room = payload.studio_room!;
   const platform = payload.platform!;
+  const studio_room = payload.studio_room ?? null;
 
-  // TODO: should upsert if the show-platform already exists but is soft-deleted
   const [inserted] = await db
     .insert(showPlatform)
     .values({
       show_id: show.id,
-      studio_room_id: studio_room.id,
       platform_id: platform.id,
+      studio_room_id: studio_room?.id,
       ...(is_active && { is_active }),
     })
+    .onConflictDoUpdate({
+      target: [showPlatform.show_id, showPlatform.platform_id],
+      set: {
+        is_active: is_active ?? false,
+        show_id: show.id,
+        platform_id: platform.id,
+        deleted_at: null,
+      },
+      setWhere: isNotNull(showPlatform.deleted_at),
+    })
     .returning();
+
+  if (!inserted) {
+    return c.json(
+      { message: "The show-platform exists" },
+      HttpStatusCodes.UNPROCESSABLE_ENTITY
+    );
+  }
 
   const data = {
     ...inserted,
     platform_uid: platform.uid,
     show_uid: show.uid,
-    studio_room_uid: studio_room.uid,
+    studio_room_uid: studio_room?.uid ?? null,
   };
 
   return c.json(selectShowPlatformSchema.parse(data), HttpStatusCodes.CREATED);
@@ -207,11 +224,32 @@ export const getOne: AppRouteHandler<GetOneRoute> = async (c) => {
       studio: { ...getTableColumns(studio) },
     })
     .from(showPlatform)
-    .innerJoin(show, eq(showPlatform.show_id, show.id))
-    .innerJoin(brand, eq(show.brand_id, brand.id))
-    .innerJoin(platform, eq(showPlatform.platform_id, platform.id))
-    .leftJoin(studioRoom, eq(showPlatform.studio_room_id, studioRoom.id))
-    .leftJoin(studio, eq(studioRoom.studio_id, studio.id))
+    .innerJoin(
+      show,
+      and(eq(showPlatform.show_id, show.id), isNull(show.deleted_at))
+    )
+    .innerJoin(
+      brand,
+      and(eq(show.brand_id, brand.id), isNull(brand.deleted_at))
+    )
+    .innerJoin(
+      platform,
+      and(
+        eq(showPlatform.platform_id, platform.id),
+        isNull(platform.deleted_at)
+      )
+    )
+    .leftJoin(
+      studioRoom,
+      and(
+        eq(showPlatform.studio_room_id, studioRoom.id),
+        isNull(studioRoom.deleted_at)
+      )
+    )
+    .leftJoin(
+      studio,
+      and(eq(studioRoom.studio_id, studio.id), isNull(studio.deleted_at))
+    )
     .where(
       and(
         eq(showPlatform.uid, show_platform_uid),

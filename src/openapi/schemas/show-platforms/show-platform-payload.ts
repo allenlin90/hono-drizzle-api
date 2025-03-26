@@ -25,7 +25,7 @@ const uidValidator = async (
   ctx: z.RefinementCtx
 ): Promise<ShowPlatformPayload> => {
   const keys = Object.entries(value)
-    .filter(([_k, value]) => !!value)
+    .filter(([_k, value]) => !!value) // filter out required, nullable keys
     .map(([key]) => key.split("_").slice(0, -1).join("_") as KeyTypes);
 
   if (!keys.length) {
