@@ -78,7 +78,7 @@ export const create: AppRouteHandler<CreateRoute> = async (c) => {
     if (!selectUser) {
       return c.json(
         {
-          message: "Brand not found",
+          message: "User not found",
         },
         HttpStatusCodes.NOT_FOUND
       );
