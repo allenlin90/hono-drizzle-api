@@ -26,7 +26,7 @@ export const mc = table(
 export const selectMcSchema = createSelectSchema(mc)
   .merge(
     z.object({
-      user_uid: z.string().startsWith(PREFIX.USER),
+      user_uid: z.string().startsWith(PREFIX.USER).nullable(),
     })
   )
   .omit({ id: true, user_id: true, deleted_at: true });
@@ -36,7 +36,7 @@ export const insertMcSchema = createInsertSchema(mc, {
 })
   .merge(
     z.object({
-      user_uid: z.string().startsWith(PREFIX.USER),
+      user_uid: z.string().startsWith(PREFIX.USER).nullable(),
     })
   )
   .omit({

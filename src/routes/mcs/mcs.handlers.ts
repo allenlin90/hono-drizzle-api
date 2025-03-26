@@ -35,7 +35,7 @@ export const list: AppRouteHandler<ListRoute> = async (c) => {
       user_uid: user.uid,
     })
     .from(mc)
-    .innerJoin(user, eq(mc.user_id, user.id))
+    .leftJoin(user, and(eq(mc.user_id, user.id), isNull(user.deleted_at)))
     .where(filters)
     .limit(limit)
     .offset(offset)
@@ -44,7 +44,7 @@ export const list: AppRouteHandler<ListRoute> = async (c) => {
   const [{ count: total }] = await db
     .select({ count: count() })
     .from(mc)
-    .innerJoin(user, eq(mc.user_id, user.id))
+    .leftJoin(user, and(eq(mc.user_id, user.id), isNull(user.deleted_at)))
     .where(filters);
 
   const data = mcs.map(mcSerializer);
@@ -64,26 +64,32 @@ export const list: AppRouteHandler<ListRoute> = async (c) => {
 export const create: AppRouteHandler<CreateRoute> = async (c) => {
   const payload = c.req.valid("json");
 
-  const [selectUser] = await db
-    .select({ id: user.id })
-    .from(user)
-    .where(and(eq(user.uid, payload.user_uid), isNull(user.deleted_at)))
-    .limit(1);
+  let selectUser: { id: number } | null = null;
 
-  if (!selectUser) {
-    return c.json(
-      {
-        message: "Brand not found",
-      },
-      HttpStatusCodes.NOT_FOUND
-    );
+  if (payload.user_uid) {
+    const queryResult = await db
+      .select({ id: user.id })
+      .from(user)
+      .where(and(eq(user.uid, payload.user_uid), isNull(user.deleted_at)))
+      .limit(1);
+
+    selectUser = queryResult[0];
+
+    if (!selectUser) {
+      return c.json(
+        {
+          message: "Brand not found",
+        },
+        HttpStatusCodes.NOT_FOUND
+      );
+    }
   }
 
   const [inserted] = await db
     .insert(mc)
     .values({
       ...payload,
-      user_id: selectUser.id,
+      user_id: selectUser?.id,
     })
     .returning();
 
@@ -102,7 +108,7 @@ export const getOne: AppRouteHandler<GetOneRoute> = async (c) => {
       user_uid: user.uid,
     })
     .from(mc)
-    .innerJoin(user, eq(mc.user_id, user.id))
+    .leftJoin(user, eq(mc.user_id, user.id))
     .where(and(eq(mc.uid, id), isNull(user.deleted_at), isNull(mc.deleted_at)))
     .limit(1);
 
