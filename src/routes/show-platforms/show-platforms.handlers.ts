@@ -174,6 +174,7 @@ export const create: AppRouteHandler<CreateRoute> = async (c) => {
         is_active: is_active ?? false,
         show_id: show.id,
         platform_id: platform.id,
+        ...(studio_room && { studio_room_id: studio_room.id }),
         deleted_at: null,
       },
       setWhere: isNotNull(showPlatform.deleted_at),
