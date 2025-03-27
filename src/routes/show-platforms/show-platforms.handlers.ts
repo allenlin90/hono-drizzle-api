@@ -66,12 +66,18 @@ export const list: AppRouteHandler<ListRoute> = async (c) => {
     ? ilike(studioRoom.name, `%${studio_room_name}%`)
     : undefined;
 
+  const activeBrands = isNull(brand.deleted_at);
   const activePlatforms = isNull(platform.deleted_at);
+  const activeShowPlatforms = isNull(showPlatform.deleted_at);
   const activeShows = isNull(show.deleted_at);
+  const activeStudios = isNull(studio.deleted_at);
   const activeStudioRooms = isNull(studioRoom.deleted_at);
   const filters = and(
+    activeBrands,
     activePlatforms,
+    activeShowPlatforms,
     activeShows,
+    activeStudios,
     activeStudioRooms,
     ilikeByPlatformUid,
     ilikeByShowUid,
@@ -92,32 +98,11 @@ export const list: AppRouteHandler<ListRoute> = async (c) => {
       studio: { ...getTableColumns(studio) },
     })
     .from(showPlatform)
-    .innerJoin(
-      show,
-      and(eq(showPlatform.show_id, show.id), isNull(show.deleted_at))
-    )
-    .innerJoin(
-      brand,
-      and(eq(show.brand_id, brand.id), isNull(brand.deleted_at))
-    )
-    .innerJoin(
-      platform,
-      and(
-        eq(showPlatform.platform_id, platform.id),
-        isNull(platform.deleted_at)
-      )
-    )
-    .leftJoin(
-      studioRoom,
-      and(
-        eq(showPlatform.studio_room_id, studioRoom.id),
-        isNull(studioRoom.deleted_at)
-      )
-    )
-    .leftJoin(
-      studio,
-      and(eq(studioRoom.studio_id, studio.id), isNull(studio.deleted_at))
-    )
+    .innerJoin(show, and(eq(showPlatform.show_id, show.id)))
+    .innerJoin(brand, and(eq(show.brand_id, brand.id)))
+    .innerJoin(platform, and(eq(showPlatform.platform_id, platform.id)))
+    .leftJoin(studioRoom, and(eq(showPlatform.studio_room_id, studioRoom.id)))
+    .leftJoin(studio, and(eq(studioRoom.studio_id, studio.id)))
     .where(filters)
     .limit(limit)
     .offset(offset)
