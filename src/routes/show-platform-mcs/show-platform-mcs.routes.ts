@@ -16,6 +16,11 @@ import { PatchIdParams } from "@/openapi/schemas/patch-id-params";
 import { PaginatedObjectsSchema } from "@/openapi/schemas/paginated-objects";
 import { ShowPlatformMcParamFiltersSchema } from "@/openapi/schemas/show-platform-mcs/show-platform-mc-param-filters";
 import { showPlatformMcSchema } from "@/serializers/show-platform-mc.serializer";
+import {
+  insertShowPlatformMcSchema,
+  selectShowPlatformMcSchema,
+} from "@/db/schema/show-platform-mc.schema";
+import { createShowPlatformMcPayloadSchema } from "@/openapi/schemas/show-platform-mcs/show-platform-mc-payload";
 
 const tags = ["Show Platform Mcs"];
 
@@ -45,48 +50,38 @@ export const list = createRoute({
   },
 });
 
-// export const create = createRoute({
-//   tags,
-//   path: "/show-platforms",
-//   method: "post",
-//   request: {
-//     headers: z.object({
-//       "Idempotency-Key": z.string().openapi({
-//         description: "key to ensure idempotency",
-//         example: "123e4567-e89b-12d3-a456-426614174000",
-//       }),
-//     }),
-//     body: jsonContentRequired(
-//       createShowPlatformPayloadSchema,
-//       "The show platform to create"
-//     ),
-//   },
-//   responses: {
-//     [HttpStatusCodes.CREATED]: jsonContent(
-//       selectShowPlatformSchema,
-//       "The created show-platform"
-//     ),
-//     [HttpStatusCodes.UNPROCESSABLE_ENTITY]: {
-//       content: {
-//         "application/json": {
-//           schema: z.union([
-//             createErrorSchema(createShowPlatformPayloadSchema),
-//             createMessageObjectSchema("The show-platform exists"),
-//           ]),
-//         },
-//       },
-//       description: "The validation error",
-//     },
-//     [HttpStatusCodes.BAD_REQUEST]: jsonContent(
-//       createMessageObjectSchema("Invalid idempotency key"),
-//       "Invalid idempotency key"
-//     ),
-//     [HttpStatusCodes.NOT_FOUND]: jsonContent(
-//       createMessageObjectSchema("platform/show/studio-room not found"),
-//       "Associated entity not found"
-//     ),
-//   },
-// });
+export const create = createRoute({
+  tags,
+  path: "/show-platform-mcs",
+  method: "post",
+  request: {
+    body: jsonContentRequired(
+      createShowPlatformMcPayloadSchema,
+      "The MC assigns to show-platform"
+    ),
+  },
+  responses: {
+    [HttpStatusCodes.CREATED]: jsonContent(
+      selectShowPlatformMcSchema,
+      "The created show-platform-mc"
+    ),
+    [HttpStatusCodes.UNPROCESSABLE_ENTITY]: {
+      content: {
+        "application/json": {
+          schema: z.union([
+            createErrorSchema(insertShowPlatformMcSchema),
+            createMessageObjectSchema("The show-platform-mc exists"),
+          ]),
+        },
+      },
+      description: "The validation error",
+    },
+    [HttpStatusCodes.NOT_FOUND]: jsonContent(
+      createMessageObjectSchema("show-platform/mc not found"),
+      "Associated entity not found"
+    ),
+  },
+});
 
 // export const getOne = createRoute({
 //   tags,
@@ -166,7 +161,7 @@ export const list = createRoute({
 // });
 
 export type ListRoute = typeof list;
-// export type CreateRoute = typeof create;
+export type CreateRoute = typeof create;
 // export type GetOneRoute = typeof getOne;
 // export type PatchRoute = typeof patch;
 // export type RemoveRoute = typeof remove;

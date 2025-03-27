@@ -1,6 +1,6 @@
 import type { AppRouteHandler } from "@/lib/types";
 import type {
-  // CreateRoute,
+  CreateRoute,
   // GetOneRoute,
   ListRoute,
   // PatchRoute,
@@ -119,4 +119,39 @@ export const list: AppRouteHandler<ListRoute> = async (c) => {
     },
     HttpStatusCodes.OK
   );
+};
+
+export const create: AppRouteHandler<CreateRoute> = async (c) => {
+  const payload = c.req.valid("json");
+
+  const showPlatform = payload.show_platform!;
+  const mc = payload.mc!;
+
+  const [insertedShowPlatformMc] = await db
+    .insert(showPlatformMc)
+    .values({
+      show_platform_id: showPlatform.id,
+      mc_id: mc.id,
+    })
+    .onConflictDoUpdate({
+      target: [showPlatformMc.show_platform_id, showPlatformMc.mc_id],
+      set: {
+        show_platform_id: showPlatform.id,
+        mc_id: mc.id,
+        deleted_at: null,
+      },
+      setWhere: isNotNull(showPlatformMc.deleted_at),
+    })
+    .returning();
+
+  if (!insertedShowPlatformMc) {
+    return c.json(
+      {
+        message: "The MC has been assigned to the show-platform",
+      },
+      HttpStatusCodes.INTERNAL_SERVER_ERROR
+    );
+  }
+
+  return c.json(showPlatformMcSerializer({}), HttpStatusCodes.CREATED);
 };

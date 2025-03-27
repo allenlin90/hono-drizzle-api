@@ -12,19 +12,23 @@ import {
 } from "drizzle-zod";
 import { PREFIX } from "@/constants";
 
-export const showPlatformMc = table("show_platform_mc", {
-  id: t.integer("id").primaryKey().generatedAlwaysAsIdentity(),
-  uid: brandedUid(PREFIX.SHOW_PLATFORM_MC),
-  show_platform_id: t
-    .integer("show_platform_id")
-    .references(() => showPlatform.id)
-    .notNull(),
-  mc_id: t
-    .integer("mc_id")
-    .references(() => mc.id)
-    .notNull(),
-  ...timestamps,
-});
+export const showPlatformMc = table(
+  "show_platform_mc",
+  {
+    id: t.integer("id").primaryKey().generatedAlwaysAsIdentity(),
+    uid: brandedUid(PREFIX.SHOW_PLATFORM_MC),
+    show_platform_id: t
+      .integer("show_platform_id")
+      .references(() => showPlatform.id)
+      .notNull(),
+    mc_id: t
+      .integer("mc_id")
+      .references(() => mc.id)
+      .notNull(),
+    ...timestamps,
+  },
+  (table) => [t.unique().on(table.show_platform_id, table.mc_id)]
+);
 
 export const selectShowPlatformMcSchema = createSelectSchema(showPlatformMc)
   .merge(
