@@ -1,10 +1,12 @@
 import { z } from "@hono/zod-openapi";
 import { and, eq, getTableColumns, isNull, sql } from "drizzle-orm";
+import { union } from "drizzle-orm/pg-core";
 
 import { PREFIX } from "@/constants";
 import db from "@/db";
 import {
   brand,
+  mc,
   platform,
   show,
   showPlatform,
@@ -12,28 +14,33 @@ import {
   studioRoom,
 } from "@/db/schema";
 
-export type EntityTypes = "show" | "show_platform" | "platform" | "studio_room";
+export type EntityTypes =
+  | "mc"
+  | "show"
+  | "show_platform"
+  | "platform"
+  | "studio_room";
 
 export type ParamUidTypes =
+  | "mc_uid"
   | "platform_uid"
   | "show_platform_uid"
   | "show_uid"
   | "studio_room_uid";
 
 export type Tables =
+  | typeof mc
   | typeof platform
   | typeof show
   | typeof showPlatform
   | typeof studioRoom;
-
-type KeyTypes = Extract<EntityTypes, "platform" | "show" | "studio_room">;
 
 type FilteredParams = Extract<
   ParamUidTypes,
   "platform_uid" | "show_uid" | "studio_room_uid"
 >;
 
-type QueryResult = Partial<Record<KeyTypes, { id: number; uid: string }>>;
+type QueryResult = Partial<Record<EntityTypes, { id: number; uid: string }>>;
 
 type TableSelect<T extends Tables> = T["$inferSelect"];
 
@@ -61,6 +68,13 @@ const queryObject = (table: Tables) => (uid: string) =>
     .from(table as Tables)
     .where(and(eq(table.uid, uid), isNull(table.deleted_at)))
     .limit(1);
+
+// const mcQuery = (mc_uid: string) =>
+//   db
+//     .select({ ...getTableColumns(mc) })
+//     .from(mc)
+//     .where(and(eq(mc.uid, mc_uid), isNull(mc.deleted_at)))
+//     .limit(1);
 
 const showPlatformQuery = (show_platform_uid: string) =>
   db
@@ -107,6 +121,12 @@ const studioRoomQuery = (studio_room_uid: string) =>
     .limit(1);
 
 export const idValidators = {
+  mc: {
+    param: "mc_uid",
+    table: mc,
+    prefix: PREFIX.MC,
+    queryObject: queryObject(mc),
+  },
   platform: {
     param: "platform_uid",
     table: platform,
@@ -144,7 +164,7 @@ export const uidValidator = async <
 ): Promise<R> => {
   const keys = Object.entries(value)
     .filter(([_k, value]) => !!value) // filter out required, nullable keys
-    .map(([key]) => key.split("_").slice(0, -1).join("_") as KeyTypes);
+    .map(([key]) => key.split("_").slice(0, -1).join("_") as EntityTypes);
 
   if (!keys.length) {
     return { params: value } as R;
@@ -157,7 +177,7 @@ export const uidValidator = async <
 
     return db
       .select({
-        object: sql<KeyTypes>`${type}`,
+        object: sql<EntityTypes>`${type}`,
         id: table.id,
         uid: table.uid,
       })
