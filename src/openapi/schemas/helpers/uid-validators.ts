@@ -1,4 +1,5 @@
-import { and, eq, getTableColumns, isNull } from "drizzle-orm";
+import { z } from "@hono/zod-openapi";
+import { and, eq, getTableColumns, isNull, sql } from "drizzle-orm";
 
 import { PREFIX } from "@/constants";
 import db from "@/db";
@@ -24,6 +25,15 @@ export type Tables =
   | typeof show
   | typeof showPlatform
   | typeof studioRoom;
+
+type KeyTypes = Extract<EntityTypes, "platform" | "show" | "studio_room">;
+
+type FilteredParams = Extract<
+  ParamUidTypes,
+  "platform_uid" | "show_uid" | "studio_room_uid"
+>;
+
+type QueryResult = Partial<Record<KeyTypes, { id: number; uid: string }>>;
 
 type TableSelect<T extends Tables> = T["$inferSelect"];
 
@@ -121,4 +131,66 @@ export const idValidators = {
     prefix: PREFIX.STUDIO_ROOM,
     queryObject: studioRoomQuery,
   },
+};
+
+export const uidValidator = async <
+  T extends Partial<Record<ParamUidTypes, string | null | undefined>>,
+  R extends {
+    params: T;
+  } & QueryResult
+>(
+  value: T,
+  ctx: z.RefinementCtx
+): Promise<R> => {
+  const keys = Object.entries(value)
+    .filter(([_k, value]) => !!value) // filter out required, nullable keys
+    .map(([key]) => key.split("_").slice(0, -1).join("_") as KeyTypes);
+
+  if (!keys.length) {
+    return { params: value } as R;
+  }
+
+  const queries = keys.map((type) => {
+    const { table, ...validators } = idValidators[type];
+
+    const param = validators.param as FilteredParams;
+
+    return db
+      .select({
+        object: sql<KeyTypes>`${type}`,
+        id: table.id,
+        uid: table.uid,
+      })
+      .from(table)
+      .where(and(eq(table.uid, value[param]!), isNull(table.deleted_at)));
+  });
+
+  const queryResult = [] as Awaited<(typeof queries)[0]>;
+
+  if (queries.length === 1) {
+    queryResult.push(...(await queries[0]));
+  } else {
+    // @ts-ignore
+    queryResult.push(...(await union(...queries)));
+  }
+
+  if (queryResult.length !== keys.length) {
+    const objectTypes = queryResult.map(({ object }) => object);
+    const entityNotFound = keys.filter((key) => !objectTypes.includes(key));
+
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: `${entityNotFound.join(", ")} not found`,
+    });
+
+    return z.NEVER;
+  }
+
+  const store = queryResult.reduce((store, result) => {
+    const { object, ...ids } = result;
+    store[object] = ids;
+    return store;
+  }, {} as Partial<QueryResult>);
+
+  return { ...store, params: value } as R;
 };
