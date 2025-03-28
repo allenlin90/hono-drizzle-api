@@ -10,6 +10,7 @@ import {
   platform,
   show,
   showPlatform,
+  showPlatformMc,
   studio,
   studioRoom,
 } from "@/db/schema";
@@ -17,22 +18,25 @@ import {
 export type EntityTypes =
   | "mc"
   | "show"
+  | "show_platform_mc"
   | "show_platform"
   | "platform"
   | "studio_room";
 
 export type ParamUidTypes =
   | "mc_uid"
-  | "platform_uid"
-  | "show_platform_uid"
   | "show_uid"
+  | "show_platform_mc_uid"
+  | "show_platform_uid"
+  | "platform_uid"
   | "studio_room_uid";
 
 export type Tables =
   | typeof mc
-  | typeof platform
   | typeof show
+  | typeof showPlatformMc
   | typeof showPlatform
+  | typeof platform
   | typeof studioRoom;
 
 type FilteredParams = Extract<
@@ -40,7 +44,7 @@ type FilteredParams = Extract<
   "platform_uid" | "show_uid" | "studio_room_uid"
 >;
 
-type QueryResult = Partial<Record<EntityTypes, { id: number; uid: string }>>;
+type QueryResult = Partial<Record<EntityTypes, { id?: number; uid: string }>>;
 
 type TableSelect<T extends Tables> = T["$inferSelect"];
 
@@ -56,7 +60,9 @@ export type TableType<T extends Tables> = {
   table: T;
   prefix: PREFIX;
   queryObject:
+    | typeof showPlatformMcQuery
     | typeof showPlatformQuery
+    | typeof showQuery
     | typeof showQuery
     | typeof studioRoomQuery
     | ((uid: string) => Promise<TableSelect<T>[]>);
@@ -69,12 +75,35 @@ const queryObject = (table: Tables) => (uid: string) =>
     .where(and(eq(table.uid, uid), isNull(table.deleted_at)))
     .limit(1);
 
-// const mcQuery = (mc_uid: string) =>
-//   db
-//     .select({ ...getTableColumns(mc) })
-//     .from(mc)
-//     .where(and(eq(mc.uid, mc_uid), isNull(mc.deleted_at)))
-//     .limit(1);
+const showPlatformMcQuery = (show_platform_mc_uid: string) =>
+  db
+    .select({
+      ...getTableColumns(showPlatformMc),
+      brand: { ...getTableColumns(brand) },
+      mc: { ...getTableColumns(mc) },
+      platform: { ...getTableColumns(platform) },
+      show: { ...getTableColumns(show) },
+      studio_room: { ...getTableColumns(studioRoom) },
+    })
+    .from(mc)
+    .innerJoin(brand, and(eq(show.brand_id, brand.id)))
+    .innerJoin(show, and(eq(showPlatformMc.show_id, show.id)))
+    .innerJoin(platform, and(eq(showPlatformMc.platform_id, platform.id)))
+    .innerJoin(
+      showPlatform,
+      and(
+        eq(showPlatform.show_id, showPlatformMc.show_id),
+        eq(showPlatform.platform_id, showPlatformMc.platform_id)
+      )
+    )
+    .leftJoin(studioRoom, and(eq(showPlatform.studio_room_id, studioRoom.id)))
+    .where(
+      and(
+        eq(showPlatformMc.uid, show_platform_mc_uid),
+        isNull(showPlatformMc.deleted_at)
+      )
+    )
+    .limit(1);
 
 const showPlatformQuery = (show_platform_uid: string) =>
   db
@@ -133,6 +162,12 @@ export const idValidators = {
     prefix: PREFIX.PLATFORM,
     queryObject: queryObject(platform),
   },
+  show_platform_mc: {
+    param: "show_platform_mc_uid",
+    table: showPlatformMc,
+    prefix: PREFIX.SHOW_PLATFORM_MC,
+    queryObject: showPlatformMcQuery,
+  },
   show_platform: {
     param: "show_platform_uid",
     table: showPlatform,
@@ -178,7 +213,7 @@ export const uidValidator = async <
     return db
       .select({
         object: sql<EntityTypes>`${type}`,
-        id: table.id,
+        ...("id" in table && { id: table.id }),
         uid: table.uid,
       })
       .from(table)
