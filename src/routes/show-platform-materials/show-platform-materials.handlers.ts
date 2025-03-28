@@ -1,5 +1,9 @@
 import type { AppRouteHandler } from "@/lib/types";
-import type { CreateRoute, ListRoute } from "./show-platform-materials.routes";
+import type {
+  CreateRoute,
+  GetOneRoute,
+  ListRoute,
+} from "./show-platform-materials.routes";
 
 import {
   and,
@@ -190,5 +194,55 @@ export const create: AppRouteHandler<CreateRoute> = async (c) => {
       material_uid: material.uid,
     }),
     HttpStatusCodes.CREATED
+  );
+};
+
+export const getOne: AppRouteHandler<GetOneRoute> = async (c) => {
+  const { id: show_platform_material_uid } = c.req.valid("param");
+
+  const [showPlatformMaterialRecord] = await db
+    .select({
+      ...getTableColumns(showPlatformMaterial),
+      brand: {
+        ...getTableColumns(brand),
+      },
+      material: {
+        ...getTableColumns(brandMaterial),
+      },
+      show: {
+        ...getTableColumns(show),
+      },
+      platform: {
+        ...getTableColumns(platform),
+      },
+    })
+    .from(showPlatformMaterial)
+    .innerJoin(show, and(eq(show.id, showPlatformMaterial.show_id)))
+    .innerJoin(platform, and(eq(platform.id, showPlatformMaterial.platform_id)))
+    .innerJoin(
+      brandMaterial,
+      and(eq(brandMaterial.id, showPlatformMaterial.brand_material_id))
+    )
+    .innerJoin(brand, and(eq(brand.id, brandMaterial.brand_id)))
+    .where(
+      and(
+        eq(showPlatformMaterial.uid, show_platform_material_uid),
+        isNull(showPlatformMaterial.deleted_at)
+      )
+    )
+    .limit(1);
+
+  if (!showPlatformMaterialRecord) {
+    return c.json(
+      {
+        message: "show-platform-material not found",
+      },
+      HttpStatusCodes.NOT_FOUND
+    );
+  }
+
+  return c.json(
+    showPlatformMaterialSerializer(showPlatformMaterialRecord),
+    HttpStatusCodes.OK
   );
 };

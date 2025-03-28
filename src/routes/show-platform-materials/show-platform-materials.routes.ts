@@ -85,5 +85,33 @@ export const create = createRoute({
   },
 });
 
+export const getOne = createRoute({
+  tags,
+  path: "/show-platform-materials/{id}",
+  method: "get",
+  request: {
+    params: IdParams(PREFIX.SHOW_PLATFORM_MATERIAL),
+  },
+  responses: {
+    [HttpStatusCodes.OK]: jsonContent(
+      showPlatformMaterialSchema,
+      "The requested show-platform-material"
+    ),
+    [HttpStatusCodes.FORBIDDEN]: jsonContent(
+      UnauthorizedSchema,
+      "Unauthorized"
+    ),
+    [HttpStatusCodes.NOT_FOUND]: jsonContent(
+      createMessageObjectSchema("show-platform-material not found"),
+      "Associated entity not found"
+    ),
+    [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContentOneOf(
+      [NotFoundSchema],
+      "Provided query params are not processable"
+    ),
+  },
+});
+
 export type ListRoute = typeof list;
 export type CreateRoute = typeof create;
+export type GetOneRoute = typeof getOne;
