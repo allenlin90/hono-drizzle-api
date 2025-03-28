@@ -170,6 +170,17 @@ await seed(db, tables).refine((r) => {
         ...timestamps,
       },
     },
+    showPlatformMaterial: {
+      count: 10,
+      columns: {
+        uid: r.valuesFromArray({
+          values: Array.from({ length: 10 }, () =>
+            generateBrandedUid(PREFIX.SHOW_PLATFORM_MATERIAL)
+          ),
+        }),
+        ...timestamps,
+      },
+    },
     showPlatform: {
       count: 20,
       columns: {
