@@ -29,6 +29,7 @@ import {
   studioRoom,
 } from "@/db/schema";
 import { showPlatformMcSerializer } from "@/serializers/show-platform-mc.serializer";
+import { selectShowPlatformMcSchema } from "@/db/schema/show-platform-mc.schema";
 
 export const list: AppRouteHandler<ListRoute> = async (c) => {
   const { offset, limit, mc_name, start_time, end_time } = c.req.valid("query");
@@ -81,7 +82,10 @@ export const list: AppRouteHandler<ListRoute> = async (c) => {
     .from(showPlatformMc)
     .innerJoin(
       showPlatform,
-      and(eq(showPlatformMc.show_platform_id, showPlatform.id))
+      and(
+        eq(showPlatformMc.show_id, showPlatform.show_id),
+        eq(showPlatformMc.platform_id, showPlatform.platform_id)
+      )
     )
     .innerJoin(mc, and(eq(showPlatformMc.mc_id, mc.id)))
     .innerJoin(show, and(eq(showPlatform.show_id, show.id)))
@@ -98,7 +102,10 @@ export const list: AppRouteHandler<ListRoute> = async (c) => {
     .from(showPlatformMc)
     .innerJoin(
       showPlatform,
-      and(eq(showPlatformMc.show_platform_id, showPlatform.id))
+      and(
+        eq(showPlatformMc.show_id, showPlatform.show_id),
+        eq(showPlatformMc.platform_id, showPlatform.platform_id)
+      )
     )
     .innerJoin(mc, and(eq(showPlatformMc.mc_id, mc.id)))
     .innerJoin(show, and(eq(showPlatform.show_id, show.id)))
@@ -124,34 +131,64 @@ export const list: AppRouteHandler<ListRoute> = async (c) => {
 export const create: AppRouteHandler<CreateRoute> = async (c) => {
   const payload = c.req.valid("json");
 
-  const showPlatform = payload.show_platform!;
+  const show = payload.show!;
+  const platform = payload.platform!;
   const mc = payload.mc!;
 
-  const [insertedShowPlatformMc] = await db
-    .insert(showPlatformMc)
-    .values({
-      show_platform_id: showPlatform.id,
-      mc_id: mc.id,
-    })
-    .onConflictDoUpdate({
-      target: [showPlatformMc.show_platform_id, showPlatformMc.mc_id],
-      set: {
-        show_platform_id: showPlatform.id,
+  let insertedShowPlatformMc;
+  try {
+    const queryResult = await db
+      .insert(showPlatformMc)
+      .values({
+        show_id: show.id,
+        platform_id: platform.id,
         mc_id: mc.id,
-        deleted_at: null,
-      },
-      setWhere: isNotNull(showPlatformMc.deleted_at),
-    })
-    .returning();
+      })
+      .onConflictDoUpdate({
+        target: [
+          showPlatformMc.show_id,
+          showPlatformMc.platform_id,
+          showPlatformMc.mc_id,
+        ],
+        set: {
+          show_id: show.id,
+          platform_id: platform.id,
+          mc_id: mc.id,
+          deleted_at: null,
+        },
+        setWhere: isNotNull(showPlatformMc.deleted_at),
+      })
+      .returning();
+
+    insertedShowPlatformMc = queryResult[0];
+  } catch (error: any) {
+    if (error.code === "23503") {
+      return c.json(
+        {
+          message: "show-platform does not exist",
+        },
+        HttpStatusCodes.UNPROCESSABLE_ENTITY
+      );
+    }
+    throw error;
+  }
 
   if (!insertedShowPlatformMc) {
     return c.json(
       {
         message: "The MC has been assigned to the show-platform",
       },
-      HttpStatusCodes.INTERNAL_SERVER_ERROR
+      HttpStatusCodes.UNPROCESSABLE_ENTITY
     );
   }
 
-  return c.json(showPlatformMcSerializer({}), HttpStatusCodes.CREATED);
+  return c.json(
+    selectShowPlatformMcSchema.parse({
+      ...insertedShowPlatformMc,
+      show_uid: show.uid,
+      platform_uid: platform.uid,
+      mc_uid: mc.uid,
+    }),
+    HttpStatusCodes.CREATED
+  );
 };

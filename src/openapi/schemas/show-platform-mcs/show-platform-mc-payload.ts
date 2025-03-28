@@ -9,6 +9,7 @@ export const createShowPlatformMcPayloadSchema =
 
 export interface ShowPlatformMcPayload {
   params: PatchShowPlatformMcSchema;
-  show_platform?: { id: number; uid: string };
+  show?: { id: number; uid: string };
+  platform?: { id: number; uid: string };
   mc?: { id: number; uid: string };
 }

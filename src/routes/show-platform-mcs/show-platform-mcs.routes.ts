@@ -69,7 +69,7 @@ export const create = createRoute({
       content: {
         "application/json": {
           schema: z.union([
-            createErrorSchema(insertShowPlatformMcSchema),
+            createErrorSchema(createShowPlatformMcPayloadSchema),
             createMessageObjectSchema("The show-platform-mc exists"),
           ]),
         },

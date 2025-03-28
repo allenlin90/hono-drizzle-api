@@ -19,8 +19,8 @@ export const showPlatformMcSchema = createSelectSchema(showPlatformMc)
     })
   )
   .omit({
-    id: true,
-    show_platform_id: true,
+    platform_id: true,
+    show_id: true,
     mc_id: true,
     deleted_at: true,
   });
