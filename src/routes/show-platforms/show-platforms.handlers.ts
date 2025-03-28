@@ -254,7 +254,7 @@ export const getOne: AppRouteHandler<GetOneRoute> = async (c) => {
 };
 
 export const patch: AppRouteHandler<PatchRoute> = async (c) => {
-  const { id: show_platform_id, ...searchData } = c.req.valid("param");
+  const searchData = c.req.valid("param");
 
   const { show, studio_room, platform, params, ...payload } =
     c.req.valid("json");
@@ -274,7 +274,8 @@ export const patch: AppRouteHandler<PatchRoute> = async (c) => {
     })
     .where(
       and(
-        eq(showPlatform.id, show_platform_id),
+        eq(showPlatform.show_id, searchData.show_id),
+        eq(showPlatform.platform_id, searchData.platform_id),
         isNull(showPlatform.deleted_at)
       )
     )
