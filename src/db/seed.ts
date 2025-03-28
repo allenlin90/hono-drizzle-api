@@ -15,13 +15,13 @@ const tables = {
   address: schema.address,
   brand: schema.brand,
   city: schema.city,
-  mcShowReview: schema.mcShowReview,
+  // mcShowReview: schema.mcShowReview,
   mc: schema.mc,
   operator: schema.operator,
   platform: schema.platform,
   brandMaterial: schema.brandMaterial,
   showPlatformMaterial: schema.showPlatformMaterial,
-  showPlatformMc: schema.showPlatformMc,
+  // showPlatformMc: schema.showPlatformMc,
   showPlatformReview: schema.showPlatformReview,
   showPlatform: schema.showPlatform,
   show: schema.show,
@@ -167,19 +167,6 @@ await seed(db, tables).refine((r) => {
           ),
         }),
         name: r.valuesFromArray({ values: PLATFORMS }),
-        ...timestamps,
-      },
-    },
-    showPlatformMc: {
-      count: 20,
-      columns: {
-        uid: r.valuesFromArray({
-          values: Array.from({ length: 20 }, () =>
-            generateBrandedUid(PREFIX.SHOW_PLATFORM_MC)
-          ),
-        }),
-        show_platform_id: r.int({ minValue: 1, maxValue: 20, isUnique: true }),
-        mc_id: r.int({ minValue: 1, maxValue: 5 }),
         ...timestamps,
       },
     },
