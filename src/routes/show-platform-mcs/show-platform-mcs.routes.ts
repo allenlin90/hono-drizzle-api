@@ -83,28 +83,24 @@ export const create = createRoute({
   },
 });
 
-// export const getOne = createRoute({
-//   tags,
-//   path: "/show-platforms/{id}",
-//   method: "get",
-//   request: {
-//     params: IdParams(PREFIX.SHOW_PLATFORM),
-//   },
-//   responses: {
-//     [HttpStatusCodes.OK]: jsonContent(
-//       showPlatformSchema,
-//       "The requested show-platform"
-//     ),
-//     [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContent(
-//       createErrorSchema(IdParams(PREFIX.SHOW_PLATFORM)),
-//       "invalid id error"
-//     ),
-//     [HttpStatusCodes.NOT_FOUND]: jsonContent(
-//       NotFoundSchema,
-//       "Show-platform not found"
-//     ),
-//   },
-// });
+export const getOne = createRoute({
+  tags,
+  path: "/show-platform-mcs/{id}",
+  method: "get",
+  request: {
+    params: IdParams(PREFIX.SHOW_PLATFORM_MC),
+  },
+  responses: {
+    [HttpStatusCodes.OK]: jsonContent(
+      showPlatformMcSchema,
+      "The requested show-platform-mc"
+    ),
+    [HttpStatusCodes.NOT_FOUND]: jsonContent(
+      NotFoundSchema,
+      "Show-platform-mc not found"
+    ),
+  },
+});
 
 // export const patch = createRoute({
 //   tags,
@@ -162,6 +158,6 @@ export const create = createRoute({
 
 export type ListRoute = typeof list;
 export type CreateRoute = typeof create;
-// export type GetOneRoute = typeof getOne;
+export type GetOneRoute = typeof getOne;
 // export type PatchRoute = typeof patch;
 // export type RemoveRoute = typeof remove;

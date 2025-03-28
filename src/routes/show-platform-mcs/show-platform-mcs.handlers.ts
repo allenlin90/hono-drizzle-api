@@ -1,7 +1,7 @@
 import type { AppRouteHandler } from "@/lib/types";
 import type {
   CreateRoute,
-  // GetOneRoute,
+  GetOneRoute,
   ListRoute,
   // PatchRoute,
   // RemoveRoute,
@@ -190,5 +190,59 @@ export const create: AppRouteHandler<CreateRoute> = async (c) => {
       mc_uid: mc.uid,
     }),
     HttpStatusCodes.CREATED
+  );
+};
+
+export const getOne: AppRouteHandler<GetOneRoute> = async (c) => {
+  const { id: show_platform_mc_uid } = c.req.valid("param");
+
+  const [showPlatformMcRecord] = await db
+    .select({
+      ...getTableColumns(showPlatformMc),
+      brand: {
+        ...getTableColumns(brand),
+      },
+      mc: {
+        ...getTableColumns(mc),
+      },
+      platform: {
+        ...getTableColumns(platform),
+      },
+      show_platform: {
+        ...getTableColumns(showPlatform),
+      },
+      show: {
+        ...getTableColumns(show),
+      },
+      studio_room: {
+        ...getTableColumns(studioRoom),
+      },
+    })
+    .from(showPlatformMc)
+    .innerJoin(
+      showPlatform,
+      and(
+        eq(showPlatformMc.show_id, showPlatform.show_id),
+        eq(showPlatformMc.platform_id, showPlatform.platform_id)
+      )
+    )
+    .innerJoin(mc, and(eq(showPlatformMc.mc_id, mc.id)))
+    .innerJoin(show, and(eq(showPlatform.show_id, show.id)))
+    .innerJoin(brand, and(eq(show.brand_id, brand.id)))
+    .innerJoin(platform, and(eq(showPlatform.platform_id, platform.id)))
+    .leftJoin(studioRoom, and(eq(showPlatform.studio_room_id, studioRoom.id)))
+    .where(eq(showPlatformMc.uid, show_platform_mc_uid))
+    .limit(1);
+
+  if (!showPlatformMcRecord) {
+    return c.json(
+      { message: "show-platform-mc not found" },
+      HttpStatusCodes.NOT_FOUND
+    );
+  }
+
+  return c.json(
+    showPlatformMcSerializer(showPlatformMcRecord),
+    HttpStatusCodes.OK
   );
 };
