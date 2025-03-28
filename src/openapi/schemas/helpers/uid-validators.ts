@@ -85,9 +85,10 @@ const showPlatformMcQuery = (show_platform_mc_uid: string) =>
       show: { ...getTableColumns(show) },
       studio_room: { ...getTableColumns(studioRoom) },
     })
-    .from(mc)
-    .innerJoin(brand, and(eq(show.brand_id, brand.id)))
+    .from(showPlatformMc)
+    .innerJoin(mc, and(eq(showPlatformMc.mc_id, mc.id)))
     .innerJoin(show, and(eq(showPlatformMc.show_id, show.id)))
+    .innerJoin(brand, and(eq(show.brand_id, brand.id)))
     .innerJoin(platform, and(eq(showPlatformMc.platform_id, platform.id)))
     .innerJoin(
       showPlatform,
@@ -208,7 +209,7 @@ export const uidValidator = async <
   const queries = keys.map((type) => {
     const { table, ...validators } = idValidators[type];
 
-    const param = validators.param as FilteredParams;
+    const param = validators.param as ParamUidTypes;
 
     return db
       .select({
