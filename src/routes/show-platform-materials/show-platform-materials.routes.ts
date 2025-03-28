@@ -152,7 +152,26 @@ export const patch = createRoute({
   },
 });
 
+export const remove = createRoute({
+  tags,
+  path: "/show-platform-materials/{id}",
+  method: "delete",
+  request: {
+    params: IdParams(PREFIX.SHOW_PLATFORM_MATERIAL),
+  },
+  responses: {
+    [HttpStatusCodes.NO_CONTENT]: {
+      description: "The show-platform-material was deleted",
+    },
+    [HttpStatusCodes.NOT_FOUND]: jsonContent(
+      NotFoundSchema,
+      "Show-platform-material not found"
+    ),
+  },
+});
+
 export type ListRoute = typeof list;
 export type CreateRoute = typeof create;
 export type GetOneRoute = typeof getOne;
 export type PatchRoute = typeof patch;
+export type RemoveRoute = typeof remove;

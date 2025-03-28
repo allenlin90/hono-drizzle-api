@@ -4,6 +4,7 @@ import type {
   GetOneRoute,
   ListRoute,
   PatchRoute,
+  RemoveRoute,
 } from "./show-platform-materials.routes";
 
 import {
@@ -327,4 +328,30 @@ export const patch: AppRouteHandler<PatchRoute> = async (c) => {
     selectShowPlatformMaterialSchema.parse(data),
     HttpStatusCodes.OK
   );
+};
+
+export const remove: AppRouteHandler<RemoveRoute> = async (c) => {
+  const { id: show_platform_material_uid } = c.req.valid("param");
+
+  const [showPlatformMaterialRecord] = await db
+    .update(showPlatformMaterial)
+    .set({ deleted_at: new Date().toISOString() })
+    .where(
+      and(
+        eq(showPlatformMaterial.uid, show_platform_material_uid),
+        isNull(showPlatformMaterial.deleted_at)
+      )
+    )
+    .returning();
+
+  if (!showPlatformMaterialRecord) {
+    return c.json(
+      {
+        message: "show-platform-material not found",
+      },
+      HttpStatusCodes.NOT_FOUND
+    );
+  }
+
+  return c.body(null, HttpStatusCodes.NO_CONTENT);
 };
