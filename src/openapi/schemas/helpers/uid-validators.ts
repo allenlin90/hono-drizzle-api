@@ -6,43 +6,46 @@ import { PREFIX } from "@/constants";
 import db from "@/db";
 import {
   brand,
+  brandMaterial,
   mc,
   platform,
   show,
   showPlatform,
+  showPlatformMaterial,
   showPlatformMc,
   studio,
   studioRoom,
 } from "@/db/schema";
 
 export type EntityTypes =
+  | "material"
   | "mc"
   | "show"
+  | "show_platform_material"
   | "show_platform_mc"
   | "show_platform"
   | "platform"
   | "studio_room";
 
 export type ParamUidTypes =
+  | "brand_material_uid"
   | "mc_uid"
   | "show_uid"
+  | "show_platform_material_uid"
   | "show_platform_mc_uid"
   | "show_platform_uid"
   | "platform_uid"
   | "studio_room_uid";
 
 export type Tables =
+  | typeof brandMaterial
   | typeof mc
   | typeof show
+  | typeof showPlatformMaterial
   | typeof showPlatformMc
   | typeof showPlatform
   | typeof platform
   | typeof studioRoom;
-
-type FilteredParams = Extract<
-  ParamUidTypes,
-  "platform_uid" | "show_uid" | "studio_room_uid"
->;
 
 type QueryResult = Partial<Record<EntityTypes, { id?: number; uid: string }>>;
 
@@ -60,6 +63,8 @@ export type TableType<T extends Tables> = {
   table: T;
   prefix: PREFIX;
   queryObject:
+    | typeof brandMaterialQuery
+    | typeof showPlatformMaterialQuery
     | typeof showPlatformMcQuery
     | typeof showPlatformQuery
     | typeof showQuery
@@ -73,6 +78,44 @@ const queryObject = (table: Tables) => (uid: string) =>
     .select()
     .from(table as Tables)
     .where(and(eq(table.uid, uid), isNull(table.deleted_at)))
+    .limit(1);
+
+const brandMaterialQuery = (material_uid: string) =>
+  db
+    .select({
+      ...getTableColumns(brandMaterial),
+      brand: { ...getTableColumns(brand) },
+    })
+    .from(brandMaterial)
+    .innerJoin(brand, eq(brandMaterial.brand_id, brand.id))
+    .where(
+      and(eq(brandMaterial.uid, material_uid), isNull(brandMaterial.deleted_at))
+    )
+    .limit(1);
+
+const showPlatformMaterialQuery = (show_platform_material_uid: string) =>
+  db
+    .select({
+      ...getTableColumns(showPlatformMaterial),
+      brand: { ...getTableColumns(brand) },
+      material: { ...getTableColumns(brandMaterial) },
+      show: { ...getTableColumns(show) },
+      platform: { ...getTableColumns(platform) },
+    })
+    .from(showPlatformMaterial)
+    .innerJoin(show, and(eq(show.id, showPlatformMaterial.show_id)))
+    .innerJoin(platform, and(eq(platform.id, showPlatformMaterial.platform_id)))
+    .innerJoin(
+      brandMaterial,
+      and(eq(brandMaterial.id, showPlatformMaterial.brand_material_id))
+    )
+    .innerJoin(brand, and(eq(brand.id, brandMaterial.brand_id)))
+    .where(
+      and(
+        eq(showPlatformMaterial.uid, show_platform_material_uid),
+        isNull(showPlatformMaterial.deleted_at)
+      )
+    )
     .limit(1);
 
 const showPlatformMcQuery = (show_platform_mc_uid: string) =>
@@ -151,6 +194,12 @@ const studioRoomQuery = (studio_room_uid: string) =>
     .limit(1);
 
 export const idValidators = {
+  material: {
+    param: "material_uid",
+    table: brandMaterial,
+    prefix: PREFIX.MATERIAL,
+    queryObject: brandMaterialQuery,
+  },
   mc: {
     param: "mc_uid",
     table: mc,
@@ -162,6 +211,12 @@ export const idValidators = {
     table: platform,
     prefix: PREFIX.PLATFORM,
     queryObject: queryObject(platform),
+  },
+  show_platform_material: {
+    param: "show_platform_material_uid",
+    table: showPlatformMaterial,
+    prefix: PREFIX.SHOW_PLATFORM_MATERIAL,
+    queryObject: showPlatformMaterialQuery,
   },
   show_platform_mc: {
     param: "show_platform_mc_uid",

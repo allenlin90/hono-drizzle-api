@@ -17,8 +17,12 @@ import { PaginatedObjectsSchema } from "@/openapi/schemas/paginated-objects";
 
 import { ShowPlatformMaterialParamFiltersSchema } from "@/openapi/schemas/show-platform-materials/show-platform-material-param-filters";
 import { showPlatformMaterialSchema } from "@/serializers/show-platform-material.serializer";
-import { createShowPlatformMaterialPayloadSchema } from "@/openapi/schemas/show-platform-materials/show-platform-material-payload";
+import {
+  createShowPlatformMaterialPayloadSchema,
+  patchShowPlatformMaterialPayloadSchema,
+} from "@/openapi/schemas/show-platform-materials/show-platform-material-payload";
 import { selectShowPlatformMaterialSchema } from "@/db/schema/show-platform-material.schema";
+import type { ReturningObjectType } from "@/openapi/schemas/helpers/uid-validators";
 
 const tags = ["Show Platform Materials"];
 
@@ -112,6 +116,43 @@ export const getOne = createRoute({
   },
 });
 
+export const patch = createRoute({
+  tags,
+  path: "/show-platform-materials/{id}",
+  method: "patch",
+  request: {
+    params: PatchIdParams<ReturningObjectType<"show_platform_material">>({
+      object: "show_platform_material",
+    }),
+    body: jsonContentRequired(
+      patchShowPlatformMaterialPayloadSchema,
+      "The material assigns to show-platform"
+    ),
+  },
+  responses: {
+    [HttpStatusCodes.OK]: jsonContent(
+      selectShowPlatformMaterialSchema,
+      "The updated show-platform-material object"
+    ),
+    [HttpStatusCodes.UNPROCESSABLE_ENTITY]: {
+      content: {
+        "application/json": {
+          schema: z.union([
+            createErrorSchema(patchShowPlatformMaterialPayloadSchema),
+            createMessageObjectSchema("invalid show-platform"),
+          ]),
+        },
+      },
+      description: "The validation error",
+    },
+    [HttpStatusCodes.NOT_FOUND]: jsonContent(
+      NotFoundSchema,
+      "Show-platform-material not found"
+    ),
+  },
+});
+
 export type ListRoute = typeof list;
 export type CreateRoute = typeof create;
 export type GetOneRoute = typeof getOne;
+export type PatchRoute = typeof patch;

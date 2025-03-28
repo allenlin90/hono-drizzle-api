@@ -3,6 +3,7 @@ import type {
   CreateRoute,
   GetOneRoute,
   ListRoute,
+  PatchRoute,
 } from "./show-platform-materials.routes";
 
 import {
@@ -27,6 +28,7 @@ import {
 } from "@/db/schema";
 import { showPlatformMaterialSerializer } from "@/serializers/show-platform-material.serializer";
 import { selectShowPlatformMaterialSchema } from "@/db/schema/show-platform-material.schema";
+import { validateShowPlatformMaterialPatchPayload } from "@/helpers/show-platform-material/validatePatchPayload";
 
 export const list: AppRouteHandler<ListRoute> = async (c) => {
   const {
@@ -243,6 +245,86 @@ export const getOne: AppRouteHandler<GetOneRoute> = async (c) => {
 
   return c.json(
     showPlatformMaterialSerializer(showPlatformMaterialRecord),
+    HttpStatusCodes.OK
+  );
+};
+
+export const patch: AppRouteHandler<PatchRoute> = async (c) => {
+  const searchData = c.req.valid("param");
+  const jsonPayload = c.req.valid("json");
+  const { show, platform, material, params, ...payload } = jsonPayload;
+
+  const show_id = show?.id;
+  const platform_id = platform?.id;
+  const brand_material_id = material?.id;
+
+  const isValidPayload = validateShowPlatformMaterialPatchPayload(
+    searchData,
+    jsonPayload
+  );
+
+  if (!isValidPayload) {
+    return c.json(
+      {
+        message: "No changes detected",
+      },
+      HttpStatusCodes.UNPROCESSABLE_ENTITY
+    );
+  }
+
+  let updated;
+  try {
+    const queryResult = await db
+      .update(showPlatformMaterial)
+      .set({
+        show_id: show_id,
+        platform_id: platform_id,
+        brand_material_id: brand_material_id,
+        ...payload,
+      })
+      .where(
+        and(
+          eq(showPlatformMaterial.uid, searchData.uid),
+          isNull(showPlatformMaterial.deleted_at)
+        )
+      )
+      .returning();
+
+    updated = queryResult[0];
+  } catch (error: any) {
+    if (error.code === "23503") {
+      return c.json(
+        {
+          message: "show-platform does not exist",
+        },
+        HttpStatusCodes.UNPROCESSABLE_ENTITY
+      );
+    }
+
+    if (error.code === "23505") {
+      return c.json(
+        {
+          message: "material has already assigned to the show-platform",
+        },
+        HttpStatusCodes.UNPROCESSABLE_ENTITY
+      );
+    }
+    throw error;
+  }
+
+  const platform_uid = platform?.uid ?? searchData.platform.uid;
+  const show_uid = show?.uid ?? searchData.show.uid;
+  const material_uid = material?.uid ?? searchData.material.uid;
+
+  const data = {
+    ...updated,
+    show_uid,
+    platform_uid,
+    material_uid,
+  };
+
+  return c.json(
+    selectShowPlatformMaterialSchema.parse(data),
     HttpStatusCodes.OK
   );
 };
