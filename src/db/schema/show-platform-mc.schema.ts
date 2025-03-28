@@ -74,12 +74,15 @@ export const insertShowPlatformMcSchema = createInsertSchema(showPlatformMc)
 export const patchShowPlatformMcSchema = createUpdateSchema(showPlatformMc)
   .merge(
     z.object({
-      show_platform_uid: z.string().startsWith(PREFIX.SHOW_PLATFORM).optional(),
+      show_uid: z.string().startsWith(PREFIX.SHOW).optional(),
+      platform_uid: z.string().startsWith(PREFIX.PLATFORM).optional(),
       mc_uid: z.string().startsWith(PREFIX.MC).optional(),
     })
   )
   .omit({
     uid: true,
+    show_id: true,
+    platform_id: true,
     mc_id: true,
     created_at: true,
     updated_at: true,
