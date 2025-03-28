@@ -1,7 +1,11 @@
 import { pgTable as table } from "drizzle-orm/pg-core";
 import * as t from "drizzle-orm/pg-core";
 import { z } from "@hono/zod-openapi";
-import { createSelectSchema } from "drizzle-zod";
+import {
+  createInsertSchema,
+  createSelectSchema,
+  createUpdateSchema,
+} from "drizzle-zod";
 
 import { PREFIX } from "@/constants";
 import { brandedUid, timestamps } from "../helpers/columns.helpers";
@@ -54,3 +58,53 @@ export const selectShowPlatformMaterialSchema = createSelectSchema(
     updated_at: true,
     deleted_at: true,
   });
+
+export const insertShowPlatformMaterialSchema = createInsertSchema(
+  showPlatformMaterial
+)
+  .merge(
+    z.object({
+      material_uid: z.string().startsWith(PREFIX.MATERIAL),
+      show_uid: z.string().startsWith(PREFIX.SHOW),
+      platform_uid: z.string().startsWith(PREFIX.PLATFORM),
+    })
+  )
+  .omit({
+    uid: true,
+    show_id: true,
+    platform_id: true,
+    brand_material_id: true,
+    created_at: true,
+    updated_at: true,
+    deleted_at: true,
+  });
+
+export const patchShowPlatformMaterialSchema = createUpdateSchema(
+  showPlatformMaterial
+)
+  .merge(
+    z.object({
+      material_uid: z.string().startsWith(PREFIX.MATERIAL).optional(),
+      show_uid: z.string().startsWith(PREFIX.SHOW).optional(),
+      platform_uid: z.string().startsWith(PREFIX.PLATFORM).optional(),
+    })
+  )
+  .omit({
+    uid: true,
+    show_id: true,
+    platform_id: true,
+    brand_material_id: true,
+    created_at: true,
+    updated_at: true,
+    deleted_at: true,
+  });
+
+export type SelectShowPlatformMaterialSchema = z.infer<
+  typeof selectShowPlatformMaterialSchema
+>;
+export type InsertShowPlatformMaterialSchema = z.infer<
+  typeof insertShowPlatformMaterialSchema
+>;
+export type PatchShowPlatformMaterialSchema = z.infer<
+  typeof patchShowPlatformMaterialSchema
+>;

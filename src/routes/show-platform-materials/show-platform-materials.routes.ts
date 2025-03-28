@@ -17,6 +17,8 @@ import { PaginatedObjectsSchema } from "@/openapi/schemas/paginated-objects";
 
 import { ShowPlatformMaterialParamFiltersSchema } from "@/openapi/schemas/show-platform-materials/show-platform-material-param-filters";
 import { showPlatformMaterialSchema } from "@/serializers/show-platform-material.serializer";
+import { createShowPlatformMaterialPayloadSchema } from "@/openapi/schemas/show-platform-materials/show-platform-material-payload";
+import { selectShowPlatformMaterialSchema } from "@/db/schema/show-platform-material.schema";
 
 const tags = ["Show Platform Materials"];
 
@@ -46,4 +48,42 @@ export const list = createRoute({
   },
 });
 
+export const create = createRoute({
+  tags,
+  path: "/show-platform-materials",
+  method: "post",
+  request: {
+    body: jsonContentRequired(
+      createShowPlatformMaterialPayloadSchema,
+      "A material for a show-platform"
+    ),
+  },
+  responses: {
+    [HttpStatusCodes.CREATED]: jsonContent(
+      selectShowPlatformMaterialSchema,
+      "The assigned material for a show-platform"
+    ),
+    [HttpStatusCodes.FORBIDDEN]: jsonContent(
+      UnauthorizedSchema,
+      "Unauthorized"
+    ),
+    [HttpStatusCodes.UNPROCESSABLE_ENTITY]: {
+      content: {
+        "application/json": {
+          schema: z.union([
+            createErrorSchema(createShowPlatformMaterialPayloadSchema),
+            createMessageObjectSchema("The show-platform-material exists"),
+          ]),
+        },
+      },
+      description: "The validation error",
+    },
+    [HttpStatusCodes.NOT_FOUND]: jsonContent(
+      createMessageObjectSchema("show-platform not found"),
+      "Associated entity not found"
+    ),
+  },
+});
+
 export type ListRoute = typeof list;
+export type CreateRoute = typeof create;

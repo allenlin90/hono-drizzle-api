@@ -1,5 +1,5 @@
 import type { AppRouteHandler } from "@/lib/types";
-import type { ListRoute } from "./show-platform-materials.routes";
+import type { CreateRoute, ListRoute } from "./show-platform-materials.routes";
 
 import {
   and,
@@ -8,6 +8,7 @@ import {
   eq,
   getTableColumns,
   ilike,
+  isNotNull,
   isNull,
 } from "drizzle-orm";
 
@@ -21,6 +22,7 @@ import {
   showPlatformMaterial,
 } from "@/db/schema";
 import { showPlatformMaterialSerializer } from "@/serializers/show-platform-material.serializer";
+import { selectShowPlatformMaterialSchema } from "@/db/schema/show-platform-material.schema";
 
 export const list: AppRouteHandler<ListRoute> = async (c) => {
   const {
@@ -124,5 +126,69 @@ export const list: AppRouteHandler<ListRoute> = async (c) => {
       total,
     },
     HttpStatusCodes.OK
+  );
+};
+
+export const create: AppRouteHandler<CreateRoute> = async (c) => {
+  const payload = c.req.valid("json");
+  const show = payload.show!;
+  const platform = payload.platform!;
+  const material = payload.material!;
+
+  let insertedShowPlatformMaterial;
+  try {
+    const queryResult = await db
+      .insert(showPlatformMaterial)
+      .values({
+        show_id: show!.id!,
+        platform_id: platform!.id!,
+        brand_material_id: material!.id!,
+      })
+      .onConflictDoUpdate({
+        target: [
+          showPlatformMaterial.show_id,
+          showPlatformMaterial.platform_id,
+          showPlatformMaterial.brand_material_id,
+        ],
+        set: {
+          show_id: show.id,
+          platform_id: platform.id,
+          brand_material_id: material.id,
+          deleted_at: null,
+        },
+        setWhere: isNotNull(showPlatformMaterial.deleted_at),
+      })
+      .returning();
+
+    insertedShowPlatformMaterial = queryResult[0];
+  } catch (error: any) {
+    if (error.code === "23503") {
+      return c.json(
+        {
+          message: "show-platform does not exist",
+        },
+        HttpStatusCodes.UNPROCESSABLE_ENTITY
+      );
+    }
+    throw error;
+  }
+
+  if (!insertedShowPlatformMaterial) {
+    return c.json(
+      {
+        message: "The material has been assigned to the show-platform",
+      },
+      HttpStatusCodes.UNPROCESSABLE_ENTITY
+    );
+  }
+
+  return c.json(
+    selectShowPlatformMaterialSchema.parse({
+      ...insertedShowPlatformMaterial,
+      show_uid: show.uid,
+      platform_uid: platform.uid,
+      material_uid: material.uid,
+    }),
+    HttpStatusCodes.CREATED
   );
 };
