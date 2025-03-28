@@ -4,7 +4,7 @@ import type {
   GetOneRoute,
   ListRoute,
   PatchRoute,
-  // RemoveRoute,
+  RemoveRoute,
 } from "./show-platform-mcs.routes";
 import {
   and,
@@ -313,4 +313,28 @@ export const patch: AppRouteHandler<PatchRoute> = async (c) => {
   };
 
   return c.json(selectShowPlatformMcSchema.parse(data), HttpStatusCodes.OK);
+};
+
+export const remove: AppRouteHandler<RemoveRoute> = async (c) => {
+  const { id: show_platform_mc_uid } = c.req.valid("param");
+
+  const [removedShowPlatformMc] = await db
+    .update(showPlatformMc)
+    .set({ deleted_at: new Date().toISOString() })
+    .where(
+      and(
+        eq(showPlatformMc.uid, show_platform_mc_uid),
+        isNull(showPlatformMc.deleted_at)
+      )
+    )
+    .returning();
+
+  if (!removedShowPlatformMc) {
+    return c.json(
+      { message: "Show-platform-mc not found" },
+      HttpStatusCodes.NOT_FOUND
+    );
+  }
+
+  return c.body(null, HttpStatusCodes.NO_CONTENT);
 };
