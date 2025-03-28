@@ -1,11 +1,12 @@
 import { z } from "@hono/zod-openapi";
-import { mcIdSchema, showPlatformIdSchema } from "../id-query-params";
 import { PageParams } from "../page-params";
 import { DurationParams } from "../duration-params";
+import { mcIdSchema, platformIdSchema, showIdSchema } from "../id-query-params";
 
 export const ShowPlatformMcParamFiltersSchema = PageParams()
-  .merge(showPlatformIdSchema)
   .merge(DurationParams("Show"))
+  .merge(showIdSchema)
+  .merge(platformIdSchema)
   .merge(mcIdSchema)
   .merge(
     z.object({
