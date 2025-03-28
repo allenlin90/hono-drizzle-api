@@ -7,6 +7,7 @@ export enum PREFIX {
   MC = "mc",
   OPERATOR = "opr",
   PLATFORM = "platform",
+  SHOW_PLATFORM_MATERIAL = "show_plat_material",
   SHOW_PLATFORM_MC = "show_plat_mc",
   SHOW_PLATFORM = "show_plat",
   SHOW_REVIEW = "show_rev",
