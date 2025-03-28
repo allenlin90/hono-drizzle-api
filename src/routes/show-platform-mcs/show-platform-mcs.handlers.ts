@@ -3,7 +3,7 @@ import type {
   CreateRoute,
   GetOneRoute,
   ListRoute,
-  // PatchRoute,
+  PatchRoute,
   // RemoveRoute,
 } from "./show-platform-mcs.routes";
 import {
@@ -30,6 +30,7 @@ import {
 } from "@/db/schema";
 import { showPlatformMcSerializer } from "@/serializers/show-platform-mc.serializer";
 import { selectShowPlatformMcSchema } from "@/db/schema/show-platform-mc.schema";
+import { validateShowPlatformMcPatchPayload } from "@/helpers/show-platform-mc/validatePatchPayload";
 
 export const list: AppRouteHandler<ListRoute> = async (c) => {
   const { offset, limit, mc_name, start_time, end_time } = c.req.valid("query");
@@ -140,9 +141,9 @@ export const create: AppRouteHandler<CreateRoute> = async (c) => {
     const queryResult = await db
       .insert(showPlatformMc)
       .values({
-        show_id: show.id,
-        platform_id: platform.id,
-        mc_id: mc.id,
+        show_id: show.id!,
+        platform_id: platform.id!,
+        mc_id: mc.id!,
       })
       .onConflictDoUpdate({
         target: [
@@ -245,4 +246,71 @@ export const getOne: AppRouteHandler<GetOneRoute> = async (c) => {
     showPlatformMcSerializer(showPlatformMcRecord),
     HttpStatusCodes.OK
   );
+};
+
+export const patch: AppRouteHandler<PatchRoute> = async (c) => {
+  const searchData = c.req.valid("param");
+  const jsonPayload = c.req.valid("json");
+  const { show, platform, mc, params, ...payload } = jsonPayload;
+
+  const show_id = show?.id;
+  const platform_id = platform?.id;
+  const mc_id = mc?.id;
+
+  const isValidPayload = validateShowPlatformMcPatchPayload(
+    searchData,
+    jsonPayload
+  );
+
+  if (!isValidPayload) {
+    return c.json(
+      { message: "No changes detected" },
+      HttpStatusCodes.UNPROCESSABLE_ENTITY
+    );
+  }
+
+  let updated;
+  try {
+    const queryResult = await db
+      .update(showPlatformMc)
+      .set({
+        ...payload,
+        ...(show_id && { show_id }),
+        ...(platform_id && { platform_id }),
+        ...(mc_id && { mc_id }),
+      })
+      .where(
+        and(
+          eq(showPlatformMc.uid, searchData.uid),
+          isNull(showPlatformMc.deleted_at)
+        )
+      )
+      .returning();
+
+    updated = queryResult[0];
+  } catch (error: any) {
+    if (error.code === "23503") {
+      return c.json(
+        {
+          message: "invalid show-platform",
+        },
+        HttpStatusCodes.UNPROCESSABLE_ENTITY
+      );
+    }
+
+    throw error;
+  }
+
+  const platform_uid = platform?.uid ?? searchData.platform.uid;
+  const show_uid = show?.uid ?? searchData.show.uid;
+  const mc_uid = mc?.uid ?? searchData.mc.uid;
+
+  const data = {
+    ...updated,
+    show_uid,
+    platform_uid,
+    mc_uid,
+  };
+
+  return c.json(selectShowPlatformMcSchema.parse(data), HttpStatusCodes.OK);
 };

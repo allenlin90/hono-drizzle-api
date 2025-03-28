@@ -1,3 +1,5 @@
+import type { ReturningObjectType } from "@/openapi/schemas/helpers/uid-validators";
+
 import { createRoute, z } from "@hono/zod-openapi";
 
 import { PREFIX } from "@/constants";
@@ -16,11 +18,11 @@ import { PatchIdParams } from "@/openapi/schemas/patch-id-params";
 import { PaginatedObjectsSchema } from "@/openapi/schemas/paginated-objects";
 import { ShowPlatformMcParamFiltersSchema } from "@/openapi/schemas/show-platform-mcs/show-platform-mc-param-filters";
 import { showPlatformMcSchema } from "@/serializers/show-platform-mc.serializer";
+import { selectShowPlatformMcSchema } from "@/db/schema/show-platform-mc.schema";
 import {
-  insertShowPlatformMcSchema,
-  selectShowPlatformMcSchema,
-} from "@/db/schema/show-platform-mc.schema";
-import { createShowPlatformMcPayloadSchema } from "@/openapi/schemas/show-platform-mcs/show-platform-mc-payload";
+  createShowPlatformMcPayloadSchema,
+  patchShowPlatformMcPayloadSchema,
+} from "@/openapi/schemas/show-platform-mcs/show-platform-mc-payload";
 
 const tags = ["Show Platform Mcs"];
 
@@ -102,37 +104,41 @@ export const getOne = createRoute({
   },
 });
 
-// export const patch = createRoute({
-//   tags,
-//   path: "/show-platforms/{id}",
-//   method: "patch",
-//   request: {
-//     params: PatchIdParams<ReturningObjectType<"show_platform">>({
-//       object: "show_platform",
-//     }),
-//     body: jsonContentRequired(
-//       updateShowPlatformPayloadSchema,
-//       "The show-platform to update"
-//     ),
-//   },
-//   responses: {
-//     [HttpStatusCodes.OK]: jsonContent(
-//       selectShowPlatformSchema,
-//       "The updated show-platform object"
-//     ),
-//     [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContentOneOf(
-//       [
-//         createErrorSchema(updateShowPlatformPayloadSchema),
-//         createErrorSchema(IdParams(PREFIX.SHOW_PLATFORM)),
-//       ],
-//       "The validation error"
-//     ),
-//     [HttpStatusCodes.NOT_FOUND]: jsonContent(
-//       NotFoundSchema,
-//       "Show-platform not found"
-//     ),
-//   },
-// });
+export const patch = createRoute({
+  tags,
+  path: "/show-platform-mcs/{id}",
+  method: "patch",
+  request: {
+    params: PatchIdParams<ReturningObjectType<"show_platform_mc">>({
+      object: "show_platform_mc",
+    }),
+    body: jsonContentRequired(
+      patchShowPlatformMcPayloadSchema,
+      "The show-platform-mc to update"
+    ),
+  },
+  responses: {
+    [HttpStatusCodes.OK]: jsonContent(
+      selectShowPlatformMcSchema,
+      "The updated show-platform-mc object"
+    ),
+    [HttpStatusCodes.UNPROCESSABLE_ENTITY]: {
+      content: {
+        "application/json": {
+          schema: z.union([
+            createErrorSchema(patchShowPlatformMcPayloadSchema),
+            createMessageObjectSchema("invalid show-platform"),
+          ]),
+        },
+      },
+      description: "The validation error",
+    },
+    [HttpStatusCodes.NOT_FOUND]: jsonContent(
+      NotFoundSchema,
+      "Show-platform-mc not found"
+    ),
+  },
+});
 
 // export const remove = createRoute({
 //   tags,
@@ -159,5 +165,5 @@ export const getOne = createRoute({
 export type ListRoute = typeof list;
 export type CreateRoute = typeof create;
 export type GetOneRoute = typeof getOne;
-// export type PatchRoute = typeof patch;
+export type PatchRoute = typeof patch;
 // export type RemoveRoute = typeof remove;
