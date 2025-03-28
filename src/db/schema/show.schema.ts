@@ -25,7 +25,10 @@ export const show = table(
     end_time: t.timestamp("end_time", { mode: "string" }).notNull(),
     ...timestamps,
   },
-  (table) => [t.index("show_name_idx").on(table.name)]
+  (table) => [
+    t.index("show_name_idx").on(table.name),
+    t.index("show_brand_id_idx").on(table.brand_id),
+  ]
 );
 
 export const selectShowSchema = createSelectSchema(show)

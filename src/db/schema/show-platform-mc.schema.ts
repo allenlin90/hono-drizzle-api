@@ -27,7 +27,11 @@ export const showPlatformMc = table(
       .notNull(),
     ...timestamps,
   },
-  (table) => [t.unique().on(table.show_platform_id, table.mc_id)]
+  (table) => [
+    t.unique().on(table.show_platform_id, table.mc_id),
+    t.index("show_platform_mc_show_platform_id_idx").on(table.show_platform_id),
+    t.index("show_platform_mc_mc_id_idx").on(table.mc_id),
+  ]
 );
 
 export const selectShowPlatformMcSchema = createSelectSchema(showPlatformMc)

@@ -20,7 +20,10 @@ export const operator = table(
     user_id: t.integer("user_id").references(() => user.id),
     ...timestamps,
   },
-  (table) => [t.index("operator_name_idx").on(table.name)]
+  (table) => [
+    t.index("operator_name_idx").on(table.name),
+    t.index("operator_user_id_idx").on(table.user_id),
+  ]
 );
 
 export const selectOperatorSchema = createSelectSchema(operator)

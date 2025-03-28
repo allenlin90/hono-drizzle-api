@@ -6,18 +6,27 @@ import { brandedUid, timestamps } from "../helpers/columns.helpers";
 import { showPlatformMc } from "./show-platform-mc.schema";
 import { user } from "./user.schema";
 
-export const mcShowReview = table("mc_show_review", {
-  id: t.integer("id").primaryKey().generatedAlwaysAsIdentity(),
-  uid: brandedUid(PREFIX.MC_SHOW_REVIEW),
-  review_items: t.jsonb("review_items"),
-  reviewer_id: t
-    .integer("reviewer_id")
-    .references(() => user.id)
-    .notNull(),
-  show_platform_mc_id: t
-    .integer("show_platform_mc_id")
-    .references(() => showPlatformMc.id)
-    .notNull(),
-  note: t.varchar("note"),
-  ...timestamps,
-});
+export const mcShowReview = table(
+  "mc_show_review",
+  {
+    id: t.integer("id").primaryKey().generatedAlwaysAsIdentity(),
+    uid: brandedUid(PREFIX.MC_SHOW_REVIEW),
+    review_items: t.jsonb("review_items"),
+    reviewer_id: t
+      .integer("reviewer_id")
+      .references(() => user.id)
+      .notNull(),
+    show_platform_mc_id: t
+      .integer("show_platform_mc_id")
+      .references(() => showPlatformMc.id)
+      .notNull(),
+    note: t.varchar("note"),
+    ...timestamps,
+  },
+  (table) => [
+    t.index("mc_show_review_reviewer_id_idx").on(table.reviewer_id),
+    t
+      .index("mc_show_review_show_platform_mc_id_idx")
+      .on(table.show_platform_mc_id),
+  ]
+);

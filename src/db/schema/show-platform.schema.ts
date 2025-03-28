@@ -31,7 +31,12 @@ export const showPlatform = table(
     is_active: t.boolean("is_active").default(false).notNull(), // for show approval
     ...timestamps,
   },
-  (table) => [t.unique().on(table.show_id, table.platform_id)]
+  (table) => [
+    t.unique().on(table.show_id, table.platform_id),
+    t.index("show_platform_show_id_idx").on(table.show_id),
+    t.index("show_platform_platform_id_idx").on(table.platform_id),
+    t.index("show_platform_studio_room_id_idx").on(table.studio_room_id),
+  ]
 );
 
 // basic schema without expand

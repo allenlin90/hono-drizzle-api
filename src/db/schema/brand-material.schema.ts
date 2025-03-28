@@ -36,7 +36,9 @@ export const brandMaterial = table(
   },
   (table) => [
     t.unique().on(table.brand_id, table.name),
-    t.index().on(table.name),
+    t.index("brand_id_idx").on(table.id),
+    t.index("brand_name_idx").on(table.name),
+    t.index("brand_resource_url_idx").on(table.resource_url),
   ]
 );
 

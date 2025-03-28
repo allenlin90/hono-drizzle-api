@@ -32,6 +32,7 @@ export const address = table(
     t.index("address_idx").on(table.address),
     t.index("address_sub_district_idx").on(table.sub_district),
     t.index("address_district_idx").on(table.district),
+    t.index("address_city_id_idx").on(table.city_id),
     t.index("address_province_idx").on(table.province),
     t.index("address_postcode_idx").on(table.postcode),
   ]

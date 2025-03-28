@@ -12,16 +12,23 @@ export const taskTypeEnum = t.pgEnum("task_type", [
   "POST_PRODUCTION",
 ]);
 
-export const task = table("task", {
-  id: t.integer("id").primaryKey().generatedAlwaysAsIdentity(),
-  uid: brandedUid(PREFIX.TASK),
-  items: t.jsonb("items"),
-  type: taskTypeEnum().notNull(),
-  is_completed: t.boolean("is_completed").default(false),
-  operator_id: t.integer("operator_id").references(() => operator.id),
-  show_platform_id: t
-    .integer("show_platform_id")
-    .references(() => showPlatform.id)
-    .notNull(),
-  ...timestamps,
-});
+export const task = table(
+  "task",
+  {
+    id: t.integer("id").primaryKey().generatedAlwaysAsIdentity(),
+    uid: brandedUid(PREFIX.TASK),
+    items: t.jsonb("items"),
+    type: taskTypeEnum().notNull(),
+    is_completed: t.boolean("is_completed").default(false),
+    operator_id: t.integer("operator_id").references(() => operator.id),
+    show_platform_id: t
+      .integer("show_platform_id")
+      .references(() => showPlatform.id)
+      .notNull(),
+    ...timestamps,
+  },
+  (table) => [
+    t.index("task_operator_id_idx").on(table.operator_id),
+    t.index("task_show_platform_id_idx").on(table.show_platform_id),
+  ]
+);

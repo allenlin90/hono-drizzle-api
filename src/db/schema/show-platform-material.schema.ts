@@ -19,5 +19,13 @@ export const showPlatformMaterial = table(
       .notNull(),
     ...timestamps,
   },
-  (table) => [t.unique().on(table.show_platform_id, table.brand_material_id)]
+  (table) => [
+    t.unique().on(table.show_platform_id, table.brand_material_id),
+    t
+      .index("show_platform_material_show_platform_id_idx")
+      .on(table.show_platform_id),
+    t
+      .index("show_platform_material_brand_material_id_idx")
+      .on(table.brand_material_id),
+  ]
 );

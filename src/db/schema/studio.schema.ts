@@ -11,13 +11,20 @@ import {
   createUpdateSchema,
 } from "drizzle-zod";
 
-export const studio = table("studio", {
-  id: t.integer("id").primaryKey().generatedAlwaysAsIdentity(),
-  uid: brandedUid(PREFIX.STUDIO),
-  name: t.varchar("name").unique().notNull(),
-  address_id: t.integer("address_id").references(() => address.id),
-  ...timestamps,
-});
+export const studio = table(
+  "studio",
+  {
+    id: t.integer("id").primaryKey().generatedAlwaysAsIdentity(),
+    uid: brandedUid(PREFIX.STUDIO),
+    name: t.varchar("name").unique().notNull(),
+    address_id: t.integer("address_id").references(() => address.id),
+    ...timestamps,
+  },
+  (table) => [
+    t.index("studio_name_idx").on(table.name),
+    t.index("studio_address_id_idx").on(table.address_id),
+  ]
+);
 
 export const selectStudioSchema = createSelectSchema(studio)
   .merge(

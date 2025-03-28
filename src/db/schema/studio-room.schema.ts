@@ -26,7 +26,11 @@ export const studioRoom = table(
     type: roomTypeEnum().default("s").notNull(),
     ...timestamps,
   },
-  (table) => [t.index("studio_room_name_idx").on(table.name)]
+  (table) => [
+    t.index("studio_room_name_idx").on(table.name),
+    t.index("studio_room_studio_id_idx").on(table.studio_id),
+    t.index("studio_room_type_idx").on(table.type),
+  ]
 );
 
 export const selectStudioRoomSchema = createSelectSchema(studioRoom)

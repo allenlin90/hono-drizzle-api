@@ -20,7 +20,10 @@ export const mc = table(
     user_id: t.integer("user_id").references(() => user.id),
     ...timestamps,
   },
-  (table) => [t.index("mc_name_idx").on(table.name)]
+  (table) => [
+    t.index("mc_name_idx").on(table.name),
+    t.index("mc_user_id_idx").on(table.user_id),
+  ]
 );
 
 export const selectMcSchema = createSelectSchema(mc)
