@@ -45,7 +45,7 @@ export const selectShowPlatformMaterialSchema = createSelectSchema(
 )
   .merge(
     z.object({
-      material_uid: z.string().startsWith(PREFIX.SHOW_PLATFORM_MATERIAL),
+      material_uid: z.string().startsWith(PREFIX.MATERIAL),
       show_uid: z.string().startsWith(PREFIX.SHOW),
       platform_uid: z.string().startsWith(PREFIX.PLATFORM),
     })
