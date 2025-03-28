@@ -15,12 +15,9 @@ import { PREFIX } from "@/constants";
 export const showPlatformMc = table(
   "show_platform_mc",
   {
-    id: t.integer("id").primaryKey().generatedAlwaysAsIdentity(),
     uid: brandedUid(PREFIX.SHOW_PLATFORM_MC),
-    show_platform_id: t
-      .integer("show_platform_id")
-      .references(() => showPlatform.id)
-      .notNull(),
+    show_id: t.integer("show_id").notNull(),
+    platform_id: t.integer("platform_id").notNull(),
     mc_id: t
       .integer("mc_id")
       .references(() => mc.id)
@@ -28,8 +25,16 @@ export const showPlatformMc = table(
     ...timestamps,
   },
   (table) => [
-    t.unique().on(table.show_platform_id, table.mc_id),
-    t.index("show_platform_mc_show_platform_id_idx").on(table.show_platform_id),
+    t.primaryKey({
+      columns: [table.show_id, table.platform_id, table.mc_id],
+    }),
+    t.foreignKey({
+      columns: [table.show_id, table.platform_id],
+      foreignColumns: [showPlatform.show_id, showPlatform.platform_id],
+    }),
+    t.unique().on(table.show_id, table.platform_id),
+    t.index("show_platform_mc_show_id_idx").on(table.show_id),
+    t.index("show_platform_mc_platform_id_idx").on(table.platform_id),
     t.index("show_platform_mc_mc_id_idx").on(table.mc_id),
   ]
 );
@@ -37,13 +42,14 @@ export const showPlatformMc = table(
 export const selectShowPlatformMcSchema = createSelectSchema(showPlatformMc)
   .merge(
     z.object({
-      show_platform_uid: z.string().startsWith(PREFIX.SHOW_PLATFORM),
+      show_uid: z.string().startsWith(PREFIX.SHOW),
+      platform_uid: z.string().startsWith(PREFIX.PLATFORM),
       mc_uid: z.string().startsWith(PREFIX.MC),
     })
   )
   .omit({
-    id: true,
-    show_platform_id: true,
+    show_id: true,
+    platform_id: true,
     mc_id: true,
     deleted_at: true,
   });
@@ -51,13 +57,15 @@ export const selectShowPlatformMcSchema = createSelectSchema(showPlatformMc)
 export const insertShowPlatformMcSchema = createInsertSchema(showPlatformMc)
   .merge(
     z.object({
-      show_platform_uid: z.string().startsWith(PREFIX.SHOW_PLATFORM),
+      show_uid: z.string().startsWith(PREFIX.SHOW),
+      platform_uid: z.string().startsWith(PREFIX.PLATFORM),
       mc_uid: z.string().startsWith(PREFIX.MC),
     })
   )
   .omit({
     uid: true,
-    show_platform_id: true,
+    show_id: true,
+    platform_id: true,
     mc_id: true,
     created_at: true,
     updated_at: true,
@@ -73,7 +81,6 @@ export const patchShowPlatformMcSchema = createUpdateSchema(showPlatformMc)
   )
   .omit({
     uid: true,
-    show_platform_id: true,
     mc_id: true,
     created_at: true,
     updated_at: true,

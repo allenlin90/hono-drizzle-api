@@ -51,8 +51,16 @@ export const mcShowReviewRelation = relations(mcShowReview, ({ one }) => ({
     references: [user.id],
   }),
   showPlatformMc: one(showPlatformMc, {
-    fields: [mcShowReview.show_platform_mc_id],
-    references: [showPlatformMc.id],
+    fields: [
+      mcShowReview.show_id,
+      mcShowReview.platform_id,
+      mcShowReview.mc_id,
+    ],
+    references: [
+      showPlatformMc.show_id,
+      showPlatformMc.platform_id,
+      showPlatformMc.mc_id,
+    ],
   }),
 }));
 
@@ -84,8 +92,8 @@ export const showPlatformMaterialRelation = relations(
       references: [brandMaterial.id],
     }),
     showPlatform: one(showPlatform, {
-      fields: [showPlatformMaterial.show_platform_id],
-      references: [showPlatform.id],
+      fields: [showPlatformMaterial.show_id, showPlatformMaterial.platform_id],
+      references: [showPlatform.show_id, showPlatform.platform_id],
     }),
   })
 );
@@ -99,8 +107,8 @@ export const showPlatformMcRelation = relations(
     }),
     reviews: many(mcShowReview),
     showPlatform: one(showPlatform, {
-      fields: [showPlatformMc.show_platform_id],
-      references: [showPlatform.id],
+      fields: [showPlatformMc.show_id, showPlatformMc.platform_id],
+      references: [showPlatform.show_id, showPlatform.platform_id],
     }),
   })
 );
@@ -135,8 +143,8 @@ export const showPlatformReviewRelation = relations(
       references: [user.id],
     }),
     showPlatform: one(showPlatform, {
-      fields: [showPlatformReview.show_platform_id],
-      references: [showPlatform.id],
+      fields: [showPlatformReview.show_id, showPlatformReview.platform_id],
+      references: [showPlatform.show_id, showPlatform.platform_id],
     }),
   })
 );
@@ -171,8 +179,8 @@ export const taskRelation = relations(task, ({ one }) => ({
     references: [operator.id],
   }),
   showPlatform: one(showPlatform, {
-    fields: [task.show_platform_id],
-    references: [showPlatform.id],
+    fields: [task.show_id, task.platform_id],
+    references: [showPlatform.show_id, showPlatform.platform_id],
   }),
 }));
 

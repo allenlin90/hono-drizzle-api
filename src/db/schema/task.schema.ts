@@ -15,20 +15,25 @@ export const taskTypeEnum = t.pgEnum("task_type", [
 export const task = table(
   "task",
   {
-    id: t.integer("id").primaryKey().generatedAlwaysAsIdentity(),
     uid: brandedUid(PREFIX.TASK),
     items: t.jsonb("items"),
     type: taskTypeEnum().notNull(),
     is_completed: t.boolean("is_completed").default(false),
     operator_id: t.integer("operator_id").references(() => operator.id),
-    show_platform_id: t
-      .integer("show_platform_id")
-      .references(() => showPlatform.id)
-      .notNull(),
+    show_id: t.integer("show_id").notNull(),
+    platform_id: t.integer("platform_id").notNull(),
     ...timestamps,
   },
   (table) => [
+    t.primaryKey({
+      columns: [table.show_id, table.platform_id, table.operator_id],
+    }),
+    t.foreignKey({
+      columns: [table.show_id, table.platform_id],
+      foreignColumns: [showPlatform.show_id, showPlatform.platform_id],
+    }),
     t.index("task_operator_id_idx").on(table.operator_id),
-    t.index("task_show_platform_id_idx").on(table.show_platform_id),
+    t.index("task_show_id_idx").on(table.show_id),
+    t.index("task_platform_id_idx").on(table.platform_id),
   ]
 );

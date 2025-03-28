@@ -9,12 +9,9 @@ import { showPlatform } from "./show-platform.schema";
 export const showPlatformReview = table(
   "show_platform_review",
   {
-    id: t.integer("id").primaryKey().generatedAlwaysAsIdentity(),
     uid: brandedUid(PREFIX.SHOW_REVIEW),
-    show_platform_id: t
-      .integer("show_platform_id")
-      .references(() => showPlatform.id)
-      .notNull(),
+    show_id: t.integer("show_id").notNull(),
+    platform_id: t.integer("platform_id").notNull(),
     reviewer_id: t
       .integer("reviewer_id")
       .references(() => user.id)
@@ -24,9 +21,15 @@ export const showPlatformReview = table(
     ...timestamps,
   },
   (table) => [
-    t
-      .index("show_platform_review_show_platform_id_idx")
-      .on(table.show_platform_id),
+    t.primaryKey({
+      columns: [table.show_id, table.platform_id, table.reviewer_id],
+    }),
+    t.foreignKey({
+      columns: [table.show_id, table.platform_id],
+      foreignColumns: [showPlatform.show_id, showPlatform.platform_id],
+    }),
+    t.index("show_platform_review_show_id_idx").on(table.show_id),
+    t.index("show_platform_review_platform_id_idx").on(table.platform_id),
     t.index("show_platform_review_reviewer_id_idx").on(table.reviewer_id),
   ]
 );

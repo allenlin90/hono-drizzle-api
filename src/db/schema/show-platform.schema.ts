@@ -17,7 +17,6 @@ import { PREFIX } from "@/constants";
 export const showPlatform = table(
   "show_platform",
   {
-    id: t.integer("id").primaryKey().generatedAlwaysAsIdentity(),
     uid: brandedUid(PREFIX.SHOW_PLATFORM),
     show_id: t
       .integer("show_id")
@@ -32,7 +31,7 @@ export const showPlatform = table(
     ...timestamps,
   },
   (table) => [
-    t.unique().on(table.show_id, table.platform_id),
+    t.primaryKey({ columns: [table.show_id, table.platform_id] }),
     t.index("show_platform_show_id_idx").on(table.show_id),
     t.index("show_platform_platform_id_idx").on(table.platform_id),
     t.index("show_platform_studio_room_id_idx").on(table.studio_room_id),
@@ -49,7 +48,6 @@ export const selectShowPlatformSchema = createSelectSchema(showPlatform)
     })
   )
   .omit({
-    id: true,
     show_id: true,
     platform_id: true,
     studio_room_id: true,

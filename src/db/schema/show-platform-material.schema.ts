@@ -8,10 +8,13 @@ import { brandMaterial } from "./brand-material.schema";
 export const showPlatformMaterial = table(
   "show_platform_material",
   {
-    id: t.integer("id").primaryKey().generatedAlwaysAsIdentity(),
-    show_platform_id: t
-      .integer("show_platform_id")
-      .references(() => showPlatform.id)
+    show_id: t
+      .integer("show_id")
+      // .references(() => showPlatform.show_id)
+      .notNull(),
+    platform_id: t
+      .integer("platform_id")
+      // .references(() => showPlatform.platform_id)
       .notNull(),
     brand_material_id: t
       .integer("brand_material_id")
@@ -20,10 +23,15 @@ export const showPlatformMaterial = table(
     ...timestamps,
   },
   (table) => [
-    t.unique().on(table.show_platform_id, table.brand_material_id),
-    t
-      .index("show_platform_material_show_platform_id_idx")
-      .on(table.show_platform_id),
+    t.primaryKey({
+      columns: [table.show_id, table.platform_id, table.brand_material_id],
+    }),
+    t.foreignKey({
+      columns: [table.show_id, table.platform_id],
+      foreignColumns: [showPlatform.show_id, showPlatform.platform_id],
+    }),
+    t.index("show_platform_material_show_id_idx").on(table.show_id),
+    t.index("show_platform_material_platform_idx").on(table.platform_id),
     t
       .index("show_platform_material_brand_material_id_idx")
       .on(table.brand_material_id),
