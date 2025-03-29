@@ -6,6 +6,8 @@ import {
   type PatchShowPlatformSchema,
 } from "@/db/schema/show-platform.schema";
 import { uidValidator } from "../helpers/uid-validators";
+import { showPlatformValidator } from "../helpers/show-platform-validator";
+import { PREFIX } from "@/constants";
 
 export interface ShowPlatformPayload {
   params: Omit<PatchShowPlatformSchema, "is_active">;
@@ -34,7 +36,13 @@ export const createShowPlatformPayloadSchema =
     showPlatformPayloadHandler
   );
 
-export const updateShowPlatformPayloadSchema =
+export const updateShowPlatformPayloadSchema = z.union([
   patchShowPlatformSchema.transform<ShowPlatformPayload>(
     showPlatformPayloadHandler
-  );
+  ),
+  showPlatformValidator(
+    z.object({
+      studio_room_uid: z.string().startsWith(PREFIX.STUDIO_ROOM).nullish(),
+    })
+  ),
+]);
