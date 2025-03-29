@@ -17,7 +17,6 @@ export const showPlatformSchema = createSelectSchema(showPlatform)
     })
   )
   .omit({
-    id: true,
     show_id: true,
     platform_id: true,
     studio_room_id: true,
