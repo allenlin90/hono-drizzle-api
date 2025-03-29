@@ -28,10 +28,12 @@ export const showPlatformMc = table(
     t.primaryKey({
       columns: [table.show_id, table.platform_id, table.mc_id],
     }),
-    t.foreignKey({
-      columns: [table.show_id, table.platform_id],
-      foreignColumns: [showPlatform.show_id, showPlatform.platform_id],
-    }),
+    t
+      .foreignKey({
+        columns: [table.show_id, table.platform_id],
+        foreignColumns: [showPlatform.show_id, showPlatform.platform_id],
+      })
+      .onUpdate("cascade"),
     t.index("show_platform_mc_show_id_idx").on(table.show_id),
     t.index("show_platform_mc_platform_id_idx").on(table.platform_id),
     t.index("show_platform_mc_mc_id_idx").on(table.mc_id),

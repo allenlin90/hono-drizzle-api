@@ -30,14 +30,16 @@ export const mcShowReview = table(
         table.reviewer_id,
       ],
     }),
-    t.foreignKey({
-      columns: [table.show_id, table.platform_id, table.mc_id],
-      foreignColumns: [
-        showPlatformMc.show_id,
-        showPlatformMc.platform_id,
-        showPlatformMc.mc_id,
-      ],
-    }),
+    t
+      .foreignKey({
+        columns: [table.show_id, table.platform_id, table.mc_id],
+        foreignColumns: [
+          showPlatformMc.show_id,
+          showPlatformMc.platform_id,
+          showPlatformMc.mc_id,
+        ],
+      })
+      .onUpdate("cascade"),
     t.index("mc_show_review_reviewer_id_idx").on(table.reviewer_id),
     t.index("mc_show_review_show_id_idx").on(table.show_id),
     t.index("mc_show_review_platform_id_idx").on(table.platform_id),
