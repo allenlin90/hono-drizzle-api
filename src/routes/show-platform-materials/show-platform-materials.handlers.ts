@@ -29,7 +29,7 @@ import {
 } from "@/db/schema";
 import { showPlatformMaterialSerializer } from "@/serializers/show-platform-material.serializer";
 import { selectShowPlatformMaterialSchema } from "@/db/schema/show-platform-material.schema";
-import { validateShowPlatformMaterialPatchPayload } from "@/helpers/show-platform-material/validatePatchPayload";
+import { validateShowPlatformMaterialPatchPayload } from "@/services/show-platform-material/validatePatchPayload";
 
 export const list: AppRouteHandler<ListRoute> = async (c) => {
   const {

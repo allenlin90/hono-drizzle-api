@@ -30,7 +30,7 @@ import {
 } from "@/db/schema";
 import { showPlatformMcSerializer } from "@/serializers/show-platform-mc.serializer";
 import { selectShowPlatformMcSchema } from "@/db/schema/show-platform-mc.schema";
-import { validateShowPlatformMcPatchPayload } from "@/helpers/show-platform-mc/validatePatchPayload";
+import { validateShowPlatformMcPatchPayload } from "@/services/show-platform-mc/validatePatchPayload";
 
 export const list: AppRouteHandler<ListRoute> = async (c) => {
   const { offset, limit, mc_name, start_time, end_time } = c.req.valid("query");
