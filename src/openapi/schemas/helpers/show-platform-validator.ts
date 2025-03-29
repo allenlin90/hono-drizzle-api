@@ -2,7 +2,7 @@ import { z } from "@hono/zod-openapi";
 import { PREFIX } from "@/constants";
 import { idValidators, uidValidator } from "./uid-validators";
 
-export const showPlatformValidator = <T extends z.AnyZodObject>(schema: T) => {
+export const showPlatformValidator = (schema: z.AnyZodObject) => {
   return z
     .object({
       show_platform_uid: z.string().startsWith(PREFIX.SHOW_PLATFORM),
