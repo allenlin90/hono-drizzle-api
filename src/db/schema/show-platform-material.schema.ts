@@ -6,6 +6,7 @@ import {
   createSelectSchema,
   createUpdateSchema,
 } from "drizzle-zod";
+import { isNull } from "drizzle-orm";
 
 import { PREFIX } from "@/constants";
 import { brandedUid, timestamps } from "../helpers/columns.helpers";
@@ -34,14 +35,22 @@ export const showPlatformMaterial = table(
         foreignColumns: [showPlatform.show_id, showPlatform.platform_id],
       })
       .onUpdate("cascade"),
-    t.index("show_platform_material_show_id_idx").on(table.show_id),
-    t.index("show_platform_material_platform_idx").on(table.platform_id),
+    t
+      .index("show_platform_material_show_id_idx")
+      .on(table.show_id)
+      .where(isNull(table.deleted_at)),
+    t
+      .index("show_platform_material_platform_idx")
+      .on(table.platform_id)
+      .where(isNull(table.deleted_at)),
     t
       .index("show_platform_material_show_id_platform_id_idx")
-      .on(table.show_id, table.platform_id),
+      .on(table.show_id, table.platform_id)
+      .where(isNull(table.deleted_at)),
     t
       .index("show_platform_material_brand_material_id_idx")
-      .on(table.brand_material_id),
+      .on(table.brand_material_id)
+      .where(isNull(table.deleted_at)),
   ]
 );
 

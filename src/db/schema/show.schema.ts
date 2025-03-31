@@ -6,6 +6,7 @@ import {
   createUpdateSchema,
 } from "drizzle-zod";
 import { z } from "@hono/zod-openapi";
+import { isNull } from "drizzle-orm";
 
 import { PREFIX } from "@/constants";
 import { brandedUid, timestamps } from "../helpers/columns.helpers";
@@ -26,10 +27,19 @@ export const show = table(
     ...timestamps,
   },
   (table) => [
-    t.index("show_name_idx").on(table.name),
-    t.index("show_brand_id_idx").on(table.brand_id),
-    t.index("show_start_time_idx").on(table.start_time),
-    t.index("show_end_time_idx").on(table.end_time),
+    t.index("show_name_idx").on(table.name).where(isNull(table.deleted_at)),
+    t
+      .index("show_brand_id_idx")
+      .on(table.brand_id)
+      .where(isNull(table.deleted_at)),
+    t
+      .index("show_start_time_idx")
+      .on(table.start_time)
+      .where(isNull(table.deleted_at)),
+    t
+      .index("show_end_time_idx")
+      .on(table.end_time)
+      .where(isNull(table.deleted_at)),
   ]
 );
 

@@ -1,5 +1,6 @@
 import { pgTable as table } from "drizzle-orm/pg-core";
 import * as t from "drizzle-orm/pg-core";
+import { isNull } from "drizzle-orm";
 
 import { PREFIX } from "@/constants";
 import { brandedUid, timestamps } from "../helpers/columns.helpers";
@@ -40,12 +41,25 @@ export const mcShowReview = table(
         ],
       })
       .onUpdate("cascade"),
-    t.index("mc_show_review_reviewer_id_idx").on(table.reviewer_id),
-    t.index("mc_show_review_show_id_idx").on(table.show_id),
-    t.index("mc_show_review_platform_id_idx").on(table.platform_id),
+    t
+      .index("mc_show_review_reviewer_id_idx")
+      .on(table.reviewer_id)
+      .where(isNull(table.deleted_at)),
+    t
+      .index("mc_show_review_show_id_idx")
+      .on(table.show_id)
+      .where(isNull(table.deleted_at)),
+    t
+      .index("mc_show_review_platform_id_idx")
+      .on(table.platform_id)
+      .where(isNull(table.deleted_at)),
     t
       .index("mc_show_review_show_id_platform_id_idx")
-      .on(table.show_id, table.platform_id),
-    t.index("mc_show_review_mc_id_idx").on(table.mc_id),
+      .on(table.show_id, table.platform_id)
+      .where(isNull(table.deleted_at)),
+    t
+      .index("mc_show_review_mc_id_idx")
+      .on(table.mc_id)
+      .where(isNull(table.deleted_at)),
   ]
 );

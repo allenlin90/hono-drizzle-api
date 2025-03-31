@@ -1,6 +1,7 @@
 import { pgTable as table } from "drizzle-orm/pg-core";
 import * as t from "drizzle-orm/pg-core";
 import { z } from "@hono/zod-openapi";
+import { isNull } from "drizzle-orm";
 
 import { brandedUid, timestamps } from "../helpers/columns.helpers";
 import { showPlatform } from "./show-platform.schema";
@@ -34,12 +35,22 @@ export const showPlatformMc = table(
         foreignColumns: [showPlatform.show_id, showPlatform.platform_id],
       })
       .onUpdate("cascade"),
-    t.index("show_platform_mc_show_id_idx").on(table.show_id),
-    t.index("show_platform_mc_platform_id_idx").on(table.platform_id),
+    t
+      .index("show_platform_mc_show_id_idx")
+      .on(table.show_id)
+      .where(isNull(table.deleted_at)),
+    t
+      .index("show_platform_mc_platform_id_idx")
+      .on(table.platform_id)
+      .where(isNull(table.deleted_at)),
     t
       .index("show_platform_mc_show_id_platform_id_idx")
-      .on(table.show_id, table.platform_id),
-    t.index("show_platform_mc_mc_id_idx").on(table.mc_id),
+      .on(table.show_id, table.platform_id)
+      .where(isNull(table.deleted_at)),
+    t
+      .index("show_platform_mc_mc_id_idx")
+      .on(table.mc_id)
+      .where(isNull(table.deleted_at)),
   ]
 );
 

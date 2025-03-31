@@ -1,6 +1,7 @@
 import { pgTable as table } from "drizzle-orm/pg-core";
 import * as t from "drizzle-orm/pg-core";
 import { z } from "@hono/zod-openapi";
+import { isNull } from "drizzle-orm";
 
 import { PREFIX } from "@/constants";
 import { generateRandomString } from "@/utils/generate-random-string";
@@ -27,7 +28,9 @@ export const user = table(
     ...timestamps,
   },
   (table) => {
-    return [t.index("user_name_idx").on(table.name)];
+    return [
+      t.index("user_name_idx").on(table.name).where(isNull(table.deleted_at)),
+    ];
   }
 );
 

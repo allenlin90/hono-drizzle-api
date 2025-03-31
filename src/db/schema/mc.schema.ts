@@ -10,6 +10,7 @@ import {
   createSelectSchema,
   createUpdateSchema,
 } from "drizzle-zod";
+import { isNull } from "drizzle-orm";
 
 export const mc = table(
   "mc",
@@ -21,8 +22,8 @@ export const mc = table(
     ...timestamps,
   },
   (table) => [
-    t.index("mc_name_idx").on(table.name),
-    t.index("mc_user_id_idx").on(table.user_id),
+    t.index("mc_name_idx").on(table.name).where(isNull(table.deleted_at)),
+    t.index("mc_user_id_idx").on(table.user_id).where(isNull(table.deleted_at)),
   ]
 );
 

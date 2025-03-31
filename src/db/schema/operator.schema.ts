@@ -6,6 +6,7 @@ import {
   createSelectSchema,
   createUpdateSchema,
 } from "drizzle-zod";
+import { isNull } from "drizzle-orm";
 
 import { PREFIX } from "@/constants";
 import { brandedUid, timestamps } from "../helpers/columns.helpers";
@@ -21,8 +22,11 @@ export const operator = table(
     ...timestamps,
   },
   (table) => [
-    t.index("operator_name_idx").on(table.name),
-    t.index("operator_user_id_idx").on(table.user_id),
+    t.index("operator_name_idx").on(table.name).where(isNull(table.deleted_at)),
+    t
+      .index("operator_user_id_idx")
+      .on(table.user_id)
+      .where(isNull(table.deleted_at)),
   ]
 );
 

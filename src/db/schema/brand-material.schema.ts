@@ -1,6 +1,7 @@
 import { pgTable as table } from "drizzle-orm/pg-core";
 import * as t from "drizzle-orm/pg-core";
 import { z } from "@hono/zod-openapi";
+import { isNull } from "drizzle-orm";
 
 import { brandedUid, timestamps } from "../helpers/columns.helpers";
 import { brand } from "./brand.schema";
@@ -36,9 +37,12 @@ export const brandMaterial = table(
   },
   (table) => [
     t.unique().on(table.brand_id, table.name),
-    t.index("brand_id_idx").on(table.id),
-    t.index("brand_name_idx").on(table.name),
-    t.index("brand_resource_url_idx").on(table.resource_url),
+    t.index("brand_id_idx").on(table.id).where(isNull(table.deleted_at)),
+    t.index("brand_name_idx").on(table.name).where(isNull(table.deleted_at)),
+    t
+      .index("brand_resource_url_idx")
+      .on(table.resource_url)
+      .where(isNull(table.deleted_at)),
   ]
 );
 

@@ -1,6 +1,7 @@
 import { pgTable as table } from "drizzle-orm/pg-core";
 import * as t from "drizzle-orm/pg-core";
 import { z } from "@hono/zod-openapi";
+import { isNull } from "drizzle-orm";
 
 import { PREFIX } from "@/constants";
 import { brandedUid, timestamps } from "../helpers/columns.helpers";
@@ -29,12 +30,27 @@ export const address = table(
     ...timestamps,
   },
   (table) => [
-    t.index("address_idx").on(table.address),
-    t.index("address_sub_district_idx").on(table.sub_district),
-    t.index("address_district_idx").on(table.district),
-    t.index("address_city_id_idx").on(table.city_id),
-    t.index("address_province_idx").on(table.province),
-    t.index("address_postcode_idx").on(table.postcode),
+    t.index("address_idx").on(table.address).where(isNull(table.deleted_at)),
+    t
+      .index("address_sub_district_idx")
+      .on(table.sub_district)
+      .where(isNull(table.deleted_at)),
+    t
+      .index("address_district_idx")
+      .on(table.district)
+      .where(isNull(table.deleted_at)),
+    t
+      .index("address_city_id_idx")
+      .on(table.city_id)
+      .where(isNull(table.deleted_at)),
+    t
+      .index("address_province_idx")
+      .on(table.province)
+      .where(isNull(table.deleted_at)),
+    t
+      .index("address_postcode_idx")
+      .on(table.postcode)
+      .where(isNull(table.deleted_at)),
   ]
 );
 

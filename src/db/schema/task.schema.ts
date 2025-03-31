@@ -1,5 +1,6 @@
 import { pgTable as table } from "drizzle-orm/pg-core";
 import * as t from "drizzle-orm/pg-core";
+import { isNull } from "drizzle-orm";
 
 import { PREFIX } from "@/constants";
 import { brandedUid, timestamps } from "../helpers/columns.helpers";
@@ -32,11 +33,21 @@ export const task = table(
       columns: [table.show_id, table.platform_id],
       foreignColumns: [showPlatform.show_id, showPlatform.platform_id],
     }),
-    t.index("task_operator_id_idx").on(table.operator_id),
-    t.index("task_show_id_idx").on(table.show_id),
+    t
+      .index("task_operator_id_idx")
+      .on(table.operator_id)
+      .where(isNull(table.deleted_at)),
+    t
+      .index("task_show_id_idx")
+      .on(table.show_id)
+      .where(isNull(table.deleted_at)),
     t
       .index("task_show_id_platform_id_idx")
-      .on(table.show_id, table.platform_id),
-    t.index("task_platform_id_idx").on(table.platform_id),
+      .on(table.show_id, table.platform_id)
+      .where(isNull(table.deleted_at)),
+    t
+      .index("task_platform_id_idx")
+      .on(table.platform_id)
+      .where(isNull(table.deleted_at)),
   ]
 );
