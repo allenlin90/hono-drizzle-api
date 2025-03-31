@@ -34,6 +34,9 @@ export const task = table(
     }),
     t.index("task_operator_id_idx").on(table.operator_id),
     t.index("task_show_id_idx").on(table.show_id),
+    t
+      .index("task_show_id_platform_id_idx")
+      .on(table.show_id, table.platform_id),
     t.index("task_platform_id_idx").on(table.platform_id),
   ]
 );

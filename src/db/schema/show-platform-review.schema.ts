@@ -32,6 +32,9 @@ export const showPlatformReview = table(
       .onUpdate("cascade"),
     t.index("show_platform_review_show_id_idx").on(table.show_id),
     t.index("show_platform_review_platform_id_idx").on(table.platform_id),
+    t
+      .index("show_platform_review_show_id_platform_id_idx")
+      .on(table.show_id, table.platform_id),
     t.index("show_platform_review_reviewer_id_idx").on(table.reviewer_id),
   ]
 );

@@ -37,6 +37,9 @@ export const showPlatformMaterial = table(
     t.index("show_platform_material_show_id_idx").on(table.show_id),
     t.index("show_platform_material_platform_idx").on(table.platform_id),
     t
+      .index("show_platform_material_show_id_platform_id_idx")
+      .on(table.show_id, table.platform_id),
+    t
       .index("show_platform_material_brand_material_id_idx")
       .on(table.brand_material_id),
   ]
