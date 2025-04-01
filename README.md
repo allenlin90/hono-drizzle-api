@@ -13,3 +13,10 @@ open http://localhost:3000
 - RESTful `show_platform_review`
 - RESTful `mc_show_review`
 - RESTful `task`
+
+# Engineering TODOs
+- [ ] CORS
+- [ ] Rate limiting
+- [ ] Helmet security headers
+- [ ] Unit tests
+- [ ] Integration tests
