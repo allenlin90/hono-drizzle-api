@@ -23,6 +23,7 @@ import {
   updateShowPlatformPayloadSchema,
 } from "@/openapi/schemas/show-platforms/show-platform-payload";
 import { ShowPlatformParamFiltersSchema } from "@/openapi/schemas/show-platforms/show-platform-param-filters";
+import { bulkUpsertShowPlatformPayloadSchema } from "@/openapi/schemas/show-platforms/show-platform-bulk-upsert-payload";
 
 const tags = ["Show Platforms"];
 
@@ -172,8 +173,41 @@ export const remove = createRoute({
   },
 });
 
+export const bulkUpsert = createRoute({
+  tags,
+  path: "/show-platforms/bulk",
+  method: "post",
+  request: {
+    headers: z.object({
+      "Idempotency-Key": z.string().openapi({
+        description: "key to ensure idempotency",
+        example: "123e4567-e89b-12d3-a456-426614174000",
+      }),
+    }),
+    body: jsonContentRequired(
+      bulkUpsertShowPlatformPayloadSchema,
+      "The list of show platforms to create"
+    ),
+  },
+  responses: {
+    [HttpStatusCodes.MULTI_STATUS]: jsonContent(
+      z.array(z.object({})), // TODO: update actual returning schema
+      "list of created show-platforms"
+    ),
+    [HttpStatusCodes.BAD_REQUEST]: jsonContent(
+      createMessageObjectSchema("Invalid idempotency key"),
+      "Invalid idempotency key"
+    ),
+    [HttpStatusCodes.NOT_FOUND]: jsonContent(
+      NotFoundSchema,
+      "Show-platform not found"
+    ),
+  },
+});
+
 export type ListRoute = typeof list;
 export type CreateRoute = typeof create;
 export type GetOneRoute = typeof getOne;
 export type PatchRoute = typeof patch;
 export type RemoveRoute = typeof remove;
+export type BulkUpsertRoute = typeof bulkUpsert;

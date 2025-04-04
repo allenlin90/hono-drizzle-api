@@ -1,5 +1,6 @@
 import type { AppRouteHandler } from "@/lib/types";
 import type {
+  BulkUpsertRoute,
   CreateRoute,
   GetOneRoute,
   ListRoute,
@@ -28,6 +29,7 @@ import {
 } from "@/db/schema";
 import { selectShowPlatformSchema } from "@/db/schema/show-platform.schema";
 import { showPlatformSerializer } from "@/serializers/show-platform.serializer";
+import { bulkUpsertShowPlatform } from "@/services/show-platform/bulk-upsert";
 
 export const list: AppRouteHandler<ListRoute> = async (c) => {
   const {
@@ -319,5 +321,16 @@ export const remove: AppRouteHandler<RemoveRoute> = async (c) => {
     );
   }
 
+  return c.body(null, HttpStatusCodes.NO_CONTENT);
+};
+
+export const bulkUpsert: AppRouteHandler<BulkUpsertRoute> = async (c) => {
+  const { show_platforms: showPlatforms } = c.req.valid("json");
+
+  try {
+    await bulkUpsertShowPlatform({ showPlatforms });
+  } catch (error: any) {}
+
+  // TODO: respond correctly
   return c.body(null, HttpStatusCodes.NO_CONTENT);
 };
