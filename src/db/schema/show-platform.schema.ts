@@ -29,6 +29,7 @@ export const showPlatform = table(
       .notNull(),
     studio_room_id: t.integer("studio_room_id").references(() => studioRoom.id),
     is_active: t.boolean("is_active").default(false).notNull(), // for show approval
+    alias_id: t.varchar("alias_id"), // in case the show has the other uid on a platform
     ...timestamps,
   },
   (table) => [
@@ -48,6 +49,10 @@ export const showPlatform = table(
     t
       .index("show_platform_studio_room_id_idx")
       .on(table.studio_room_id)
+      .where(isNull(table.deleted_at)),
+    t
+      .index("show_platform_alias_id_idx")
+      .on(table.alias_id)
       .where(isNull(table.deleted_at)),
   ]
 );
