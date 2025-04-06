@@ -182,24 +182,24 @@ await seed(db, tables).refine((r) => {
       },
     },
     showPlatform: {
-      count: 20,
+      count: 1000,
       columns: {
         uid: r.valuesFromArray({
-          values: Array.from({ length: 20 }, () =>
+          values: Array.from({ length: 1000 }, () =>
             generateBrandedUid(PREFIX.SHOW_PLATFORM)
           ),
         }),
-        show_id: r.int({ minValue: 1, maxValue: 20, isUnique: true }),
+        show_id: r.int({ minValue: 1, maxValue: 1000, isUnique: true }),
         platform_id: r.int({ minValue: 1, maxValue: 3 }),
         is_active: r.default({ defaultValue: true }),
         ...timestamps,
       },
     },
     show: {
-      count: 20,
+      count: 1000,
       columns: {
         uid: r.valuesFromArray({
-          values: Array.from({ length: 20 }, () =>
+          values: Array.from({ length: 1000 }, () =>
             generateBrandedUid(PREFIX.SHOW)
           ),
         }),
