@@ -1,5 +1,6 @@
 import type { AppRouteHandler } from "@/lib/types";
 import type {
+  BulkInsertRoute,
   CreateRoute,
   GetOneRoute,
   ListRoute,
@@ -19,7 +20,9 @@ import {
 import * as HttpStatusCodes from "@/http-status-codes";
 import db from "@/db";
 import { brand, show } from "@/db/schema";
-import { showSerializer } from "@/serializers/show.serializer";
+import { showSerializer } from "@/serializers/shows/show.serializer";
+import { bulkInsertShows } from "@/services/show/bulk-insert";
+import { showBulkSerializer } from "@/serializers/shows/show-bulk.serializer";
 
 export const list: AppRouteHandler<ListRoute> = async (c) => {
   const { offset, limit, brand_id, name, start_time, end_time } =
@@ -204,4 +207,22 @@ export const remove: AppRouteHandler<RemoveRoute> = async (c) => {
   }
 
   return c.body(null, HttpStatusCodes.NO_CONTENT);
+};
+
+export const bulkInsert: AppRouteHandler<BulkInsertRoute> = async (c) => {
+  const { shows } = c.req.valid("json");
+
+  const { errors, insertedShows, resolvedIds } = await bulkInsertShows({
+    shows,
+  });
+
+  const serializedShows = await showBulkSerializer({
+    insertedShows,
+    resolvedIds,
+  });
+
+  return c.json(
+    { errors, shows: serializedShows },
+    HttpStatusCodes.MULTI_STATUS
+  );
 };

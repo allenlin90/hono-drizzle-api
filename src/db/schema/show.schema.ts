@@ -56,23 +56,12 @@ export const selectShowSchema = createSelectSchema(show)
   });
 
 export const insertShowSchema = createInsertSchema(show)
-  .merge(z.object({ brand_uid: z.string().startsWith(PREFIX.BRAND) }))
-  .omit({
-    uid: true,
-    brand_id: true,
-    created_at: true,
-    updated_at: true,
-    deleted_at: true,
-  });
-
-export const patchShowSchema = createUpdateSchema(show, {
-  name: (schema) => schema.min(1).optional(),
-  start_time: (schema) => schema.datetime().optional(),
-  end_time: (schema) => schema.datetime().optional(),
-})
   .merge(
     z.object({
-      brand_uid: z.string().startsWith(PREFIX.BRAND).optional(),
+      brand_uid: z.string().startsWith(PREFIX.BRAND),
+      name: z.string().min(1),
+      start_time: z.string().datetime(),
+      end_time: z.string().datetime(),
     })
   )
   .omit({
@@ -81,7 +70,35 @@ export const patchShowSchema = createUpdateSchema(show, {
     created_at: true,
     updated_at: true,
     deleted_at: true,
+  })
+  .refine((data) => new Date(data.end_time) > new Date(data.start_time), {
+    message: "end_time must be later than start_time",
   });
+
+export const patchShowSchema = createUpdateSchema(show)
+  .merge(
+    z.object({
+      show_uid: z.string().startsWith(PREFIX.SHOW),
+      brand_uid: z.string().startsWith(PREFIX.BRAND).optional(),
+      name: z.string().min(1).optional(),
+      start_time: z.string().datetime().optional(),
+      end_time: z.string().datetime().optional(),
+    })
+  )
+  .omit({
+    uid: true,
+    brand_id: true,
+    created_at: true,
+    updated_at: true,
+    deleted_at: true,
+  })
+  .refine(
+    (data) =>
+      !data.start_time ||
+      !data.end_time ||
+      new Date(data.end_time) > new Date(data.start_time),
+    { message: "end_time must be later than start_time" }
+  );
 
 export type SelectShowSchema = z.infer<typeof selectShowSchema>;
 export type InsertShowSchema = z.infer<typeof insertShowSchema>;

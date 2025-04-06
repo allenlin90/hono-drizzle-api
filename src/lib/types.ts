@@ -13,3 +13,8 @@ export type AppRouteHandler<R extends RouteConfig> = RouteHandler<
   R,
   AppBindings
 >;
+
+// Utility to infer the type of values from a Map
+export type ValueOfMap<M extends Map<any, any>> = M extends Map<any, infer V>
+  ? V
+  : never;

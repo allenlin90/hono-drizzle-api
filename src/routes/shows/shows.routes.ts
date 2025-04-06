@@ -1,5 +1,7 @@
 import { createRoute, z } from "@hono/zod-openapi";
 import * as HttpStatusCodes from "@/http-status-codes";
+
+import { PREFIX } from "@/constants";
 import {
   insertShowSchema,
   patchShowSchema,
@@ -15,7 +17,6 @@ import { NotFoundSchema } from "@/openapi/schemas/not-found";
 import createMessageObjectSchema from "@/openapi/schemas/create-message-object";
 import { PaginatedObjectsSchema } from "@/openapi/schemas/paginated-objects";
 import { ShowParamFilters } from "@/openapi/schemas/shows/show-param-filters";
-import { PREFIX } from "@/constants";
 
 const tags = ["Shows"];
 
@@ -138,8 +139,47 @@ export const remove = createRoute({
   },
 });
 
+export const bulkInsert = createRoute({
+  tags,
+  path: "/shows/bulk",
+  method: "post",
+  request: {
+    headers: z.object({
+      "Idempotency-Key": z.string().openapi({
+        description: "key to ensure idempotency",
+        example: "123e4567-e89b-12d3-a456-426614174000",
+      }),
+    }),
+    body: jsonContentRequired(
+      z.object({
+        shows: z.array(insertShowSchema),
+      }),
+      "The list of shows to create"
+    ),
+  },
+  responses: {
+    [HttpStatusCodes.MULTI_STATUS]: jsonContent(
+      z.object({
+        errors: z.array(
+          z.object({
+            message: z.string(),
+            payload: insertShowSchema,
+          })
+        ),
+        shows: z.array(selectShowSchema),
+      }),
+      "list of created shows"
+    ),
+    [HttpStatusCodes.BAD_REQUEST]: jsonContent(
+      createMessageObjectSchema("Invalid idempotency key"),
+      "Invalid idempotency key"
+    ),
+  },
+});
+
 export type ListRoute = typeof list;
 export type CreateRoute = typeof create;
 export type GetOneRoute = typeof getOne;
 export type PatchRoute = typeof patch;
 export type RemoveRoute = typeof remove;
+export type BulkInsertRoute = typeof bulkInsert;
