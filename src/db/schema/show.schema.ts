@@ -79,11 +79,31 @@ export const insertShowSchema = createInsertSchema(show)
 export const patchShowSchema = createUpdateSchema(show)
   .merge(
     z.object({
+      brand_uid: z.string().startsWith(PREFIX.BRAND).optional(),
+      name: z.string().min(1).optional(),
+    })
+  )
+  .omit({
+    uid: true,
+    brand_id: true,
+    created_at: true,
+    updated_at: true,
+    deleted_at: true,
+  })
+  .refine(
+    (data) =>
+      !data.start_time ||
+      !data.end_time ||
+      new Date(data.end_time) > new Date(data.start_time),
+    { message: "end_time must be later than start_time" }
+  );
+
+export const patchBulkShowSchema = createUpdateSchema(show)
+  .merge(
+    z.object({
       show_uid: z.string().startsWith(PREFIX.SHOW),
       brand_uid: z.string().startsWith(PREFIX.BRAND).optional(),
       name: z.string().min(1).optional(),
-      start_time: z.string().datetime().optional(),
-      end_time: z.string().datetime().optional(),
     })
   )
   .omit({
@@ -104,3 +124,4 @@ export const patchShowSchema = createUpdateSchema(show)
 export type SelectShowSchema = z.infer<typeof selectShowSchema>;
 export type InsertShowSchema = z.infer<typeof insertShowSchema>;
 export type PatchShowSchema = z.infer<typeof patchShowSchema>;
+export type PatchBulkShowSchema = z.infer<typeof patchBulkShowSchema>;

@@ -4,6 +4,7 @@ import * as HttpStatusCodes from "@/http-status-codes";
 import { PREFIX } from "@/constants";
 import {
   insertShowSchema,
+  patchBulkShowSchema,
   patchShowSchema,
   selectShowSchema,
 } from "@/db/schema/show.schema";
@@ -177,9 +178,48 @@ export const bulkInsert = createRoute({
   },
 });
 
+export const bulkUpsert = createRoute({
+  tags,
+  path: "/shows/bulk",
+  method: "patch",
+  request: {
+    headers: z.object({
+      "Idempotency-Key": z.string().openapi({
+        description: "key to ensure idempotency",
+        example: "123e4567-e89b-12d3-a456-426614174000",
+      }),
+    }),
+    body: jsonContentRequired(
+      z.object({
+        shows: z.array(patchBulkShowSchema),
+      }),
+      "The list of shows to update"
+    ),
+  },
+  responses: {
+    [HttpStatusCodes.MULTI_STATUS]: jsonContent(
+      z.object({
+        errors: z.array(
+          z.object({
+            message: z.string(),
+            payload: patchBulkShowSchema,
+          })
+        ),
+        shows: z.array(selectShowSchema),
+      }),
+      "list of updated shows"
+    ),
+    [HttpStatusCodes.BAD_REQUEST]: jsonContent(
+      createMessageObjectSchema("Invalid idempotency key"),
+      "Invalid idempotency key"
+    ),
+  },
+});
+
 export type ListRoute = typeof list;
 export type CreateRoute = typeof create;
 export type GetOneRoute = typeof getOne;
 export type PatchRoute = typeof patch;
 export type RemoveRoute = typeof remove;
 export type BulkInsertRoute = typeof bulkInsert;
+export type BulkUpsertRoute = typeof bulkUpsert;
