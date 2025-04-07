@@ -67,10 +67,12 @@ const PLATFORMS = ["shopee", "lazada", "tiktok"];
 
 await reset(db, tables);
 await seed(db, tables).refine((r) => {
-  const now = new Date().toISOString();
+  const now = new Date();
+  const nowLater = new Date(now.getTime() + 1000 * 60 * 60 * 2); // 2 hours later
+  const nowStr = now.toISOString();
   const timestamps = {
-    created_at: r.default({ defaultValue: now }),
-    updated_at: r.default({ defaultValue: now }),
+    created_at: r.default({ defaultValue: nowStr }),
+    updated_at: r.default({ defaultValue: nowStr }),
     deleted_at: r.default({ defaultValue: null }),
   };
 
@@ -205,6 +207,8 @@ await seed(db, tables).refine((r) => {
         }),
         brand_id: r.int({ minValue: 1, maxValue: 5 }),
         name: r.valuesFromArray({ values: SHOW_NAMES }),
+        start_time: r.default({ defaultValue: nowStr }),
+        end_time: r.default({ defaultValue: nowLater.toISOString() }),
         ...timestamps,
       },
     },
