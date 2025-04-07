@@ -6,7 +6,7 @@ import {
   createUpdateSchema,
 } from "drizzle-zod";
 import { z } from "@hono/zod-openapi";
-import { isNull } from "drizzle-orm";
+import { isNull, sql } from "drizzle-orm";
 
 import { PREFIX } from "@/constants";
 import { brandedUid, timestamps } from "../helpers/columns.helpers";
@@ -27,6 +27,7 @@ export const show = table(
     ...timestamps,
   },
   (table) => [
+    t.check("show_time_check", sql`${table.end_time} > ${table.start_time}`),
     t.index("show_name_idx").on(table.name).where(isNull(table.deleted_at)),
     t
       .index("show_brand_id_idx")
