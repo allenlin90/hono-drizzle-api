@@ -181,7 +181,10 @@ async function resolveUIDs({
     .where(and(inArray(brand.uid, brandIds), isNull(brand.deleted_at)));
 
   const showsQuery = await db
-    .select({ ...getTableColumns(show) })
+    .select({
+      ...getTableColumns(show),
+      duration: sql<number>`EXTRACT(EPOCH FROM (${show.end_time} - ${show.start_time}))`, // duration in seconds
+    })
     .from(show)
     .where(and(inArray(show.uid, showIds), isNull(show.deleted_at)));
 
