@@ -4,8 +4,8 @@ import type { InsertShowPlatformMcSchema } from "@/db/schema/show-platform-mc.sc
 import { z } from "@hono/zod-openapi";
 
 import db from "@/db";
-import { and, eq, getTableColumns, inArray, isNull, sql } from "drizzle-orm";
-import { brand, mc, platform, show, showPlatformMc } from "@/db/schema";
+import { and, getTableColumns, inArray, isNull, sql } from "drizzle-orm";
+import { mc, platform, show, showPlatformMc } from "@/db/schema";
 
 type Error = { message: string; payload: InsertShowPlatformMcSchema };
 
@@ -123,19 +123,9 @@ async function resolveUIDs({
   const showsByUID = db
     .select({
       ...getTableColumns(show),
-      brand: {
-        ...getTableColumns(brand),
-      },
     })
     .from(show)
-    .innerJoin(brand, eq(show.brand_id, brand.id))
-    .where(
-      and(
-        inArray(show.uid, showIds),
-        isNull(show.deleted_at),
-        isNull(brand.deleted_at)
-      )
-    );
+    .where(and(inArray(show.uid, showIds), isNull(show.deleted_at)));
 
   const platformsByUID = db
     .select({ ...getTableColumns(platform) })
