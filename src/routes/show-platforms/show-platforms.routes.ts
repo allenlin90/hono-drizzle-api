@@ -4,8 +4,11 @@ import { createRoute, z } from "@hono/zod-openapi";
 
 import { PREFIX } from "@/constants";
 import * as HttpStatusCodes from "@/http-status-codes";
-import { showPlatformSchema } from "@/serializers/show-platform.serializer";
-import { selectShowPlatformSchema } from "@/db/schema/show-platform.schema";
+import { showPlatformSchema } from "@/serializers/show-platforms/show-platform.serializer";
+import {
+  insertShowPlatformSchema,
+  selectShowPlatformSchema,
+} from "@/db/schema/show-platform.schema";
 
 import { jsonContent } from "@/openapi/helpers/json-content";
 import { jsonContentOneOf } from "@/openapi/helpers/json-content-one-of";
@@ -23,7 +26,6 @@ import {
   updateShowPlatformPayloadSchema,
 } from "@/openapi/schemas/show-platforms/show-platform-payload";
 import { ShowPlatformParamFiltersSchema } from "@/openapi/schemas/show-platforms/show-platform-param-filters";
-import { bulkUpsertShowPlatformPayloadSchema } from "@/openapi/schemas/show-platforms/show-platform-bulk-upsert-payload";
 
 const tags = ["Show Platforms"];
 
@@ -173,7 +175,7 @@ export const remove = createRoute({
   },
 });
 
-export const bulkUpsert = createRoute({
+export const bulkInsert = createRoute({
   tags,
   path: "/show-platforms/bulk",
   method: "post",
@@ -185,22 +187,28 @@ export const bulkUpsert = createRoute({
       }),
     }),
     body: jsonContentRequired(
-      bulkUpsertShowPlatformPayloadSchema,
+      z.object({
+        show_platforms: z.array(insertShowPlatformSchema),
+      }),
       "The list of show platforms to create"
     ),
   },
   responses: {
     [HttpStatusCodes.MULTI_STATUS]: jsonContent(
-      z.array(z.object({})), // TODO: update actual returning schema
+      z.object({
+        errors: z.array(
+          z.object({
+            message: z.string(),
+            payload: insertShowPlatformSchema,
+          })
+        ),
+        showPlatforms: z.array(selectShowPlatformSchema),
+      }),
       "list of created show-platforms"
     ),
     [HttpStatusCodes.BAD_REQUEST]: jsonContent(
       createMessageObjectSchema("Invalid idempotency key"),
       "Invalid idempotency key"
-    ),
-    [HttpStatusCodes.NOT_FOUND]: jsonContent(
-      NotFoundSchema,
-      "Show-platform not found"
     ),
   },
 });
@@ -210,4 +218,4 @@ export type CreateRoute = typeof create;
 export type GetOneRoute = typeof getOne;
 export type PatchRoute = typeof patch;
 export type RemoveRoute = typeof remove;
-export type BulkUpsertRoute = typeof bulkUpsert;
+export type BulkInsertRoute = typeof bulkInsert;
