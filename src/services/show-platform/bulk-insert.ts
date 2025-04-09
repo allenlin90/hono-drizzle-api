@@ -29,6 +29,14 @@ export const bulkInsertShowPlatform = async ({
       showPlatforms,
     });
 
+  if (dataToInsert.length === 0) {
+    return {
+      errors,
+      resolvedIds,
+      insertedShowPlatforms: [],
+    };
+  }
+
   const insertedShowPlatforms = await db.transaction(async (tx) => {
     return tx
       .insert(showPlatform)

@@ -20,6 +20,14 @@ export const bulkInsertShows = async ({ shows }: BulkInsertShows) => {
     shows,
   });
 
+  if (dataToCreate.length === 0) {
+    return {
+      errors,
+      insertedShows: [],
+      resolvedIds,
+    };
+  }
+
   // TODO: handle insertion errors
   const insertedShows = await db.transaction(async (tx) => {
     return tx.insert(show).values(dataToCreate).returning();
