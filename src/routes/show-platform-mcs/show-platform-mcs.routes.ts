@@ -17,8 +17,11 @@ import { IdParams } from "@/openapi/schemas/id-params";
 import { PatchIdParams } from "@/openapi/schemas/patch-id-params";
 import { PaginatedObjectsSchema } from "@/openapi/schemas/paginated-objects";
 import { ShowPlatformMcParamFiltersSchema } from "@/openapi/schemas/show-platform-mcs/show-platform-mc-param-filters";
-import { showPlatformMcSchema } from "@/serializers/show-platform-mc.serializer";
-import { selectShowPlatformMcSchema } from "@/db/schema/show-platform-mc.schema";
+import { showPlatformMcSchema } from "@/serializers/show-platform-mcs/show-platform-mc.serializer";
+import {
+  insertShowPlatformMcSchema,
+  selectShowPlatformMcSchema,
+} from "@/db/schema/show-platform-mc.schema";
 import {
   createShowPlatformMcPayloadSchema,
   patchShowPlatformMcPayloadSchema,
@@ -158,8 +161,47 @@ export const remove = createRoute({
   },
 });
 
+export const bulkInsert = createRoute({
+  tags,
+  path: "/show-platform-mcs/bulk",
+  method: "post",
+  request: {
+    headers: z.object({
+      "Idempotency-Key": z.string().openapi({
+        description: "key to ensure idempotency",
+        example: "123e4567-e89b-12d3-a456-426614174000",
+      }),
+    }),
+    body: jsonContentRequired(
+      z.object({
+        show_platform_mcs: z.array(insertShowPlatformMcSchema),
+      }),
+      "The show-platform-mc to create"
+    ),
+  },
+  responses: {
+    [HttpStatusCodes.MULTI_STATUS]: jsonContent(
+      z.object({
+        errors: z.array(
+          z.object({
+            message: z.string(),
+            payload: insertShowPlatformMcSchema,
+          })
+        ),
+        show_platform_mcs: z.array(selectShowPlatformMcSchema),
+      }),
+      "list of created show-platform-mcs"
+    ),
+    [HttpStatusCodes.BAD_REQUEST]: jsonContent(
+      createMessageObjectSchema("Invalid idempotency key"),
+      "Invalid idempotency key"
+    ),
+  },
+});
+
 export type ListRoute = typeof list;
 export type CreateRoute = typeof create;
 export type GetOneRoute = typeof getOne;
 export type PatchRoute = typeof patch;
 export type RemoveRoute = typeof remove;
+export type BulkInsertRoute = typeof bulkInsert;
