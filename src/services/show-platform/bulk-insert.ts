@@ -25,7 +25,7 @@ export const bulkInsertShowPlatform = async ({
   showPlatforms,
 }: BulkUpsertShowPlatformArgs) => {
   const { errors, resolvedIds, dataToInsert } =
-    await validateUpsertShowPlatformPayload({
+    await validateInsertShowPlatformPayload({
       showPlatforms,
     });
 
@@ -54,7 +54,7 @@ export const bulkInsertShowPlatform = async ({
   };
 };
 
-async function validateUpsertShowPlatformPayload({
+async function validateInsertShowPlatformPayload({
   showPlatforms,
 }: BulkUpsertShowPlatformArgs) {
   const ids = getUniqueIds(showPlatforms);
