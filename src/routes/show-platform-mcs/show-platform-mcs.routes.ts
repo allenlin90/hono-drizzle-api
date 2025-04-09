@@ -20,6 +20,7 @@ import { ShowPlatformMcParamFiltersSchema } from "@/openapi/schemas/show-platfor
 import { showPlatformMcSchema } from "@/serializers/show-platform-mcs/show-platform-mc.serializer";
 import {
   insertShowPlatformMcSchema,
+  patchBulkShowPlatformMcSchema,
   selectShowPlatformMcSchema,
 } from "@/db/schema/show-platform-mc.schema";
 import {
@@ -199,9 +200,38 @@ export const bulkInsert = createRoute({
   },
 });
 
+export const bulkUpdate = createRoute({
+  tags,
+  path: "/show-platform-mcs/bulk",
+  method: "patch",
+  request: {
+    body: jsonContentRequired(
+      z.object({
+        show_platform_mcs: z.array(patchBulkShowPlatformMcSchema),
+      }),
+      "The list of show-platform-mc to update"
+    ),
+  },
+  responses: {
+    [HttpStatusCodes.MULTI_STATUS]: jsonContent(
+      z.object({
+        errors: z.array(
+          z.object({
+            message: z.string(),
+            payload: patchBulkShowPlatformMcSchema,
+          })
+        ),
+        show_platform_mcs: z.array(selectShowPlatformMcSchema),
+      }),
+      "list of updated show-platform-mcs"
+    ),
+  },
+});
+
 export type ListRoute = typeof list;
 export type CreateRoute = typeof create;
 export type GetOneRoute = typeof getOne;
 export type PatchRoute = typeof patch;
 export type RemoveRoute = typeof remove;
 export type BulkInsertRoute = typeof bulkInsert;
+export type BulkUpdateRoute = typeof bulkUpdate;

@@ -105,6 +105,10 @@ export const patchShowPlatformMcSchema = createUpdateSchema(showPlatformMc)
     deleted_at: true,
   });
 
+export const patchBulkShowPlatformMcSchema = patchShowPlatformMcSchema.extend({
+  show_platform_mc_uid: z.string().startsWith(PREFIX.SHOW_PLATFORM_MC),
+});
+
 export type SelectShowPlatformMcSchema = z.infer<
   typeof selectShowPlatformMcSchema
 >;
@@ -113,4 +117,7 @@ export type InsertShowPlatformMcSchema = z.infer<
 >;
 export type PatchShowPlatformMcSchema = z.infer<
   typeof patchShowPlatformMcSchema
+>;
+export type PatchBulkShowPlatformMcSchema = z.infer<
+  typeof patchBulkShowPlatformMcSchema
 >;

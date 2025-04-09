@@ -1,6 +1,7 @@
 import type { AppRouteHandler } from "@/lib/types";
 import type {
   BulkInsertRoute,
+  BulkUpdateRoute,
   CreateRoute,
   GetOneRoute,
   ListRoute,
@@ -32,6 +33,7 @@ import {
 import { selectShowPlatformMcSchema } from "@/db/schema/show-platform-mc.schema";
 import { validateShowPlatformMcPatchPayload } from "@/services/show-platform-mc/validatePatchPayload";
 import { bulkInsertShowPlatformMc } from "@/services/show-platform-mc/bulk-insert";
+import { bulkUpdateShowPlatformMc } from "@/services/show-platform-mc/bulk-update";
 import { showPlatformMcSerializer } from "@/serializers/show-platform-mcs/show-platform-mc.serializer";
 import { showPlatformMcBulkSerializer } from "@/serializers/show-platform-mcs/show-platform-mc-bulk.serializer";
 
@@ -350,6 +352,23 @@ export const bulkInsert: AppRouteHandler<BulkInsertRoute> = async (c) => {
 
   const serializedShowPlatformMcs = await showPlatformMcBulkSerializer({
     insertedShowPlatformMcs,
+    resolvedIds,
+  });
+
+  return c.json(
+    { errors, show_platform_mcs: serializedShowPlatformMcs },
+    HttpStatusCodes.MULTI_STATUS
+  );
+};
+
+export const bulkUpdate: AppRouteHandler<BulkUpdateRoute> = async (c) => {
+  const { show_platform_mcs: showPlatformMcs } = c.req.valid("json");
+
+  const { errors, resolvedIds, updatedShowPlatformMcs } =
+    await bulkUpdateShowPlatformMc({ showPlatformMcs });
+
+  const serializedShowPlatformMcs = await showPlatformMcBulkSerializer({
+    insertedShowPlatformMcs: updatedShowPlatformMcs,
     resolvedIds,
   });
 
