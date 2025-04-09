@@ -219,12 +219,6 @@ export const bulkUpdate = createRoute({
   path: "/show-platforms/bulk",
   method: "patch",
   request: {
-    headers: z.object({
-      "Idempotency-Key": z.string().openapi({
-        description: "key to ensure idempotency",
-        example: "123e4567-e89b-12d3-a456-426614174000",
-      }),
-    }),
     body: jsonContentRequired(
       z.object({
         show_platforms: z.array(patchBulkShowPlatformSchema),
@@ -244,10 +238,6 @@ export const bulkUpdate = createRoute({
         showPlatforms: z.array(selectShowPlatformSchema),
       }),
       "list of updated show-platforms"
-    ),
-    [HttpStatusCodes.BAD_REQUEST]: jsonContent(
-      createMessageObjectSchema("Invalid idempotency key"),
-      "Invalid idempotency key"
     ),
   },
 });
