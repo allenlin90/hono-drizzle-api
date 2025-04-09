@@ -7,6 +7,7 @@ import * as HttpStatusCodes from "@/http-status-codes";
 import { showPlatformSchema } from "@/serializers/show-platforms/show-platform.serializer";
 import {
   insertShowPlatformSchema,
+  patchBulkShowPlatformSchema,
   selectShowPlatformSchema,
 } from "@/db/schema/show-platform.schema";
 
@@ -213,9 +214,48 @@ export const bulkInsert = createRoute({
   },
 });
 
+export const bulkUpdate = createRoute({
+  tags,
+  path: "/show-platforms/bulk",
+  method: "patch",
+  request: {
+    headers: z.object({
+      "Idempotency-Key": z.string().openapi({
+        description: "key to ensure idempotency",
+        example: "123e4567-e89b-12d3-a456-426614174000",
+      }),
+    }),
+    body: jsonContentRequired(
+      z.object({
+        show_platforms: z.array(patchBulkShowPlatformSchema),
+      }),
+      "The list of show platforms to update"
+    ),
+  },
+  responses: {
+    [HttpStatusCodes.MULTI_STATUS]: jsonContent(
+      z.object({
+        errors: z.array(
+          z.object({
+            message: z.string(),
+            payload: patchBulkShowPlatformSchema,
+          })
+        ),
+        showPlatforms: z.array(selectShowPlatformSchema),
+      }),
+      "list of updated show-platforms"
+    ),
+    [HttpStatusCodes.BAD_REQUEST]: jsonContent(
+      createMessageObjectSchema("Invalid idempotency key"),
+      "Invalid idempotency key"
+    ),
+  },
+});
+
 export type ListRoute = typeof list;
 export type CreateRoute = typeof create;
 export type GetOneRoute = typeof getOne;
 export type PatchRoute = typeof patch;
 export type RemoveRoute = typeof remove;
 export type BulkInsertRoute = typeof bulkInsert;
+export type BulkUpdateRoute = typeof bulkUpdate;

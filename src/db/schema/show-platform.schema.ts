@@ -115,8 +115,15 @@ export const patchShowPlatformSchema = createUpdateSchema(showPlatform)
     deleted_at: true,
   });
 
+export const patchBulkShowPlatformSchema = patchShowPlatformSchema.extend({
+  show_platform_uid: z.string().startsWith(PREFIX.SHOW_PLATFORM),
+});
+
 export type SelectShowPlatformSchema = z.infer<typeof selectShowPlatformSchema>;
 export type InsertShowPlatformSchema = z.infer<typeof insertShowPlatformSchema>;
 export type PatchShowPlatformSchema = z.infer<typeof patchShowPlatformSchema>;
+export type PatchBulkShowPlatformSchema = z.infer<
+  typeof patchBulkShowPlatformSchema
+>;
 
 export type ShowPlatformSchema = typeof showPlatform.$inferSelect;

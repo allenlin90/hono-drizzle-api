@@ -1,6 +1,7 @@
 import type { AppRouteHandler } from "@/lib/types";
 import type {
   BulkInsertRoute,
+  BulkUpdateRoute,
   CreateRoute,
   GetOneRoute,
   ListRoute,
@@ -31,6 +32,7 @@ import { selectShowPlatformSchema } from "@/db/schema/show-platform.schema";
 import { bulkInsertShowPlatform } from "@/services/show-platform/bulk-insert";
 import { showPlatformSerializer } from "@/serializers/show-platforms/show-platform.serializer";
 import { showPlatformBulkSerializer } from "@/serializers/show-platforms/show-platform-bulk.serializer";
+import { bulkUpdateShowPlatform } from "@/services/show-platform/bulk-update";
 
 export const list: AppRouteHandler<ListRoute> = async (c) => {
   const {
@@ -343,6 +345,23 @@ export const bulkInsert: AppRouteHandler<BulkInsertRoute> = async (c) => {
       errors,
       showPlatforms: serializedShowPlatforms,
     },
+    HttpStatusCodes.MULTI_STATUS
+  );
+};
+
+export const bulkUpdate: AppRouteHandler<BulkUpdateRoute> = async (c) => {
+  const { show_platforms: showPlatforms } = c.req.valid("json");
+
+  const { errors, updatedShowPlatforms, resolvedIds } =
+    await bulkUpdateShowPlatform({ showPlatforms });
+
+  const serializedShowPlatforms = await showPlatformBulkSerializer({
+    insertedShowPlatforms: updatedShowPlatforms,
+    resolvedIds,
+  });
+
+  return c.json(
+    { errors, showPlatforms: serializedShowPlatforms },
     HttpStatusCodes.MULTI_STATUS
   );
 };
