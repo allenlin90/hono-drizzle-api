@@ -1,4 +1,6 @@
+import { cors } from "hono/cors";
 import { requestId } from "hono/request-id";
+import { secureHeaders } from "hono/secure-headers";
 
 import { OpenAPIHono } from "@hono/zod-openapi";
 import { type AppBindings } from "@/lib/types";
@@ -17,6 +19,8 @@ export const createRouter = () => {
 export const createApp = () => {
   const app = createRouter();
 
+  app.use("*", cors());
+  app.use("*", secureHeaders({}));
   app.use(requestId());
   // app.use(pinoLogger());
 
