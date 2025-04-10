@@ -1,16 +1,16 @@
+import { isNull, sql } from "drizzle-orm";
 import { pgTable as table } from "drizzle-orm/pg-core";
 import * as t from "drizzle-orm/pg-core";
 import { z } from "@hono/zod-openapi";
-import { isNull } from "drizzle-orm";
-
-import { PREFIX } from "@/constants";
-import { generateRandomString } from "@/utils/generate-random-string";
-import { brandedUid, timestamps } from "../helpers/columns.helpers";
 import {
   createInsertSchema,
   createSelectSchema,
   createUpdateSchema,
 } from "drizzle-zod";
+
+import { PREFIX } from "@/constants";
+import { generateRandomString } from "@/utils/generate-random-string";
+import { brandedUid, timestamps } from "../helpers/columns.helpers";
 
 export const user = table(
   "users",
@@ -30,6 +30,9 @@ export const user = table(
   (table) => {
     return [
       t.index("user_name_idx").on(table.name).where(isNull(table.deleted_at)),
+      t
+        .index("user_name_search_idx")
+        .using("gin", sql`to_tsvector('english', ${table.name})`),
     ];
   }
 );

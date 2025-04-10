@@ -1,16 +1,16 @@
+import { isNull, sql } from "drizzle-orm";
 import { pgTable as table } from "drizzle-orm/pg-core";
 import * as t from "drizzle-orm/pg-core";
 import { z } from "@hono/zod-openapi";
-
-import { PREFIX } from "@/constants";
-import { brandedUid, timestamps } from "../helpers/columns.helpers";
-import { user } from "./user.schema";
 import {
   createInsertSchema,
   createSelectSchema,
   createUpdateSchema,
 } from "drizzle-zod";
-import { isNull } from "drizzle-orm";
+
+import { PREFIX } from "@/constants";
+import { brandedUid, timestamps } from "../helpers/columns.helpers";
+import { user } from "./user.schema";
 
 export const mc = table(
   "mc",
@@ -24,6 +24,9 @@ export const mc = table(
   (table) => [
     t.index("mc_name_idx").on(table.name).where(isNull(table.deleted_at)),
     t.index("mc_user_id_idx").on(table.user_id).where(isNull(table.deleted_at)),
+    t
+      .index("mc_name_search_idx")
+      .using("gin", sql`to_tsvector('english', ${table.name})`),
   ]
 );
 

@@ -1,21 +1,31 @@
+import { isNull, sql } from "drizzle-orm";
 import { pgTable as table } from "drizzle-orm/pg-core";
 import * as t from "drizzle-orm/pg-core";
+import { z } from "@hono/zod-openapi";
 import {
   createInsertSchema,
   createSelectSchema,
   createUpdateSchema,
 } from "drizzle-zod";
-import { z } from "@hono/zod-openapi";
 
 import { PREFIX } from "@/constants";
 import { brandedUid, timestamps } from "../helpers/columns.helpers";
 
-export const brand = table("brand", {
-  id: t.integer("id").primaryKey().generatedAlwaysAsIdentity(),
-  uid: brandedUid(PREFIX.BRAND),
-  name: t.varchar("name").unique().notNull(),
-  ...timestamps,
-});
+export const brand = table(
+  "brand",
+  {
+    id: t.integer("id").primaryKey().generatedAlwaysAsIdentity(),
+    uid: brandedUid(PREFIX.BRAND),
+    name: t.varchar("name").unique().notNull(),
+    ...timestamps,
+  },
+  (table) => [
+    t.index("brand_name_idx").on(table.name).where(isNull(table.deleted_at)),
+    t
+      .index("brand_name_search_idx")
+      .using("gin", sql`to_tsvector('english', ${table.name})`),
+  ]
+);
 
 export const selectBrandSchema = createSelectSchema(brand).omit({
   id: true,

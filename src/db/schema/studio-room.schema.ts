@@ -1,16 +1,16 @@
+import { isNull, sql } from "drizzle-orm";
 import { pgTable as table } from "drizzle-orm/pg-core";
 import * as t from "drizzle-orm/pg-core";
 import { z } from "@hono/zod-openapi";
-import { isNull } from "drizzle-orm";
-
-import { PREFIX } from "@/constants";
-import { brandedUid, timestamps } from "../helpers/columns.helpers";
-import { studio } from "./studio.schema";
 import {
   createInsertSchema,
   createSelectSchema,
   createUpdateSchema,
 } from "drizzle-zod";
+
+import { PREFIX } from "@/constants";
+import { brandedUid, timestamps } from "../helpers/columns.helpers";
+import { studio } from "./studio.schema";
 
 export const roomTypeEnum = t.pgEnum("studio_room_type", ["s", "m", "l"]);
 
@@ -40,6 +40,9 @@ export const studioRoom = table(
       .index("studio_room_type_idx")
       .on(table.type)
       .where(isNull(table.deleted_at)),
+    t
+      .index("studio_room_name_search_idx")
+      .using("gin", sql`to_tsvector('english', ${table.name})`),
   ]
 );
 
