@@ -9,3 +9,5 @@ export type AuthPayload = JWTPayload &
   User & {
     memberships?: Member[];
   };
+
+export type Role = 'owner' | 'admin' | 'member' | 'guest';
