@@ -4,8 +4,9 @@ import type { AuthPayload } from '@/lib/auth/types';
 
 export type AppBindings = {
   Variables: {
-    logger: PinoLogger;
+    isAdmin?: boolean;
     jwtPayload?: AuthPayload;
+    logger: PinoLogger;
   };
 };
 

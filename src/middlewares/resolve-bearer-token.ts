@@ -1,6 +1,7 @@
 import * as jose from 'jose';
 import { createMiddleware } from 'hono/factory';
 
+import env from '@/env';
 import type { AppBindings } from '@/lib/types';
 import type { AuthPayload } from '@/lib/auth/types';
 import * as httpStatusCodes from '@/http-status-codes';
@@ -11,18 +12,24 @@ const jwks = jose.createRemoteJWKSet(authHost);
 
 export const resolveBearerToken = createMiddleware<AppBindings>(
   async (c, next) => {
-    const token = c.req.header('Authorization')?.split(' ')?.[1];
+    const authorizationHeader = c.req.header('Authorization');
+    const token = authorizationHeader?.split(' ')?.[1];
 
-    if (token) {
-      try {
+    if (!token) {
+      await next();
+      return;
+    }
+
+    try {
+      if (env.ADMIN_TOKEN?.includes(token)) {
+        c.set('isAdmin', true);
+      } else {
         const { payload } = await jose.jwtVerify(token, jwks);
         c.set('jwtPayload', payload as AuthPayload);
-      } catch (error: any) {
-        return c.json(
-          { message: error?.message },
-          httpStatusCodes.UNAUTHORIZED
-        );
       }
+    } catch (error: any) {
+      const errorMessage = error?.message || 'Invalid token';
+      return c.json({ message: errorMessage }, httpStatusCodes.UNAUTHORIZED);
     }
 
     await next();
