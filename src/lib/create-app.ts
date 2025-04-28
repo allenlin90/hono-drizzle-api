@@ -20,7 +20,21 @@ export const createRouter = () => {
 export const createApp = () => {
   const app = createRouter();
 
-  app.use('*', cors());
+  app.use(
+    '*',
+    cors({
+      origin: [
+        'http://localhost',
+        'http://localhost:3000',
+        'http://localhost:3001',
+        'http://localhost:4173',
+        'http://localhost:5173',
+      ],
+      allowHeaders: ['Content-Type', 'Authorization'],
+      allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+      credentials: true,
+    })
+  );
   app.use('*', secureHeaders({}));
   app.use(requestId());
   // app.use(pinoLogger());
