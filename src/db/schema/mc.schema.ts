@@ -22,6 +22,7 @@ export const mc = table(
     ...timestamps,
   },
   (table) => [
+    t.unique().on(table.user_id),
     t.index("mc_name_idx").on(table.name).where(isNull(table.deleted_at)),
     t.index("mc_user_id_idx").on(table.user_id).where(isNull(table.deleted_at)),
     t

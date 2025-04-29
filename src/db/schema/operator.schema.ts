@@ -22,6 +22,7 @@ export const operator = table(
     ...timestamps,
   },
   (table) => [
+    t.unique().on(table.user_id),
     t.index("operator_name_idx").on(table.name).where(isNull(table.deleted_at)),
     t
       .index("operator_user_id_idx")
