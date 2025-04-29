@@ -11,7 +11,7 @@ import * as HttpStatusCodes from "@/http-status-codes";
 import * as HttpStatusPhrases from "@/http-status-phrases";
 import db from "@/db";
 import { city } from "@/db/schema";
-import { citySerializer } from "@/serializers/city.serializer";
+import { citySerializer } from "@/serializers/admin/city.serializer";
 
 export const list: AppRouteHandler<ListRoute> = async (c) => {
   const { offset, limit, name } = c.req.valid("query");

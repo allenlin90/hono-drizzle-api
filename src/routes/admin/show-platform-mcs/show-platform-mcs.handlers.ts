@@ -34,8 +34,8 @@ import { selectShowPlatformMcSchema } from "@/db/schema/show-platform-mc.schema"
 import { validateShowPlatformMcPatchPayload } from "@/services/show-platform-mc/validatePatchPayload";
 import { bulkInsertShowPlatformMc } from "@/services/show-platform-mc/bulk-insert";
 import { bulkUpdateShowPlatformMc } from "@/services/show-platform-mc/bulk-update";
-import { showPlatformMcSerializer } from "@/serializers/show-platform-mcs/show-platform-mc.serializer";
-import { showPlatformMcBulkSerializer } from "@/serializers/show-platform-mcs/show-platform-mc-bulk.serializer";
+import { showPlatformMcSerializer } from "@/serializers/admin/show-platform-mcs/show-platform-mc.serializer";
+import { showPlatformMcBulkSerializer } from "@/serializers/admin/show-platform-mcs/show-platform-mc-bulk.serializer";
 
 export const list: AppRouteHandler<ListRoute> = async (c) => {
   const { offset, limit, mc_name, start_time, end_time } = c.req.valid("query");

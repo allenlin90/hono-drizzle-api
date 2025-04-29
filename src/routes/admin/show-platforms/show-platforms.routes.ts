@@ -4,7 +4,7 @@ import { createRoute, z } from "@hono/zod-openapi";
 
 import { PREFIX } from "@/constants";
 import * as HttpStatusCodes from "@/http-status-codes";
-import { showPlatformSchema } from "@/serializers/show-platforms/show-platform.serializer";
+import { showPlatformSchema } from "@/serializers/admin/show-platforms/show-platform.serializer";
 import {
   insertShowPlatformSchema,
   patchBulkShowPlatformSchema,

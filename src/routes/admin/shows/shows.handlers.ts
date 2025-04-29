@@ -21,9 +21,9 @@ import {
 import * as HttpStatusCodes from "@/http-status-codes";
 import db from "@/db";
 import { brand, show } from "@/db/schema";
-import { showSerializer } from "@/serializers/shows/show.serializer";
+import { showSerializer } from "@/serializers/admin/shows/show.serializer";
 import { bulkInsertShows } from "@/services/show/bulk-insert";
-import { showBulkSerializer } from "@/serializers/shows/show-bulk.serializer";
+import { showBulkSerializer } from "@/serializers/admin/shows/show-bulk.serializer";
 import { bulkUpsertShows } from "@/services/show/bulk-upsert";
 
 export const list: AppRouteHandler<ListRoute> = async (c) => {
@@ -140,7 +140,7 @@ export const patch: AppRouteHandler<PatchRoute> = async (c) => {
   const { id: show_uid } = c.req.valid("param");
   const payload = c.req.valid("json");
 
-  let selectBrand: { id: number } | null = null;
+  let selectBrand: { id: number; } | null = null;
   let byBrandUid = payload.brand_uid
     ? eq(brand.uid, payload.brand_uid)
     : undefined;

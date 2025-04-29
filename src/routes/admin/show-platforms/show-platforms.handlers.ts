@@ -30,8 +30,8 @@ import {
 } from "@/db/schema";
 import { selectShowPlatformSchema } from "@/db/schema/show-platform.schema";
 import { bulkInsertShowPlatform } from "@/services/show-platform/bulk-insert";
-import { showPlatformSerializer } from "@/serializers/show-platforms/show-platform.serializer";
-import { showPlatformBulkSerializer } from "@/serializers/show-platforms/show-platform-bulk.serializer";
+import { showPlatformSerializer } from "@/serializers/admin/show-platforms/show-platform.serializer";
+import { showPlatformBulkSerializer } from "@/serializers/admin/show-platforms/show-platform-bulk.serializer";
 import { bulkUpdateShowPlatform } from "@/services/show-platform/bulk-update";
 
 export const list: AppRouteHandler<ListRoute> = async (c) => {

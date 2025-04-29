@@ -18,7 +18,7 @@ import {
 import * as HttpStatusCodes from "@/http-status-codes";
 import db from "@/db";
 import { address, city } from "@/db/schema";
-import { addressSerializer } from "@/serializers/address.serializer";
+import { addressSerializer } from "@/serializers/admin/address.serializer";
 
 export const list: AppRouteHandler<ListRoute> = async (c) => {
   const {
@@ -153,7 +153,7 @@ export const patch: AppRouteHandler<PatchRoute> = async (c) => {
   const { id: address_id } = c.req.valid("param");
   const payload = c.req.valid("json");
 
-  let selectCity: { id: number } | null = null;
+  let selectCity: { id: number; } | null = null;
   let byCityUid = payload.city_uid ? eq(city.uid, payload.city_uid) : undefined;
 
   if (payload.city_uid) {

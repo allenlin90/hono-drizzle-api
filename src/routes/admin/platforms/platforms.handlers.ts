@@ -4,7 +4,7 @@ import * as HttpStatusCodes from "@/http-status-codes";
 import * as HttpStatusPhrases from "@/http-status-phrases";
 import db from "@/db";
 import { platform } from "@/db/schema";
-import platformSerializer from "@/serializers/platform.serializer";
+import platformSerializer from "@/serializers/admin/platform.serializer";
 import type {
   CreateRoute,
   GetOneRoute,

@@ -19,7 +19,7 @@ import {
 import * as HttpStatusCodes from "@/http-status-codes";
 import db from "@/db";
 import { address, studio } from "@/db/schema";
-import { studioSerializer } from "@/serializers/studio.serializer";
+import { studioSerializer } from "@/serializers/admin/studio.serializer";
 
 export const list: AppRouteHandler<ListRoute> = async (c) => {
   const { offset, limit, name, address_id } = c.req.valid("query");
@@ -72,7 +72,7 @@ export const list: AppRouteHandler<ListRoute> = async (c) => {
 export const create: AppRouteHandler<CreateRoute> = async (c) => {
   const payload = c.req.valid("json");
 
-  let selectAddress: { id: number } | null = null;
+  let selectAddress: { id: number; } | null = null;
 
   if (payload.address_uid) {
     const queryResult = await db
@@ -162,7 +162,7 @@ export const patch: AppRouteHandler<PatchRoute> = async (c) => {
   const { id: studio_id } = c.req.valid("param");
   const payload = c.req.valid("json");
 
-  let selectAddress: { id: number } | null = null;
+  let selectAddress: { id: number; } | null = null;
   let byAddressUid = payload.address_uid
     ? eq(address.uid, payload.address_uid)
     : undefined;

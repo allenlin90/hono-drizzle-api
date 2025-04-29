@@ -11,7 +11,7 @@ import db from "@/db";
 import { user } from "@/db/schema";
 import * as HttpStatusCodes from "@/http-status-codes";
 import * as HttpStatusPhrases from "@/http-status-phrases";
-import { userSerializer } from "@/serializers/user.serializer";
+import { userSerializer } from "@/serializers/admin/user.serializer";
 
 export const list: AppRouteHandler<ListRoute> = async (c) => {
   const { offset, limit, email, name } = c.req.valid("query");

@@ -18,7 +18,7 @@ import {
 import * as HttpStatusCodes from "@/http-status-codes";
 import db from "@/db";
 import { mc, user } from "@/db/schema";
-import { mcSerializer } from "@/serializers/mc.serializer";
+import { mcSerializer } from "@/serializers/admin/mc.serializer";
 
 export const list: AppRouteHandler<ListRoute> = async (c) => {
   const { offset, limit, name, user_id } = c.req.valid("query");
@@ -64,7 +64,7 @@ export const list: AppRouteHandler<ListRoute> = async (c) => {
 export const create: AppRouteHandler<CreateRoute> = async (c) => {
   const payload = c.req.valid("json");
 
-  let selectUser: { id: number } | null = null;
+  let selectUser: { id: number; } | null = null;
 
   if (payload.user_uid) {
     const queryResult = await db
@@ -128,7 +128,7 @@ export const patch: AppRouteHandler<PatchRoute> = async (c) => {
   const { id: mc_uid } = c.req.valid("param");
   const payload = c.req.valid("json");
 
-  let selectUser: { id: number } | null = null;
+  let selectUser: { id: number; } | null = null;
   let byUserUid = payload.user_uid ? eq(user.uid, payload.user_uid) : undefined;
 
   if (payload.user_uid) {

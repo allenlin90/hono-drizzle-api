@@ -17,7 +17,7 @@ import { IdParams } from "@/openapi/schemas/id-params";
 import { PatchIdParams } from "@/openapi/schemas/patch-id-params";
 import { PaginatedObjectsSchema } from "@/openapi/schemas/paginated-objects";
 import { ShowPlatformMcParamFiltersSchema } from "@/openapi/schemas/show-platform-mcs/show-platform-mc-param-filters";
-import { showPlatformMcSchema } from "@/serializers/show-platform-mcs/show-platform-mc.serializer";
+import { showPlatformMcSchema } from "@/serializers/admin/show-platform-mcs/show-platform-mc.serializer";
 import {
   insertShowPlatformMcSchema,
   patchBulkShowPlatformMcSchema,

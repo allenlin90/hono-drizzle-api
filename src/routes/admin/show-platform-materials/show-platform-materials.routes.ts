@@ -16,7 +16,7 @@ import { PatchIdParams } from "@/openapi/schemas/patch-id-params";
 import { PaginatedObjectsSchema } from "@/openapi/schemas/paginated-objects";
 
 import { ShowPlatformMaterialParamFiltersSchema } from "@/openapi/schemas/show-platform-materials/show-platform-material-param-filters";
-import { showPlatformMaterialSchema } from "@/serializers/show-platform-material.serializer";
+import { showPlatformMaterialSchema } from "@/serializers/admin/show-platform-material.serializer";
 import {
   createShowPlatformMaterialPayloadSchema,
   patchShowPlatformMaterialPayloadSchema,

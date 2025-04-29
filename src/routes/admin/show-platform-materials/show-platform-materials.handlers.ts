@@ -27,7 +27,7 @@ import {
   show,
   showPlatformMaterial,
 } from "@/db/schema";
-import { showPlatformMaterialSerializer } from "@/serializers/show-platform-material.serializer";
+import { showPlatformMaterialSerializer } from "@/serializers/admin/show-platform-material.serializer";
 import { selectShowPlatformMaterialSchema } from "@/db/schema/show-platform-material.schema";
 import { validateShowPlatformMaterialPatchPayload } from "@/services/show-platform-material/validatePatchPayload";
 

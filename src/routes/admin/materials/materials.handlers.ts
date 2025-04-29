@@ -10,7 +10,7 @@ import { and, count, eq, getTableColumns, ilike, isNull } from "drizzle-orm";
 import * as HttpStatusCodes from "@/http-status-codes";
 import db from "@/db";
 import { brand, brandMaterial } from "@/db/schema";
-import { brandMaterialSerializer } from "@/serializers/brand-material.serializer";
+import { brandMaterialSerializer } from "@/serializers/admin/brand-material.serializer";
 
 export const list: AppRouteHandler<ListRoute> = async (c) => {
   const { offset, limit, brand_id, name, type, is_active } =
@@ -130,7 +130,7 @@ export const patch: AppRouteHandler<PatchRoute> = async (c) => {
   const { id: brand_material_uid } = c.req.valid("param");
   const payload = c.req.valid("json");
 
-  let selectBrand: { id: number } | null = null;
+  let selectBrand: { id: number; } | null = null;
   let byBrandUid = payload.brand_uid
     ? eq(brand.uid, payload.brand_uid)
     : undefined;

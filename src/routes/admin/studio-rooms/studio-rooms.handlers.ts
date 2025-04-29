@@ -18,7 +18,7 @@ import {
 import * as HttpStatusCodes from "@/http-status-codes";
 import db from "@/db";
 import { studioRoom, studio } from "@/db/schema";
-import { studioRoomSerializer } from "@/serializers/studio-room.serializer";
+import { studioRoomSerializer } from "@/serializers/admin/studio-room.serializer";
 
 export const list: AppRouteHandler<ListRoute> = async (c) => {
   const { offset, limit, name, studio_id, room_type } = c.req.valid("query");
@@ -136,7 +136,7 @@ export const patch: AppRouteHandler<PatchRoute> = async (c) => {
   const { id: studio_room_id } = c.req.valid("param");
   const payload = c.req.valid("json");
 
-  let selectStudio: { id: number } | null = null;
+  let selectStudio: { id: number; } | null = null;
   let byStudioUid = payload.studio_uid
     ? eq(studio.uid, payload.studio_uid)
     : undefined;
