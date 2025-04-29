@@ -46,7 +46,6 @@ export const list: AppRouteHandler<ListRoute> = async (c) => {
 export const create: AppRouteHandler<CreateRoute> = async (c) => {
   const payload = c.req.valid("json");
 
-  // TODO: retrieve clerk_uid from context
   const [inserted] = await db
     .insert(user)
     .values({ ...payload })
