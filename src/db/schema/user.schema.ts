@@ -47,9 +47,9 @@ export const selectUserSchema = createSelectSchema(user).omit({
 export const insertUserSchema = createInsertSchema(user, {
   name: z.string().min(1),
   email: z.string().email(),
+  clerk_uid: z.string().min(1).optional(),
 }).omit({
   uid: true,
-  clerk_uid: true,
   password: true,
   created_at: true,
   updated_at: true,
