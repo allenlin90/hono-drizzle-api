@@ -14,6 +14,7 @@ import { PaginatedObjectsSchema } from "@/openapi/schemas/paginated-objects";
 import { IdParams } from "@/openapi/schemas/id-params";
 import { NotFoundSchema } from "@/openapi/schemas/not-found";
 import { UserParamFilters } from "@/openapi/schemas/users/user-param-filter";
+import UnauthorizedSchema from "@/openapi/schemas/unauthorized";
 
 const tags = ["Users"];
 
@@ -47,6 +48,7 @@ export const create = createRoute({
       selectUserSchema,
       "The created user"
     ),
+    [HttpStatusCodes.UNAUTHORIZED]: jsonContent(UnauthorizedSchema, 'Unauthorized'),
     [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContent(
       createErrorSchema(insertUserSchema),
       "The validation error"
