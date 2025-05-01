@@ -12,7 +12,7 @@ import { ShowPlatformParamFiltersSchema } from "@/openapi/schemas/show-platforms
 import { createErrorSchema } from "@/openapi/schemas/create-error-schema";
 import { IdParams } from "@/openapi/schemas/id-params";
 
-import { showTransformer } from "@/serializers/api/shows/show.serializer";
+import { showDetailsTransformer, showTransformer } from "@/serializers/api/shows/show.serializer";
 
 const tags = ["Shows"];
 
@@ -51,7 +51,7 @@ export const getOne = createRoute({
   },
   responses: {
     [HttpStatusCodes.OK]: jsonContent(
-      showTransformer,
+      showDetailsTransformer,
       "The requested show"
     ),
     [HttpStatusCodes.NOT_FOUND]: jsonContent(

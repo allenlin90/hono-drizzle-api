@@ -5,7 +5,7 @@ import { and, count, desc, eq, getTableColumns, gte, ilike, isNull, lte, or, sql
 import * as HttpStatusCodes from "@/http-status-codes";
 import db from "@/db";
 import { brand, brandMaterial, mc, platform, show, showPlatform, showPlatformMaterial, showPlatformMc, studio, studioRoom, user } from "@/db/schema";
-import { showDetailsSerializer, showSerializer } from "@/serializers/api/shows/show.serializer";
+import { showDetailsSerializer, showSerializer, type BrandMaterialSchema } from "@/serializers/api/shows/show.serializer";
 
 export const list: AppRouteHandler<ListRoute> = async (c) => {
   const {
@@ -147,16 +147,21 @@ export const getOne: AppRouteHandler<GetOneRoute> = async (c) => {
       show: { ...getTableColumns(show) },
       studio_room: { ...getTableColumns(studioRoom) },
       studio: { ...getTableColumns(studio) },
-      materials: sql
-        `json_agg(json_build_object(
-          'show_id', ${showPlatformMaterial.show_id},
-          'platform_id', ${showPlatformMaterial.platform_id},
-          'brand_material_id', ${showPlatformMaterial.brand_material_id},
-          'type', ${brandMaterial.type},
-          'name', ${brandMaterial.name},
-          'description', ${brandMaterial.description},
-          'resource_url', ${brandMaterial.resource_url}
-        )) FILTER (WHERE ${showPlatformMaterial.deleted_at} IS NULL AND ${brandMaterial.is_active} IS TRUE)`,
+      materials: sql<BrandMaterialSchema[]>
+        `COALESCE(
+          json_agg(
+            json_build_object(
+              'uid', ${brandMaterial.uid},
+              'show_id', ${showPlatformMaterial.show_id},
+              'platform_id', ${showPlatformMaterial.platform_id},
+              'brand_material_id', ${showPlatformMaterial.brand_material_id},
+              'type', ${brandMaterial.type},
+              'name', ${brandMaterial.name},
+              'description', ${brandMaterial.description},
+              'resource_url', ${brandMaterial.resource_url}
+            )
+          ) FILTER (WHERE ${showPlatformMaterial.deleted_at} IS NULL AND ${brandMaterial.is_active} IS TRUE), '[]'::json
+        )`,
     })
     .from(showPlatformMc)
     .innerJoin(showPlatform,
@@ -172,12 +177,12 @@ export const getOne: AppRouteHandler<GetOneRoute> = async (c) => {
     .innerJoin(platform, and(eq(showPlatformMc.platform_id, platform.id),))
     .leftJoin(showPlatformMaterial,
       and(
-        eq(showPlatformMaterial.show_id, showPlatformMc.show_id),
-        eq(showPlatformMaterial.platform_id, showPlatformMc.platform_id),
+        eq(showPlatformMc.show_id, showPlatformMaterial.show_id),
+        eq(showPlatformMc.platform_id, showPlatformMaterial.platform_id),
         isNull(showPlatformMaterial.deleted_at)
       )
     )
-    .leftJoin(brandMaterial, and(eq(showPlatformMaterial.brand_material_id, brandMaterial.id)))
+    .leftJoin(brandMaterial, and(eq(brandMaterial.id, showPlatformMaterial.brand_material_id)))
     .leftJoin(studioRoom, and(eq(showPlatform.studio_room_id, studioRoom.id)))
     .leftJoin(studio, and(eq(studioRoom.studio_id, studio.id)))
     .where(
@@ -192,7 +197,8 @@ export const getOne: AppRouteHandler<GetOneRoute> = async (c) => {
         isNull(user.deleted_at),
         eq(show.uid, show_uid)
       )
-    ).groupBy(
+    )
+    .groupBy(
       showPlatformMc.uid,
       showPlatformMc.show_id,
       showPlatformMc.platform_id,
@@ -207,10 +213,7 @@ export const getOne: AppRouteHandler<GetOneRoute> = async (c) => {
       studio.id,
     );
 
-  console.log('🚀 ~ constgetOne:AppRouteHandler<GetOneRoute>= ~ showDetails:', showDetails);
-  return c.json(showDetails, 200);
+  const data = showDetailsSerializer(showDetails);
 
-  // const data = showDetailsSerializer(showDetails);
-
-  // return c.json(data, HttpStatusCodes.OK);
+  return c.json(data, HttpStatusCodes.OK);
 };
