@@ -1,4 +1,4 @@
-import { createRoute } from "@hono/zod-openapi";
+import { createRoute, z } from "@hono/zod-openapi";
 import * as HttpStatusCodes from "@/http-status-codes";
 
 import { PREFIX } from "@/constants";
@@ -13,6 +13,7 @@ import { createErrorSchema } from "@/openapi/schemas/create-error-schema";
 import { IdParams } from "@/openapi/schemas/id-params";
 
 import { showDetailsTransformer, showTransformer } from "@/serializers/api/shows/show.serializer";
+import { selectBrandMaterialSchema } from "@/db/schema/brand-material.schema";
 
 const tags = ["Shows"];
 
@@ -61,5 +62,25 @@ export const getOne = createRoute({
   },
 });
 
+export const getMaterials = createRoute({
+  tags,
+  path: '/shows/{id}/materials',
+  method: 'get',
+  request: {
+    params: IdParams(PREFIX.SHOW),
+  },
+  responses: {
+    [HttpStatusCodes.OK]: jsonContent(
+      z.object({ materials: z.array(selectBrandMaterialSchema) }),
+      "The requested materials by show ID"
+    ),
+    [HttpStatusCodes.NOT_FOUND]: jsonContent(
+      NotFoundSchema,
+      "Show not found"
+    ),
+  },
+});
+
 export type ListRoute = typeof list;
 export type GetOneRoute = typeof getOne;
+export type GetMaterialsRoute = typeof getMaterials;

@@ -1,7 +1,11 @@
 import { z } from "@hono/zod-openapi";
-import { brand, platform, show, showPlatform, showPlatformMaterial, showPlatformMc, studio, studioRoom } from "@/db/schema";
+import { brand, platform, show, showPlatform, showPlatformMc, studioRoom } from "@/db/schema";
 import { createSelectSchema } from "drizzle-zod";
-import { PREFIX } from "@/constants";
+import { selectBrandSchema } from "@/db/schema/brand.schema";
+import { selectPlatformSchema } from "@/db/schema/platform.schema";
+import { selectShowSchema } from "@/db/schema/show.schema";
+import { selectStudioRoomSchema } from "@/db/schema/studio-room.schema";
+import { selectShowPlatformSchema } from "@/db/schema/show-platform.schema";
 
 export const showSchema = createSelectSchema(showPlatformMc)
   .extend({
@@ -23,20 +27,6 @@ export const showTransformer = showSchema.transform((data) => ({
   end_time: data.show.end_time,
 }));
 
-export const brandMaterialSchema = createSelectSchema(showPlatformMaterial)
-  .pick({
-    show_id: true,
-    platform_id: true,
-    brand_material_id: true,
-  })
-  .extend({
-    uid: z.string().startsWith(PREFIX.MATERIAL),
-    type: z.string(),
-    name: z.string(),
-    description: z.string().nullable(),
-    resource_url: z.string().nullable(),
-  });
-
 export const showDetailsSchema = createSelectSchema(showPlatformMc)
   .extend({
     brand: createSelectSchema(brand),
@@ -44,16 +34,27 @@ export const showDetailsSchema = createSelectSchema(showPlatformMc)
     show_platform: createSelectSchema(showPlatform),
     show: createSelectSchema(show),
     studio_room: createSelectSchema(studioRoom).nullable(),
-    studio: createSelectSchema(studio).nullable(),
-    materials: z.array(brandMaterialSchema)
   });
 
 export const showDetailsTransformer = showDetailsSchema
-  .transform((data) => ({}));
+  .transform((data) => ({
+    uid: data.uid,
+    brand: selectBrandSchema.parse(data.brand),
+    platform: selectPlatformSchema.parse(data.platform),
+    show_platform: selectShowPlatformSchema
+      .omit({ show_uid: true, platform_uid: true, studio_room_uid: true })
+      .parse(data.show_platform),
+    show: selectShowSchema
+      .omit({ brand_uid: true })
+      .parse(data.show),
+    studio_room: selectStudioRoomSchema
+      .omit({ studio_uid: true })
+      .nullable()
+      .parse(data.studio_room),
+  }));
 
 export type ShowSchema = z.infer<typeof showSchema>;
 export type ShowDetailsSchema = z.infer<typeof showDetailsSchema>;
-export type BrandMaterialSchema = z.infer<typeof brandMaterialSchema>;
 
 export const showSerializer = (show: ShowSchema) => {
   return showTransformer.parse(show);

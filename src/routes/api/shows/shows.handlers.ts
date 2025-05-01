@@ -1,11 +1,12 @@
 import type { AppRouteHandler } from "@/lib/types";
-import type { GetOneRoute, ListRoute } from "./shows.routes";
-import { and, count, desc, eq, getTableColumns, gte, ilike, isNull, lte, or, sql } from "drizzle-orm";
+import type { GetMaterialsRoute, GetOneRoute, ListRoute } from "./shows.routes";
+import { and, count, desc, eq, getTableColumns, gte, ilike, isNull, lte, or } from "drizzle-orm";
 
 import * as HttpStatusCodes from "@/http-status-codes";
 import db from "@/db";
-import { brand, brandMaterial, mc, platform, show, showPlatform, showPlatformMaterial, showPlatformMc, studio, studioRoom, user } from "@/db/schema";
-import { showDetailsSerializer, showSerializer, type BrandMaterialSchema } from "@/serializers/api/shows/show.serializer";
+import { brand, brandMaterial, mc, platform, show, showPlatform, showPlatformMaterial, showPlatformMc, studioRoom, user } from "@/db/schema";
+import { showDetailsSerializer, showSerializer } from "@/serializers/api/shows/show.serializer";
+import { showMaterialSerializer } from "@/serializers/api/shows/material.serializer";
 
 export const list: AppRouteHandler<ListRoute> = async (c) => {
   const {
@@ -146,22 +147,6 @@ export const getOne: AppRouteHandler<GetOneRoute> = async (c) => {
       show_platform: { ...getTableColumns(showPlatform) },
       show: { ...getTableColumns(show) },
       studio_room: { ...getTableColumns(studioRoom) },
-      studio: { ...getTableColumns(studio) },
-      materials: sql<BrandMaterialSchema[]>
-        `COALESCE(
-          json_agg(
-            json_build_object(
-              'uid', ${brandMaterial.uid},
-              'show_id', ${showPlatformMaterial.show_id},
-              'platform_id', ${showPlatformMaterial.platform_id},
-              'brand_material_id', ${showPlatformMaterial.brand_material_id},
-              'type', ${brandMaterial.type},
-              'name', ${brandMaterial.name},
-              'description', ${brandMaterial.description},
-              'resource_url', ${brandMaterial.resource_url}
-            )
-          ) FILTER (WHERE ${showPlatformMaterial.deleted_at} IS NULL AND ${brandMaterial.is_active} IS TRUE), '[]'::json
-        )`,
     })
     .from(showPlatformMc)
     .innerJoin(showPlatform,
@@ -175,16 +160,7 @@ export const getOne: AppRouteHandler<GetOneRoute> = async (c) => {
     .innerJoin(mc, and(eq(showPlatformMc.mc_id, mc.id)))
     .innerJoin(user, and(eq(mc.user_id, user.id)))
     .innerJoin(platform, and(eq(showPlatformMc.platform_id, platform.id),))
-    .leftJoin(showPlatformMaterial,
-      and(
-        eq(showPlatformMc.show_id, showPlatformMaterial.show_id),
-        eq(showPlatformMc.platform_id, showPlatformMaterial.platform_id),
-        isNull(showPlatformMaterial.deleted_at)
-      )
-    )
-    .leftJoin(brandMaterial, and(eq(brandMaterial.id, showPlatformMaterial.brand_material_id)))
     .leftJoin(studioRoom, and(eq(showPlatform.studio_room_id, studioRoom.id)))
-    .leftJoin(studio, and(eq(studioRoom.studio_id, studio.id)))
     .where(
       and(
         or(eq(user.clerk_uid, userId), eq(user.uid, userId)),
@@ -197,23 +173,51 @@ export const getOne: AppRouteHandler<GetOneRoute> = async (c) => {
         isNull(user.deleted_at),
         eq(show.uid, show_uid)
       )
-    )
-    .groupBy(
-      showPlatformMc.uid,
-      showPlatformMc.show_id,
-      showPlatformMc.platform_id,
-      showPlatformMc.mc_id,
-      showPlatform.show_id,
-      showPlatform.platform_id,
-      brand.id,
-      show.id,
-      platform.id,
-      showPlatform.uid,
-      studioRoom.id,
-      studio.id,
     );
+
+  if (!showDetails) {
+    return c.json({ message: 'show not found' }, HttpStatusCodes.NOT_FOUND);
+  }
 
   const data = showDetailsSerializer(showDetails);
 
   return c.json(data, HttpStatusCodes.OK);
+};
+
+export const getMaterials: AppRouteHandler<GetMaterialsRoute> = async (c) => {
+  const { id: show_uid } = c.req.valid("param");
+  const userId = c.get('jwtPayload')!.id;
+
+  const materials = await db
+    .select({
+      ...getTableColumns(brandMaterial),
+      brand_uid: brand.uid,
+    })
+    .from(showPlatformMc)
+    .innerJoin(show, and(eq(showPlatformMc.show_id, show.id)))
+    .innerJoin(mc, and(eq(showPlatformMc.mc_id, mc.id)))
+    .innerJoin(user, and(eq(mc.user_id, user.id)))
+    .leftJoin(showPlatformMaterial, and(
+      eq(showPlatformMc.show_id, showPlatformMaterial.show_id),
+      eq(showPlatformMc.platform_id, showPlatformMaterial.platform_id),
+    ))
+    .leftJoin(brandMaterial, and(eq(showPlatformMaterial.brand_material_id, brandMaterial.id)))
+    .leftJoin(brand, and(eq(brandMaterial.brand_id, brand.id)))
+    .where(
+      and(
+        or(eq(user.clerk_uid, userId), eq(user.uid, userId)),
+        eq(show.uid, show_uid),
+        isNull(showPlatformMc.deleted_at),
+        isNull(show.deleted_at),
+        isNull(mc.deleted_at),
+        isNull(user.deleted_at),
+        isNull(showPlatformMaterial.deleted_at),
+        isNull(brandMaterial.deleted_at),
+        isNull(brand.deleted_at),
+      )
+    );
+
+  const data = materials.map(showMaterialSerializer);
+
+  return c.json({ materials: data }, HttpStatusCodes.OK);
 };
