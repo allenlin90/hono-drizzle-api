@@ -22,8 +22,16 @@ export const showTransformer = showSchema.transform((data) => ({
   end_time: data.show.end_time,
 }));
 
+export const showDetailsTransformer = showSchema.transform((data) => ({
+
+}));
+
 export type ShowSchema = z.infer<typeof showSchema>;
 
 export const showSerializer = (show: ShowSchema) => {
   return showTransformer.parse(show);
+};
+
+export const showDetailsSerializer = (show: ShowSchema) => {
+  return showDetailsTransformer.parse(show);
 };

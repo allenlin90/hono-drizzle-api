@@ -6,11 +6,13 @@ import {
 } from "../id-query-params";
 import { PageParams } from "../page-params";
 import coerceBoolean from "../coerce-boolean";
+import DurationParams from "../duration-params";
 
 export const ShowPlatformParamFiltersSchema = PageParams()
   .merge(platformIdSchema)
   .merge(studioRoomIdSchema)
   .merge(showIdSchema)
+  .merge(DurationParams('Show'))
   .merge(
     z.object({
       is_active: coerceBoolean.optional(),

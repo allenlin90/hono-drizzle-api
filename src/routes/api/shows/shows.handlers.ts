@@ -1,11 +1,11 @@
 import type { AppRouteHandler } from "@/lib/types";
 import type { GetOneRoute, ListRoute } from "./shows.routes";
-import { and, count, desc, eq, getTableColumns, ilike, isNull, or } from "drizzle-orm";
+import { and, count, desc, eq, getTableColumns, gte, ilike, isNull, lte, or, sql } from "drizzle-orm";
 
 import * as HttpStatusCodes from "@/http-status-codes";
 import db from "@/db";
-import { brand, mc, platform, show, showPlatform, showPlatformMc, studio, studioRoom, user } from "@/db/schema";
-import { showSerializer } from "@/serializers/api/shows/show.serializer";
+import { brand, brandMaterial, mc, platform, show, showPlatform, showPlatformMaterial, showPlatformMc, studio, studioRoom, user } from "@/db/schema";
+import { showDetailsSerializer, showSerializer } from "@/serializers/api/shows/show.serializer";
 
 export const list: AppRouteHandler<ListRoute> = async (c) => {
   const {
@@ -19,11 +19,17 @@ export const list: AppRouteHandler<ListRoute> = async (c) => {
     platform_name,
     show_name,
     studio_room_name,
+    start_time,
+    end_time,
   } = c.req.valid("query");
+
   const userId = c.get('jwtPayload')!.id;
 
   const isApproved =
     is_active !== undefined ? eq(showPlatform.is_active, is_active) : undefined;
+
+  const startTime = start_time ? gte(show.start_time, start_time) : undefined;
+  const endTime = end_time ? lte(show.end_time, end_time) : undefined;
 
   const ilikeByPlatformUid = platform_id
     ? ilike(platform.uid, `%${platform_id}%`)
@@ -64,6 +70,8 @@ export const list: AppRouteHandler<ListRoute> = async (c) => {
     ilikeByPlatformName,
     ilikeByShowName,
     ilikeByStudioRoomName,
+    startTime,
+    endTime,
     or(eq(user.clerk_uid, userId), eq(user.uid, userId))
   );
 
@@ -129,4 +137,80 @@ export const list: AppRouteHandler<ListRoute> = async (c) => {
 export const getOne: AppRouteHandler<GetOneRoute> = async (c) => {
   const { id: show_uid } = c.req.valid("param");
   const userId = c.get('jwtPayload')!.id;
+
+  const [showDetails] = await db
+    .select({
+      ...getTableColumns(showPlatformMc),
+      brand: { ...getTableColumns(brand) },
+      platform: { ...getTableColumns(platform) },
+      show_platform: { ...getTableColumns(showPlatform) },
+      show: { ...getTableColumns(show) },
+      studio_room: { ...getTableColumns(studioRoom) },
+      studio: { ...getTableColumns(studio) },
+      materials: sql
+        `json_agg(json_build_object(
+          'show_id', ${showPlatformMaterial.show_id},
+          'platform_id', ${showPlatformMaterial.platform_id},
+          'brand_material_id', ${showPlatformMaterial.brand_material_id},
+          'type', ${brandMaterial.type},
+          'name', ${brandMaterial.name},
+          'description', ${brandMaterial.description},
+          'resource_url', ${brandMaterial.resource_url}
+        )) FILTER (WHERE ${showPlatformMaterial.deleted_at} IS NULL AND ${brandMaterial.is_active} IS TRUE)`,
+    })
+    .from(showPlatformMc)
+    .innerJoin(showPlatform,
+      and(
+        eq(showPlatformMc.show_id, showPlatform.show_id),
+        eq(showPlatformMc.platform_id, showPlatform.platform_id)
+      )
+    )
+    .innerJoin(show, and(eq(showPlatformMc.show_id, show.id)))
+    .innerJoin(brand, and(eq(show.brand_id, brand.id)))
+    .innerJoin(mc, and(eq(showPlatformMc.mc_id, mc.id)))
+    .innerJoin(user, and(eq(mc.user_id, user.id)))
+    .innerJoin(platform, and(eq(showPlatformMc.platform_id, platform.id),))
+    .leftJoin(showPlatformMaterial,
+      and(
+        eq(showPlatformMaterial.show_id, showPlatformMc.show_id),
+        eq(showPlatformMaterial.platform_id, showPlatformMc.platform_id),
+        isNull(showPlatformMaterial.deleted_at)
+      )
+    )
+    .leftJoin(brandMaterial, and(eq(showPlatformMaterial.brand_material_id, brandMaterial.id)))
+    .leftJoin(studioRoom, and(eq(showPlatform.studio_room_id, studioRoom.id)))
+    .leftJoin(studio, and(eq(studioRoom.studio_id, studio.id)))
+    .where(
+      and(
+        or(eq(user.clerk_uid, userId), eq(user.uid, userId)),
+        isNull(brand.deleted_at),
+        isNull(mc.deleted_at),
+        isNull(platform.deleted_at),
+        isNull(show.deleted_at),
+        isNull(showPlatform.deleted_at),
+        isNull(studioRoom.deleted_at),
+        isNull(user.deleted_at),
+        eq(show.uid, show_uid)
+      )
+    ).groupBy(
+      showPlatformMc.uid,
+      showPlatformMc.show_id,
+      showPlatformMc.platform_id,
+      showPlatformMc.mc_id,
+      showPlatform.show_id,
+      showPlatform.platform_id,
+      brand.id,
+      show.id,
+      platform.id,
+      showPlatform.uid,
+      studioRoom.id,
+      studio.id,
+    );
+
+  console.log('🚀 ~ constgetOne:AppRouteHandler<GetOneRoute>= ~ showDetails:', showDetails);
+  return c.json(showDetails, 200);
+
+  // const data = showDetailsSerializer(showDetails);
+
+  // return c.json(data, HttpStatusCodes.OK);
 };
