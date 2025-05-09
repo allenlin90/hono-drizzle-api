@@ -39,7 +39,6 @@ export const user = table(
 
 export const selectUserSchema = createSelectSchema(user).omit({
   id: true,
-  clerk_uid: true,
   password: true,
   deleted_at: true,
 });
