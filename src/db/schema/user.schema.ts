@@ -43,30 +43,32 @@ export const selectUserSchema = createSelectSchema(user).omit({
   deleted_at: true,
 });
 
-export const insertUserSchema = createInsertSchema(user, {
-  name: z.string().min(1),
-  email: z.string().email(),
-  clerk_uid: z.string().min(1).optional(),
-}).omit({
-  uid: true,
-  password: true,
-  created_at: true,
-  updated_at: true,
-  deleted_at: true,
-});
+export const insertUserSchema = createInsertSchema(user)
+  .extend({
+    name: z.string().min(1),
+    email: z.string().email(),
+    clerk_uid: z.string().min(1).optional(),
+  }).omit({
+    uid: true,
+    password: true,
+    created_at: true,
+    updated_at: true,
+    deleted_at: true,
+  });
 
 // allow changing clerk_uid and password in a different update schema
-export const patchUserSchema = createUpdateSchema(user, {
-  name: z.string().min(1),
-  email: z.string().email(),
-}).omit({
-  uid: true,
-  clerk_uid: true,
-  password: true,
-  created_at: true,
-  updated_at: true,
-  deleted_at: true,
-});
+export const patchUserSchema = createUpdateSchema(user)
+  .extend({
+    name: z.string().min(1),
+    email: z.string().email(),
+  }).omit({
+    uid: true,
+    clerk_uid: true,
+    password: true,
+    created_at: true,
+    updated_at: true,
+    deleted_at: true,
+  });
 
 export type SelectUserSchema = z.infer<typeof selectUserSchema>;
 export type InsertUserSchema = z.infer<typeof insertUserSchema>;
