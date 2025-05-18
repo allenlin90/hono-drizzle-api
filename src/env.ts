@@ -25,6 +25,7 @@ const EnvSchema = z.object({
     .optional(),
   NODE_ENV: z.string().default('development'),
   PORT: z.coerce.number().default(3000),
+  JWK_HOST: z.string().url(),
   LOG_LEVEL: z
     .enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent'])
     .default('debug'),

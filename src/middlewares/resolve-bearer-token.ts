@@ -7,7 +7,7 @@ import type { AuthPayload } from '@/lib/auth/types';
 import * as httpStatusCodes from '@/http-status-codes';
 
 // TODO: invalidate cached jwks
-const authHost = new URL('http://localhost:3000/api/auth/jwks');
+const authHost = new URL(env.JWK_HOST);
 const jwks = jose.createRemoteJWKSet(authHost);
 
 export const resolveBearerToken = createMiddleware<AppBindings>(
