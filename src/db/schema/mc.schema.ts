@@ -19,6 +19,7 @@ export const mc = table(
     uid: brandedUid(PREFIX.MC),
     name: t.varchar("name"),
     user_id: t.integer("user_id").references(() => user.id),
+    banned: t.boolean(),
     ...timestamps,
   },
   (table) => [
@@ -49,6 +50,7 @@ export const insertMcSchema = createInsertSchema(mc)
   .omit({
     uid: true,
     user_id: true,
+    banned: true,
     created_at: true,
     updated_at: true,
     deleted_at: true,
