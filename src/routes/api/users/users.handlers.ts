@@ -28,7 +28,7 @@ export const verify: AppRouteHandler<VerifyRoute> = async (c) => {
     .values({
       name: payload.name,
       email: payload.email,
-      clerk_uid: payload.id,
+      ext_uid: payload.id,
     });
 
   return c.json(null, HttpStatusCodes.CREATED);

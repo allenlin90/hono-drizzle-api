@@ -73,7 +73,7 @@ export const list: AppRouteHandler<ListRoute> = async (c) => {
     ilikeByStudioRoomName,
     startTime,
     endTime,
-    or(eq(user.clerk_uid, userId), eq(user.uid, userId))
+    or(eq(user.ext_uid, userId), eq(user.uid, userId))
   );
 
   const showPlatforms = await db
@@ -163,7 +163,7 @@ export const getOne: AppRouteHandler<GetOneRoute> = async (c) => {
     .leftJoin(studioRoom, and(eq(showPlatform.studio_room_id, studioRoom.id)))
     .where(
       and(
-        or(eq(user.clerk_uid, userId), eq(user.uid, userId)),
+        or(eq(user.ext_uid, userId), eq(user.uid, userId)),
         isNull(brand.deleted_at),
         isNull(mc.deleted_at),
         isNull(platform.deleted_at),
@@ -205,7 +205,7 @@ export const getMaterials: AppRouteHandler<GetMaterialsRoute> = async (c) => {
     .leftJoin(brand, and(eq(brandMaterial.brand_id, brand.id)))
     .where(
       and(
-        or(eq(user.clerk_uid, userId), eq(user.uid, userId)),
+        or(eq(user.ext_uid, userId), eq(user.uid, userId)),
         eq(show.uid, show_uid),
         isNull(showPlatformMc.deleted_at),
         isNull(show.deleted_at),

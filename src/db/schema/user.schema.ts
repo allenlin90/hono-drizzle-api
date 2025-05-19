@@ -17,7 +17,7 @@ export const user = table(
   {
     id: t.integer("id").primaryKey().generatedAlwaysAsIdentity(),
     uid: brandedUid(PREFIX.USER),
-    clerk_uid: t.varchar("clerk_uid", { length: 255 }).unique(),
+    ext_uid: t.varchar("ext_uid", { length: 255 }).unique(),
     email: t.varchar("email", { length: 255 }).unique().notNull(),
     // TODO: proper hash and salt after changing auth module
     password: t // no use
@@ -47,7 +47,7 @@ export const insertUserSchema = createInsertSchema(user)
   .extend({
     name: z.string().min(1),
     email: z.string().email(),
-    clerk_uid: z.string().min(1).optional(),
+    ext_uid: z.string().min(1).optional(),
   }).omit({
     uid: true,
     password: true,
@@ -56,14 +56,14 @@ export const insertUserSchema = createInsertSchema(user)
     deleted_at: true,
   });
 
-// allow changing clerk_uid and password in a different update schema
+// allow changing ext_uid and password in a different update schema
 export const patchUserSchema = createUpdateSchema(user)
   .extend({
     name: z.string().min(1),
     email: z.string().email(),
   }).omit({
     uid: true,
-    clerk_uid: true,
+    ext_uid: true,
     password: true,
     created_at: true,
     updated_at: true,

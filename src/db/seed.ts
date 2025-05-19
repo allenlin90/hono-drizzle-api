@@ -248,7 +248,7 @@ await seed(db, tables).refine((r) => {
           ),
           isUnique: true,
         }),
-        clerk_uid: r.valuesFromArray({
+        ext_uid: r.valuesFromArray({
           values: Array.from({ length: 10 }, () => generateRandomString(16)),
           isUnique: true,
         }),
