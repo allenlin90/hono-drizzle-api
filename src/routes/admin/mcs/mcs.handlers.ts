@@ -66,37 +66,50 @@ export const create: AppRouteHandler<CreateRoute> = async (c) => {
 
   let selectUser: { id: number; } | null = null;
 
-  if (payload.user_uid) {
-    const queryResult = await db
-      .select({ id: user.id })
-      .from(user)
-      .where(and(eq(user.uid, payload.user_uid), isNull(user.deleted_at)))
-      .limit(1);
+  try {
+    if (payload.user_uid) {
+      const queryResult = await db
+        .select({ id: user.id })
+        .from(user)
+        .where(and(eq(user.uid, payload.user_uid), isNull(user.deleted_at)))
+        .limit(1);
 
-    selectUser = queryResult[0];
+      selectUser = queryResult[0];
 
-    if (!selectUser) {
+      if (!selectUser) {
+        return c.json(
+          {
+            message: "User not found",
+          },
+          HttpStatusCodes.NOT_FOUND
+        );
+      }
+    }
+
+    const [inserted] = await db
+      .insert(mc)
+      .values({
+        ...payload,
+        user_id: selectUser?.id,
+      })
+      .returning();
+
+    return c.json(
+      mcSerializer({ ...inserted, user_uid: payload.user_uid }),
+      HttpStatusCodes.CREATED
+    );
+  } catch (error: any) {
+    if (error.code === "23505") {
       return c.json(
         {
-          message: "User not found",
+          message: "duplicate on properties",
         },
-        HttpStatusCodes.NOT_FOUND
+        HttpStatusCodes.CONFLICT
       );
     }
+
+    throw error;
   }
-
-  const [inserted] = await db
-    .insert(mc)
-    .values({
-      ...payload,
-      user_id: selectUser?.id,
-    })
-    .returning();
-
-  return c.json(
-    mcSerializer({ ...inserted, user_uid: payload.user_uid }),
-    HttpStatusCodes.CREATED
-  );
 };
 
 export const getOne: AppRouteHandler<GetOneRoute> = async (c) => {

@@ -62,6 +62,10 @@ export const create = createRoute({
       createMessageObjectSchema("Mc not found"),
       "Mc not found"
     ),
+    [HttpStatusCodes.CONFLICT]: jsonContent(
+      createMessageObjectSchema("duplicate on properties"),
+      "Content has duplicate data or violates unique constraints"
+    ),
   },
 });
 
