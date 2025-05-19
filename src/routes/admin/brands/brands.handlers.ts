@@ -6,12 +6,13 @@ import type {
   PatchRoute,
   RemoveRoute,
 } from "./brands.routes";
-import { and, asc, eq, getTableColumns, ilike, isNull } from "drizzle-orm";
+import { and, asc, eq, getTableColumns, ilike, isNotNull, isNull } from "drizzle-orm";
 import db from "@/db";
 import { brand } from "@/db/schema";
 import * as HttpStatusCodes from "@/http-status-codes";
 import * as HttpStatusPhrases from "@/http-status-phrases";
 import { brandSerializer } from "@/serializers/admin/brand.serializer";
+import { patchBrandSchema } from "@/db/schema/brand.schema";
 
 export const list: AppRouteHandler<ListRoute> = async (c) => {
   const { offset, limit, name } = c.req.valid("query");
@@ -46,7 +47,20 @@ export const list: AppRouteHandler<ListRoute> = async (c) => {
 export const create: AppRouteHandler<CreateRoute> = async (c) => {
   const payload = c.req.valid("json");
 
-  const [inserted] = await db.insert(brand).values(payload).returning();
+  const [inserted] = await db
+    .insert(brand)
+    .values(payload)
+    .onConflictDoUpdate(
+      {
+        target: [brand.name],
+        set: {
+          ...payload,
+          deleted_at: null,
+        },
+        setWhere: isNotNull(brand.deleted_at),
+      }
+    )
+    .returning();
 
   return c.json(brandSerializer(inserted), HttpStatusCodes.CREATED);
 };
@@ -77,7 +91,9 @@ export const getOne: AppRouteHandler<GetOneRoute> = async (c) => {
 
 export const patch: AppRouteHandler<PatchRoute> = async (c) => {
   const { id } = c.req.valid("param");
-  const updates = c.req.valid("json");
+  const payload = c.req.valid("json");
+  const updates = patchBrandSchema.parse(payload);
+
   const [updated] = await db
     .update(brand)
     .set({ ...updates, updated_at: new Date().toISOString() })
