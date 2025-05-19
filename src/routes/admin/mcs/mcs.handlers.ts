@@ -168,6 +168,7 @@ export const patch: AppRouteHandler<PatchRoute> = async (c) => {
     .set({
       ...payload,
       ...(selectUser && { user_id: selectUser?.id }),
+      ...(payload.user_uid === null && { user_id: null }),
     })
     .from(user)
     .where(and(eq(mc.uid, mc_uid), byUserUid, isNull(mc.deleted_at)))

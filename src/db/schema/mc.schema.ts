@@ -57,8 +57,8 @@ export const insertMcSchema = createInsertSchema(mc)
 export const patchMcSchema = createUpdateSchema(mc)
   .merge(
     z.object({
-      name: z.string().min(1),
-      user_uid: z.string().startsWith(PREFIX.USER).optional(),
+      name: z.string().min(1).optional(),
+      user_uid: z.string().startsWith(PREFIX.USER).nullable().optional(),
     })
   )
   .omit({
