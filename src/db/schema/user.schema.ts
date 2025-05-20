@@ -47,7 +47,7 @@ export const insertUserSchema = createInsertSchema(user)
   .extend({
     name: z.string().min(1),
     email: z.string().email(),
-    ext_uid: z.string().min(1).optional(),
+    ext_uid: z.string().min(1).nullish(),
   }).omit({
     uid: true,
     password: true,

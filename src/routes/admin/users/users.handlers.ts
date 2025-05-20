@@ -6,7 +6,7 @@ import type {
   PatchRoute,
   RemoveRoute,
 } from "./users.routes";
-import { and, asc, eq, getTableColumns, ilike, isNull } from "drizzle-orm";
+import { and, asc, eq, getTableColumns, ilike, isNotNull, isNull } from "drizzle-orm";
 import db from "@/db";
 import { user } from "@/db/schema";
 import * as HttpStatusCodes from "@/http-status-codes";
@@ -48,7 +48,18 @@ export const create: AppRouteHandler<CreateRoute> = async (c) => {
 
   const [inserted] = await db
     .insert(user)
-    .values({ ...payload })
+    .values({
+      ...payload,
+      ...(payload.ext_uid === null ? { ext_uid: null } : {}),
+    })
+    .onConflictDoUpdate({
+      target: [user.email],
+      set: {
+        ...payload,
+        deleted_at: null,
+      },
+      setWhere: isNotNull(user.deleted_at),
+    })
     .returning();
 
   return c.json(userSerializer(inserted), HttpStatusCodes.CREATED);
