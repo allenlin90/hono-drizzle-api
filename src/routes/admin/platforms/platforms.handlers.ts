@@ -1,5 +1,5 @@
 import type { AppRouteHandler } from "@/lib/types";
-import { and, asc, eq, getTableColumns, ilike, isNull } from "drizzle-orm";
+import { and, asc, eq, getTableColumns, ilike, isNotNull, isNull } from "drizzle-orm";
 import * as HttpStatusCodes from "@/http-status-codes";
 import * as HttpStatusPhrases from "@/http-status-phrases";
 import db from "@/db";
@@ -46,7 +46,18 @@ export const list: AppRouteHandler<ListRoute> = async (c) => {
 export const create: AppRouteHandler<CreateRoute> = async (c) => {
   const payload = c.req.valid("json");
 
-  const [inserted] = await db.insert(platform).values(payload).returning();
+  const [inserted] = await db
+    .insert(platform)
+    .values(payload)
+    .onConflictDoUpdate({
+      target: [platform.name],
+      set: {
+        ...payload,
+        deleted_at: null,
+      },
+      setWhere: isNotNull(platform.deleted_at),
+    })
+    .returning();
 
   return c.json(platformSerializer(inserted), HttpStatusCodes.CREATED);
 };
