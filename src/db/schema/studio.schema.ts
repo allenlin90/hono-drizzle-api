@@ -36,7 +36,7 @@ export const studio = table(
 export const selectStudioSchema = createSelectSchema(studio)
   .merge(
     z.object({
-      address_uid: z.string().startsWith(PREFIX.ADDRESS).nullable(),
+      address_uid: z.string().startsWith(PREFIX.ADDRESS).nullish(),
     })
   )
   .omit({
@@ -49,7 +49,7 @@ export const insertStudioSchema = createInsertSchema(studio)
   .merge(
     z.object({
       name: z.string().min(1),
-      address_uid: z.string().startsWith(PREFIX.ADDRESS).nullable(),
+      address_uid: z.string().startsWith(PREFIX.ADDRESS).nullish(),
     })
   )
   .omit({
@@ -64,7 +64,7 @@ export const patchStudioSchema = createUpdateSchema(studio)
   .merge(
     z.object({
       name: z.string().min(1),
-      address_uid: z.string().startsWith(PREFIX.ADDRESS),
+      address_uid: z.string().startsWith(PREFIX.ADDRESS).nullish(),
     })
   )
   .omit({

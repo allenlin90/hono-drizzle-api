@@ -105,7 +105,8 @@ export const create: AppRouteHandler<CreateRoute> = async (c) => {
       target: [studio.name],
       set: {
         ...payload,
-        address_id: selectAddress?.id,
+        address_id: selectAddress?.id ?? null,
+        deleted_at: null,
       },
       setWhere: isNotNull(studio.deleted_at),
     })
@@ -122,7 +123,7 @@ export const create: AppRouteHandler<CreateRoute> = async (c) => {
 
   const data = studioSerializer({
     ...inserted,
-    address_uid: payload.address_uid,
+    address_uid: payload.address_uid ?? null,
   });
 
   return c.json(data, HttpStatusCodes.CREATED);
