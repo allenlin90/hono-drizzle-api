@@ -199,7 +199,7 @@ export const remove: AppRouteHandler<RemoveRoute> = async (c) => {
   const result = await db
     .update(studioRoom)
     .set({ deleted_at: new Date().toISOString() })
-    .where(and(eq(studioRoom.uid, studio_room_id), isNull(studio.deleted_at)))
+    .where(and(eq(studioRoom.uid, studio_room_id), isNull(studioRoom.deleted_at)))
     .returning();
 
   if (!result.length) {
