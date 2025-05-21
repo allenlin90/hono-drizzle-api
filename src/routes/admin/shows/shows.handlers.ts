@@ -17,6 +17,7 @@ import {
   gte,
   ilike,
   isNull,
+  lte,
 } from "drizzle-orm";
 import * as HttpStatusCodes from "@/http-status-codes";
 import db from "@/db";
@@ -32,7 +33,7 @@ export const list: AppRouteHandler<ListRoute> = async (c) => {
 
   const ilikeByName = name ? ilike(show.name, `%${name}%`) : undefined;
   const startTime = start_time ? gte(show.start_time, start_time) : undefined;
-  const endTime = end_time ? gte(show.end_time, end_time) : undefined;
+  const endTime = end_time ? lte(show.end_time, end_time) : undefined;
   const brandUid = brand_id ? eq(brand.uid, brand_id) : undefined;
   const activeShows = isNull(show.deleted_at);
   const activeBrands = isNull(brand.deleted_at);
