@@ -28,13 +28,14 @@ import { showBulkSerializer } from "@/serializers/admin/shows/show-bulk.serializ
 import { bulkUpsertShows } from "@/services/show/bulk-upsert";
 
 export const list: AppRouteHandler<ListRoute> = async (c) => {
-  const { offset, limit, brand_id, name, start_time, end_time } =
+  const { offset, limit, brand_id, show_id, name, start_time, end_time } =
     c.req.valid("query");
 
   const ilikeByName = name ? ilike(show.name, `%${name}%`) : undefined;
   const startTime = start_time ? gte(show.start_time, start_time) : undefined;
   const endTime = end_time ? lte(show.end_time, end_time) : undefined;
   const brandUid = brand_id ? eq(brand.uid, brand_id) : undefined;
+  const showUid = show_id ? eq(show.uid, show_id) : undefined;
   const activeShows = isNull(show.deleted_at);
   const activeBrands = isNull(brand.deleted_at);
   const filters = and(
@@ -43,7 +44,8 @@ export const list: AppRouteHandler<ListRoute> = async (c) => {
     ilikeByName,
     startTime,
     endTime,
-    brandUid
+    brandUid,
+    showUid
   );
 
   const shows = await db
