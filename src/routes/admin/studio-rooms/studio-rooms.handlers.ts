@@ -25,7 +25,7 @@ export const list: AppRouteHandler<ListRoute> = async (c) => {
 
   const ilikeByName = name ? ilike(studioRoom.name, `%${name}%`) : undefined;
   const ilikeByStudioUid = studio_id
-    ? ilike(studioRoom.uid, `%${studio_id}%`)
+    ? ilike(studio.uid, `%${studio_id}%`)
     : undefined;
   const isRoomType = room_type ? eq(studioRoom.type, room_type) : undefined;
   const activeStudioRooms = isNull(studioRoom.deleted_at);
