@@ -30,7 +30,7 @@ export const createApp = () => {
         'http://localhost:4173',
         'http://localhost:5173',
       ],
-      allowHeaders: ['Content-Type', 'Authorization'],
+      allowHeaders: ['Content-Type', 'Authorization', 'Idempotency-Key'],
       allowMethods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
       credentials: true,
     })
