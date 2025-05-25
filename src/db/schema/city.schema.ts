@@ -1,7 +1,7 @@
 import { pgTable as table } from "drizzle-orm/pg-core";
 import * as t from "drizzle-orm/pg-core";
 import { z } from "@hono/zod-openapi";
-import { isNull, sql } from "drizzle-orm";
+import { sql } from "drizzle-orm";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 
 import { PREFIX } from "@/constants";
@@ -16,7 +16,6 @@ export const city = table(
     ...timestamps,
   },
   (table) => [
-    t.index("city_name_idx").on(table.name).where(isNull(table.deleted_at)),
     t
       .index("city_name_search_idx")
       .using("gin", sql`to_tsvector('english', ${table.name})`),

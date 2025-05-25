@@ -10,7 +10,8 @@ import {
 
 import { PREFIX } from "@/constants";
 import { brandedUid, timestamps } from "../helpers/columns.helpers";
-import { brand } from "./brand.schema";
+import { client } from "./client.schema";
+import { studioRoom } from "./studio-room.schema";
 
 export const show = table(
   "show",
@@ -18,28 +19,37 @@ export const show = table(
     id: t.integer("id").primaryKey().generatedAlwaysAsIdentity(),
     uid: brandedUid(PREFIX.SHOW),
     name: t.varchar("name").notNull(),
-    brand_id: t
-      .integer("brand_id")
-      .references(() => brand.id)
-      .notNull(),
+    client_id: t
+      .integer("client_id")
+      .references(() => client.id),
     start_time: t.timestamp("start_time", { mode: "string" }).notNull(),
     end_time: t.timestamp("end_time", { mode: "string" }).notNull(),
+    studio_room_id: t
+      .integer("studio_room_id")
+      .references(() => studioRoom.id),
     ...timestamps,
   },
   (table) => [
     t.check("show_time_check", sql`${table.end_time} > ${table.start_time}`),
-    t.index("show_name_idx").on(table.name).where(isNull(table.deleted_at)),
     t
-      .index("show_brand_id_idx")
-      .on(table.brand_id)
+      .index()
+      .on(table.name)
       .where(isNull(table.deleted_at)),
     t
-      .index("show_start_time_idx")
+      .index()
+      .on(table.client_id)
+      .where(isNull(table.deleted_at)),
+    t
+      .index()
       .on(table.start_time)
       .where(isNull(table.deleted_at)),
     t
-      .index("show_end_time_idx")
+      .index()
       .on(table.end_time)
+      .where(isNull(table.deleted_at)),
+    t
+      .index()
+      .on(table.studio_room_id)
       .where(isNull(table.deleted_at)),
     t
       .index("show_name_search_idx")
@@ -50,19 +60,19 @@ export const show = table(
 export const selectShowSchema = createSelectSchema(show)
   .merge(
     z.object({
-      brand_uid: z.string(),
+      client_uid: z.string(),
     })
   )
   .omit({
     id: true,
-    brand_id: true,
+    client_id: true,
     deleted_at: true,
   });
 
 export const insertShowSchema = createInsertSchema(show)
   .merge(
     z.object({
-      brand_uid: z.string().startsWith(PREFIX.BRAND),
+      client_uid: z.string().startsWith(PREFIX.CLIENT).optional(),
       name: z.string().min(1),
       start_time: z.string().datetime(),
       end_time: z.string().datetime(),
@@ -70,7 +80,7 @@ export const insertShowSchema = createInsertSchema(show)
   )
   .omit({
     uid: true,
-    brand_id: true,
+    client_id: true,
     created_at: true,
     updated_at: true,
     deleted_at: true,
@@ -82,13 +92,13 @@ export const insertShowSchema = createInsertSchema(show)
 export const patchShowSchema = createUpdateSchema(show)
   .merge(
     z.object({
-      brand_uid: z.string().startsWith(PREFIX.BRAND).optional(),
+      client_uid: z.string().startsWith(PREFIX.CLIENT).optional(),
       name: z.string().min(1).optional(),
     })
   )
   .omit({
     uid: true,
-    brand_id: true,
+    client_id: true,
     created_at: true,
     updated_at: true,
     deleted_at: true,
@@ -105,13 +115,12 @@ export const patchBulkShowSchema = createUpdateSchema(show)
   .merge(
     z.object({
       show_uid: z.string().startsWith(PREFIX.SHOW),
-      brand_uid: z.string().startsWith(PREFIX.BRAND).optional(),
       name: z.string().min(1).optional(),
     })
   )
   .omit({
     uid: true,
-    brand_id: true,
+    client_id: true,
     created_at: true,
     updated_at: true,
     deleted_at: true,

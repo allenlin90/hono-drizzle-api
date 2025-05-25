@@ -11,23 +11,25 @@ import {
 import { PREFIX } from "@/constants";
 import { brandedUid, timestamps } from "../helpers/columns.helpers";
 
-export const rankingTypeEnum = t.pgEnum("ranking_type", [
-  "normal",
-  "good",
-  "superstar",
+export const memberTypeEnum = t.pgEnum("member_type", [
+  "helper",
+  "moderator",
+  "operator",
+  "manager",
+  "admin",
 ]);
 
-export const mc = table(
-  "mc",
+export const member = table(
+  "member",
   {
     id: t.integer("id").primaryKey().generatedAlwaysAsIdentity(),
-    uid: brandedUid(PREFIX.MC),
+    uid: brandedUid(PREFIX.MEMBER),
     banned: t.boolean(),
     email: t.varchar("email", { length: 255 }).unique(),
     ext_id: t.integer("ext_id").unique(),
     metadata: t.jsonb("metadata").default({}).notNull(),
-    name: t.varchar("name").notNull(),
-    ranking: rankingTypeEnum().notNull(),
+    name: t.varchar("name"),
+    type: memberTypeEnum().notNull(),
     ...timestamps,
   },
   (table) => [
@@ -35,17 +37,25 @@ export const mc = table(
     t.index().on(table.ext_id).where(isNull(table.deleted_at)),
     t.index().on(table.name).where(isNull(table.deleted_at)),
     t.index().on(table.name, table.banned).where(isNull(table.deleted_at)),
-    t.index().on(table.ranking).where(isNull(table.deleted_at)),
+    t.index().on(table.type).where(isNull(table.deleted_at)),
+    t.index().on(table.type, table.banned).where(isNull(table.deleted_at)),
     t
-      .index("mc_name_search_idx")
+      .index("member_name_search_idx")
       .using("gin", sql`to_tsvector('english', ${table.name})`),
   ]
 );
 
-export const selectMcSchema = createSelectSchema(mc)
+export const selectMemberSchema = createSelectSchema(member)
   .omit({ id: true, deleted_at: true });
 
-export const insertMcSchema = createInsertSchema(mc)
+export const insertMemberSchema = createInsertSchema(member)
+  .merge(
+    z.object({
+      email: z.string().email().optional(),
+      name: z.string().min(1),
+      type: z.enum(memberTypeEnum.enumValues),
+    })
+  )
   .omit({
     uid: true,
     banned: true,
@@ -54,10 +64,14 @@ export const insertMcSchema = createInsertSchema(mc)
     deleted_at: true,
   });
 
-export const patchMcSchema = createUpdateSchema(mc)
+export const patchMemberSchema = createUpdateSchema(member)
   .merge(
     z.object({
+      email: z.string().min(1).optional(),
+      ext_id: z.string().min(1).optional(),
       name: z.string().min(1).optional(),
+      metadata: z.any({}).optional(),
+      type: z.enum(memberTypeEnum.enumValues).optional(),
     })
   )
   .omit({
@@ -67,6 +81,6 @@ export const patchMcSchema = createUpdateSchema(mc)
     deleted_at: true,
   });
 
-export type SelectMcSchema = z.infer<typeof selectMcSchema>;
-export type InsertMcSchema = z.infer<typeof insertMcSchema>;
-export type PatchMcSchema = z.infer<typeof patchMcSchema>;
+export type SelectMemberSchema = z.infer<typeof selectMemberSchema>;
+export type InsertMemberSchema = z.infer<typeof insertMemberSchema>;
+export type PatchMemberSchema = z.infer<typeof patchMemberSchema>;

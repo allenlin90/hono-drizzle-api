@@ -29,15 +29,15 @@ export const studioRoom = table(
   },
   (table) => [
     t
-      .index("studio_room_name_idx")
+      .index()
       .on(table.name)
       .where(isNull(table.deleted_at)),
     t
-      .index("studio_room_studio_id_idx")
+      .index()
       .on(table.studio_id)
       .where(isNull(table.deleted_at)),
     t
-      .index("studio_room_type_idx")
+      .index()
       .on(table.type)
       .where(isNull(table.deleted_at)),
     t

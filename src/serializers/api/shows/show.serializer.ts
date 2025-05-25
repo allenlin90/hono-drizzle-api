@@ -1,7 +1,7 @@
 import { z } from "@hono/zod-openapi";
 import { brand, platform, show, showPlatform, showPlatformMc, studioRoom } from "@/db/schema";
 import { createSelectSchema } from "drizzle-zod";
-import { selectBrandSchema } from "@/db/schema/brand.schema";
+import { selectBrandSchema } from "@/db/schema/client.schema";
 import { selectPlatformSchema } from "@/db/schema/platform.schema";
 import { selectShowSchema } from "@/db/schema/show.schema";
 import { selectStudioRoomSchema } from "@/db/schema/studio-room.schema";

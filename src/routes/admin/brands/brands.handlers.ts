@@ -12,7 +12,7 @@ import { brand } from "@/db/schema";
 import * as HttpStatusCodes from "@/http-status-codes";
 import * as HttpStatusPhrases from "@/http-status-phrases";
 import { brandSerializer } from "@/serializers/admin/brand.serializer";
-import { patchBrandSchema } from "@/db/schema/brand.schema";
+import { patchBrandSchema } from "@/db/schema/client.schema";
 
 export const list: AppRouteHandler<ListRoute> = async (c) => {
   const { offset, limit, name } = c.req.valid("query");

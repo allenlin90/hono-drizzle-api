@@ -22,9 +22,12 @@ export const studio = table(
     ...timestamps,
   },
   (table) => [
-    t.index("studio_name_idx").on(table.name).where(isNull(table.deleted_at)),
     t
-      .index("studio_address_id_idx")
+      .index()
+      .on(table.name)
+      .where(isNull(table.deleted_at)),
+    t
+      .index()
       .on(table.address_id)
       .where(isNull(table.deleted_at)),
     t

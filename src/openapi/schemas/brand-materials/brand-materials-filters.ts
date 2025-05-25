@@ -1,6 +1,6 @@
 import { z } from "@hono/zod-openapi";
 import { NameParams } from "@/openapi/schemas/name-params";
-import { brandMaterialTypeEnum } from "@/db/schema/brand-material.schema";
+import { brandMaterialTypeEnum } from "@/db/schema/material.schema";
 import coerceBoolean from "../coerce-boolean";
 import { brandIdSchema } from "../id-query-params";
 import PageParams from "../page-params";

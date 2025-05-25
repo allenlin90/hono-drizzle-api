@@ -11,28 +11,31 @@ import {
 import { PREFIX } from "@/constants";
 import { brandedUid, timestamps } from "../helpers/columns.helpers";
 
-export const brand = table(
-  "brand",
+export const client = table(
+  "client",
   {
     id: t.integer("id").primaryKey().generatedAlwaysAsIdentity(),
-    uid: brandedUid(PREFIX.BRAND),
+    uid: brandedUid(PREFIX.CLIENT),
     name: t.varchar("name").unique().notNull(),
     ...timestamps,
   },
   (table) => [
-    t.index("brand_name_idx").on(table.name).where(isNull(table.deleted_at)),
     t
-      .index("brand_name_search_idx")
+      .index()
+      .on(table.name)
+      .where(isNull(table.deleted_at)),
+    t
+      .index("client_name_search_idx")
       .using("gin", sql`to_tsvector('english', ${table.name})`),
   ]
 );
 
-export const selectBrandSchema = createSelectSchema(brand).omit({
+export const selectClientSchema = createSelectSchema(client).omit({
   id: true,
   deleted_at: true,
 });
 
-export const insertBrandSchema = createInsertSchema(brand, {
+export const insertClientSchema = createInsertSchema(client, {
   name: (schema) => schema.min(1),
 }).omit({
   uid: true,
@@ -41,7 +44,7 @@ export const insertBrandSchema = createInsertSchema(brand, {
   deleted_at: true,
 });
 
-export const patchBrandSchema = createUpdateSchema(brand, {
+export const patchClientSchema = createUpdateSchema(client, {
   name: (schema) => schema.min(1),
 }).omit({
   uid: true,
@@ -50,4 +53,6 @@ export const patchBrandSchema = createUpdateSchema(brand, {
   deleted_at: true,
 });
 
-export type SelectBrandSchema = z.infer<typeof selectBrandSchema>;
+export type SelectClientSchema = z.infer<typeof selectClientSchema>;
+export type InsertClientSchema = z.infer<typeof insertClientSchema>;
+export type PatchClientSchema = z.infer<typeof patchClientSchema>;

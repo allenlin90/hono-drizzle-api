@@ -4,7 +4,7 @@ import {
   insertBrandSchema,
   patchBrandSchema,
   selectBrandSchema,
-} from "@/db/schema/brand.schema";
+} from "@/db/schema/client.schema";
 import { PREFIX } from "@/constants";
 import jsonContent from "@/openapi/helpers/json-content";
 import jsonContentRequired from "@/openapi/helpers/json-content-required";

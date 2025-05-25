@@ -4,7 +4,7 @@ import { z } from "@hono/zod-openapi";
 import { isNull, sql } from "drizzle-orm";
 
 import { brandedUid, timestamps } from "../helpers/columns.helpers";
-import { brand } from "./brand.schema";
+import { client } from "./client.schema";
 import { PREFIX } from "@/constants";
 import {
   createInsertSchema,
@@ -19,51 +19,67 @@ export const materialTypeEnum = t.pgEnum("material_type", [
   "other",
 ]);
 
-export const brandMaterial = table(
-  "brand_material",
+export const material = table(
+  "material",
   {
     id: t.integer("id").primaryKey().generatedAlwaysAsIdentity(),
     uid: brandedUid(PREFIX.MATERIAL),
-    brand_id: t
-      .integer("brand_id")
-      .references(() => brand.id)
-      .notNull(),
+    client_id: t
+      .integer("client_id")
+      .references(() => client.id),
     type: materialTypeEnum().notNull(),
     name: t.varchar("name").notNull(),
     description: t.text("description"),
     is_active: t.boolean("is_active").default(true).notNull(),
-    resource_url: t.varchar("resource_url"),
+    resource_url: t.varchar("resource_url").unique(),
     ...timestamps,
   },
   (table) => [
-    t.unique().on(table.brand_id, table.name),
-    t.index("brand_id_idx").on(table.id).where(isNull(table.deleted_at)),
     t
-      .index("brand_material_name_idx")
+      .index()
       .on(table.name)
       .where(isNull(table.deleted_at)),
     t
-      .index("brand_material_resource_url_idx")
-      .on(table.resource_url)
+      .index()
+      .on(table.client_id)
       .where(isNull(table.deleted_at)),
     t
-      .index("brand_material_name_search_idx")
+      .index()
+      .on(table.client_id, table.type)
+      .where(isNull(table.deleted_at)),
+    t
+      .index()
+      .on(table.type)
+      .where(isNull(table.deleted_at)),
+    t
+      .index()
+      .on(table.type, table.is_active)
+      .where(isNull(table.deleted_at)),
+    t
+      .index()
+      .on(table.client_id, table.is_active)
+      .where(isNull(table.deleted_at)),
+    t
+      .index("material_name_search_idx")
       .using("gin", sql`to_tsvector('english', ${table.name})`),
+    t
+      .index("material_description_search_idx")
+      .using("gin", sql`to_tsvector('english', ${table.description})`),
   ]
 );
 
-export const selectBrandMaterialSchema = createSelectSchema(brandMaterial)
-  .merge(z.object({ brand_uid: z.string() }))
+export const selectMaterialSchema = createSelectSchema(material)
+  .merge(z.object({ client_uid: z.string() }))
   .omit({
     id: true,
-    brand_id: true,
+    client_id: true,
     deleted_at: true,
   });
 
-export const insertBrandMaterialSchema = createInsertSchema(brandMaterial)
+export const insertMaterialSchema = createInsertSchema(material)
   .merge(
     z.object({
-      brand_uid: z.string(),
+      client_uid: z.string().optional(),
       name: z.string().min(1),
       type: z.enum(materialTypeEnum.enumValues),
       description: z.string().min(1).optional(),
@@ -72,16 +88,16 @@ export const insertBrandMaterialSchema = createInsertSchema(brandMaterial)
   )
   .omit({
     uid: true,
-    brand_id: true,
+    client_id: true,
     created_at: true,
     updated_at: true,
     deleted_at: true,
   });
 
-export const patchBrandMaterialSchema = createUpdateSchema(brandMaterial)
+export const patchMaterialSchema = createUpdateSchema(material)
   .merge(
     z.object({
-      brand_uid: z.string().startsWith(PREFIX.BRAND).optional(),
+      client_uid: z.string().startsWith(PREFIX.CLIENT).optional(),
       name: z.string().min(1).optional(),
       type: z.enum(materialTypeEnum.enumValues).optional(),
       description: z.string().min(1).optional(),
@@ -90,7 +106,7 @@ export const patchBrandMaterialSchema = createUpdateSchema(brandMaterial)
   )
   .omit({
     uid: true,
-    brand_id: true,
+    client_id: true,
     created_at: true,
     updated_at: true,
     deleted_at: true,
@@ -98,10 +114,10 @@ export const patchBrandMaterialSchema = createUpdateSchema(brandMaterial)
 
 export const brandMaterialTypeEnum = createSelectSchema(materialTypeEnum);
 
-export type SelectBrandMaterialSchema = z.infer<
-  typeof selectBrandMaterialSchema
+export type SelectMaterialSchema = z.infer<
+  typeof selectMaterialSchema
 >;
-export type InsertBrandMaterialSchema = z.infer<
-  typeof insertBrandMaterialSchema
+export type InsertMaterialSchema = z.infer<
+  typeof insertMaterialSchema
 >;
-export type PatchShowSchema = z.infer<typeof patchBrandMaterialSchema>;
+export type PatchMaterialSchema = z.infer<typeof patchMaterialSchema>;

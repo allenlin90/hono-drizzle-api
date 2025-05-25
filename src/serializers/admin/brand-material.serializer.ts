@@ -1,7 +1,7 @@
 import {
   selectBrandMaterialSchema,
   type SelectBrandMaterialSchema,
-} from "@/db/schema/brand-material.schema";
+} from "@/db/schema/material.schema";
 
 export const brandMaterialSerializer = (
   brandMaterial: SelectBrandMaterialSchema

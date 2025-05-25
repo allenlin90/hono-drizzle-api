@@ -13,7 +13,7 @@ import { createErrorSchema } from "@/openapi/schemas/create-error-schema";
 import { IdParams } from "@/openapi/schemas/id-params";
 
 import { showDetailsTransformer, showTransformer } from "@/serializers/api/shows/show.serializer";
-import { selectBrandMaterialSchema } from "@/db/schema/brand-material.schema";
+import { selectBrandMaterialSchema } from "@/db/schema/material.schema";
 
 const tags = ["Shows"];
 

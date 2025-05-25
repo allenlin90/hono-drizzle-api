@@ -2,7 +2,7 @@ import { z } from "@hono/zod-openapi";
 
 import { showPlatformMc } from "@/db/schema/show-platform-mc.schema";
 import { createSelectSchema } from "drizzle-zod";
-import { selectBrandSchema } from "@/db/schema/brand.schema";
+import { selectBrandSchema } from "@/db/schema/client.schema";
 import { selectMcSchema } from "@/db/schema/mc.schema";
 import { selectPlatformSchema } from "@/db/schema/platform.schema";
 import { selectShowSchema } from "@/db/schema/show.schema";

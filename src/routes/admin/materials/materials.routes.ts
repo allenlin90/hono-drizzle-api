@@ -5,7 +5,7 @@ import {
   insertBrandMaterialSchema,
   patchBrandMaterialSchema,
   selectBrandMaterialSchema,
-} from "@/db/schema/brand-material.schema";
+} from "@/db/schema/material.schema";
 import jsonContent from "@/openapi/helpers/json-content";
 import jsonContentOneOf from "@/openapi/helpers/json-content-one-of";
 import jsonContentRequired from "@/openapi/helpers/json-content-required";

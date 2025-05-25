@@ -4,8 +4,8 @@ import { createSelectSchema } from "drizzle-zod";
 import { showPlatformMaterial } from "@/db/schema";
 import { selectPlatformSchema } from "@/db/schema/platform.schema";
 import { selectShowSchema } from "@/db/schema/show.schema";
-import { selectBrandSchema } from "@/db/schema/brand.schema";
-import { selectBrandMaterialSchema } from "@/db/schema/brand-material.schema";
+import { selectBrandSchema } from "@/db/schema/client.schema";
+import { selectBrandMaterialSchema } from "@/db/schema/material.schema";
 
 export const showPlatformMaterialSchema = createSelectSchema(
   showPlatformMaterial

@@ -1,129 +1,131 @@
+import { isNull, sql } from "drizzle-orm";
 import { pgTable as table } from "drizzle-orm/pg-core";
 import * as t from "drizzle-orm/pg-core";
 import { z } from "@hono/zod-openapi";
-import { isNull } from "drizzle-orm";
-
-import { brandedUid, timestamps } from "../helpers/columns.helpers";
-import { platform } from "./platform.schema";
-import { show } from "./show.schema";
-import { studioRoom } from "./studio-room.schema";
 import {
   createInsertSchema,
   createSelectSchema,
   createUpdateSchema,
 } from "drizzle-zod";
-import { PREFIX } from "@/constants";
 
-// TODO: full text search with ts_vector
+import { PREFIX } from "@/constants";
+import { brandedUid, reviewByMember, timestamps } from "../helpers/columns.helpers";
+import { show } from "./show.schema";
+import { platform } from "./platform.schema";
+
 export const showPlatform = table(
   "show_platform",
   {
+    id: t.integer("id").primaryKey().generatedAlwaysAsIdentity(),
     uid: brandedUid(PREFIX.SHOW_PLATFORM),
-    show_id: t
-      .integer("show_id")
-      .references(() => show.id)
-      .notNull(),
-    platform_id: t
-      .integer("platform_id")
-      .references(() => platform.id)
-      .notNull(),
-    studio_room_id: t.integer("studio_room_id").references(() => studioRoom.id),
-    is_active: t.boolean("is_active").default(false).notNull(), // for show approval
-    alias_id: t.varchar("alias_id"), // in case the show has the other uid on a platform
+    show_id: t.integer("show_id").references(() => show.id).notNull(),
+    platform_id: t.integer("platform_id").references(() => platform.id).notNull(),
+    is_active: t.boolean("is_active").default(false).notNull(),
+    ext_id: t.varchar("ext_id").unique(),
+    note: t.varchar("note"),
+    ...reviewByMember,
     ...timestamps,
   },
   (table) => [
-    t.primaryKey({ columns: [table.show_id, table.platform_id] }),
+    t.unique().on(table.show_id, table.platform_id),
     t
-      .index("show_platform_show_id_idx")
+      .index()
       .on(table.show_id)
       .where(isNull(table.deleted_at)),
     t
-      .index("show_platform_platform_id_idx")
-      .on(table.platform_id)
-      .where(isNull(table.deleted_at)),
-    t
-      .index("show_platform_show_id_platform_id_idx")
+      .index()
       .on(table.show_id, table.platform_id)
       .where(isNull(table.deleted_at)),
     t
-      .index("show_platform_studio_room_id_idx")
-      .on(table.studio_room_id)
+      .index()
+      .on(table.platform_id)
       .where(isNull(table.deleted_at)),
     t
-      .index("show_platform_alias_id_idx")
-      .on(table.alias_id)
+      .index()
+      .on(table.review_form_id)
+      .where(isNull(table.deleted_at)),
+    t
+      .index()
+      .on(table.reviewer_id)
+      .where(isNull(table.deleted_at)),
+    t
+      .index()
+      .on(table.ext_id)
       .where(isNull(table.deleted_at)),
   ]
 );
 
-// basic schema without expand
-export const selectShowPlatformSchema = createSelectSchema(showPlatform)
+export const selectShowSchema = createSelectSchema(showPlatform)
   .merge(
     z.object({
-      show_uid: z.string().startsWith(PREFIX.SHOW),
-      platform_uid: z.string().startsWith(PREFIX.PLATFORM),
-      studio_room_uid: z.string().startsWith(PREFIX.STUDIO_ROOM).nullable(),
+      client_uid: z.string(),
     })
   )
   .omit({
+    id: true,
     show_id: true,
     platform_id: true,
-    studio_room_id: true,
-    created_at: true,
-    updated_at: true,
     deleted_at: true,
   });
 
-export const insertShowPlatformSchema = createInsertSchema(showPlatform)
+export const insertShowSchema = createInsertSchema(showPlatform)
   .merge(
     z.object({
+      name: z.string().min(1),
       show_uid: z.string().startsWith(PREFIX.SHOW),
       platform_uid: z.string().startsWith(PREFIX.PLATFORM),
-      studio_room_uid: z.string().startsWith(PREFIX.STUDIO_ROOM).nullable(),
+      ext_id: z.string().min(1).optional(),
+      note: z.string().min(1).optional(),
     })
   )
   .omit({
     uid: true,
     show_id: true,
     platform_id: true,
-    studio_room_id: true,
     created_at: true,
     updated_at: true,
     deleted_at: true,
   });
 
-export const patchShowPlatformSchema = createUpdateSchema(showPlatform)
+export const patchShowSchema = createUpdateSchema(showPlatform)
   .merge(
     z.object({
-      show_uid: z.string().startsWith(PREFIX.SHOW).optional(),
-      platform_uid: z.string().startsWith(PREFIX.PLATFORM).optional(),
-      studio_room_uid: z
-        .string()
-        .startsWith(PREFIX.STUDIO_ROOM)
-        .nullable()
-        .optional(),
+      name: z.string().min(1).optional(),
+      show_uid: z.string().startsWith(PREFIX.SHOW),
+      platform_uid: z.string().startsWith(PREFIX.PLATFORM),
+      ext_id: z.string().min(1).optional(),
+      note: z.string().min(1).optional(),
     })
   )
   .omit({
     uid: true,
     show_id: true,
     platform_id: true,
-    studio_room_id: true,
     created_at: true,
     updated_at: true,
     deleted_at: true,
   });
 
-export const patchBulkShowPlatformSchema = patchShowPlatformSchema.extend({
-  show_platform_uid: z.string().startsWith(PREFIX.SHOW_PLATFORM),
-});
+export const patchBulkShowSchema = createUpdateSchema(showPlatform)
+  .merge(
+    z.object({
+      name: z.string().min(1).optional(),
+      show_uid: z.string().startsWith(PREFIX.SHOW),
+      platform_uid: z.string().startsWith(PREFIX.PLATFORM),
+      ext_id: z.string().min(1).optional(),
+      note: z.string().min(1).optional(),
+    })
+  )
+  .omit({
+    uid: true,
+    show_id: true,
+    platform_id: true,
+    created_at: true,
+    updated_at: true,
+    deleted_at: true,
+  });
 
-export type SelectShowPlatformSchema = z.infer<typeof selectShowPlatformSchema>;
-export type InsertShowPlatformSchema = z.infer<typeof insertShowPlatformSchema>;
-export type PatchShowPlatformSchema = z.infer<typeof patchShowPlatformSchema>;
-export type PatchBulkShowPlatformSchema = z.infer<
-  typeof patchBulkShowPlatformSchema
->;
-
-export type ShowPlatformSchema = typeof showPlatform.$inferSelect;
+export type SelectShowSchema = z.infer<typeof selectShowSchema>;
+export type InsertShowSchema = z.infer<typeof insertShowSchema>;
+export type PatchShowSchema = z.infer<typeof patchShowSchema>;
+export type PatchBulkShowSchema = z.infer<typeof patchBulkShowSchema>;

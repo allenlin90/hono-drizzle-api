@@ -30,25 +30,28 @@ export const address = table(
     ...timestamps,
   },
   (table) => [
-    t.index("address_idx").on(table.address).where(isNull(table.deleted_at)),
     t
-      .index("address_sub_district_idx")
+      .index()
+      .on(table.address)
+      .where(isNull(table.deleted_at)),
+    t
+      .index()
       .on(table.sub_district)
       .where(isNull(table.deleted_at)),
     t
-      .index("address_district_idx")
+      .index()
       .on(table.district)
       .where(isNull(table.deleted_at)),
     t
-      .index("address_city_id_idx")
+      .index()
       .on(table.city_id)
       .where(isNull(table.deleted_at)),
     t
-      .index("address_province_idx")
+      .index()
       .on(table.province)
       .where(isNull(table.deleted_at)),
     t
-      .index("address_postcode_idx")
+      .index()
       .on(table.postcode)
       .where(isNull(table.deleted_at)),
   ]
