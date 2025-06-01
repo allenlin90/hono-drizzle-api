@@ -3,7 +3,7 @@ export { address } from "./address.schema";
 export { client } from "./client.schema";
 export { city } from "./city.schema";
 export { formTemplate, formTypeEnum } from "./form-template.schema";
-export { material, materialTypeEnum } from "./material.schema";
+export { material, materialTypePgEnum } from "./material.schema";
 export { mc, rankingTypeEnum } from "./mc.schema";
 export { member, memberTypeEnum } from "./member.schema";
 export { onsetTask, onsetTaskTypeEnum } from "./onset-task.schema";

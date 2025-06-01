@@ -12,7 +12,7 @@ import {
   createUpdateSchema,
 } from "drizzle-zod";
 
-export const materialTypeEnum = t.pgEnum("material_type", [
+export const materialTypePgEnum = t.pgEnum("material_type", [
   "mechanic",
   "scene",
   "script",
@@ -27,7 +27,7 @@ export const material = table(
     client_id: t
       .integer("client_id")
       .references(() => client.id),
-    type: materialTypeEnum().notNull(),
+    type: materialTypePgEnum().notNull(),
     name: t.varchar("name").notNull(),
     description: t.text("description"),
     is_active: t.boolean("is_active").default(true).notNull(),
@@ -81,7 +81,7 @@ export const insertMaterialSchema = createInsertSchema(material)
     z.object({
       client_uid: z.string().optional(),
       name: z.string().min(1),
-      type: z.enum(materialTypeEnum.enumValues),
+      type: z.enum(materialTypePgEnum.enumValues),
       description: z.string().min(1).optional(),
       resource_url: z.string().url().optional(),
     })
@@ -99,7 +99,7 @@ export const patchMaterialSchema = createUpdateSchema(material)
     z.object({
       client_uid: z.string().startsWith(PREFIX.CLIENT).optional(),
       name: z.string().min(1).optional(),
-      type: z.enum(materialTypeEnum.enumValues).optional(),
+      type: z.enum(materialTypePgEnum.enumValues).optional(),
       description: z.string().min(1).optional(),
       resource_url: z.string().url().optional(),
     })
@@ -112,12 +112,8 @@ export const patchMaterialSchema = createUpdateSchema(material)
     deleted_at: true,
   });
 
-export const brandMaterialTypeEnum = createSelectSchema(materialTypeEnum);
+export const materialTypeEnum = createSelectSchema(materialTypePgEnum);
 
-export type SelectMaterialSchema = z.infer<
-  typeof selectMaterialSchema
->;
-export type InsertMaterialSchema = z.infer<
-  typeof insertMaterialSchema
->;
+export type SelectMaterialSchema = z.infer<typeof selectMaterialSchema>;
+export type InsertMaterialSchema = z.infer<typeof insertMaterialSchema>;
 export type PatchMaterialSchema = z.infer<typeof patchMaterialSchema>;

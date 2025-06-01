@@ -3,19 +3,19 @@ import * as HttpStatusCodes from "@/http-status-codes";
 import {
   insertStudioSchema,
   patchStudioSchema,
-  selectStudioSchema,
 } from "@/db/schema/studio.schema";
 import { PREFIX } from "@/constants";
 import jsonContent from "@/openapi/helpers/json-content";
 import jsonContentRequired from "@/openapi/helpers/json-content-required";
 import jsonContentOneOf from "@/openapi/helpers/json-content-one-of";
-import { createErrorSchema } from "@/openapi/schemas/create-error-schema";
-import { IdParams } from "@/openapi/schemas/id-params";
-import { UnauthorizedSchema } from "@/openapi/schemas/unauthorized";
-import notFoundSchema from "@/openapi/schemas/not-found";
-import createMessageObjectSchema from "@/openapi/schemas/create-message-object";
-import { PaginatedObjectsSchema } from "@/openapi/schemas/paginated-objects";
-import { StudioParamFilters } from "@/openapi/schemas/studios/studio-param-filter";
+import { createErrorSchema } from "@/openapi/schemas/utils/create-error-schema";
+import { IdParams } from "@/openapi/schemas/params/id-params";
+import { UnauthorizedSchema } from "@/openapi/schemas/status/unauthorized";
+import notFoundSchema from "@/openapi/schemas/status/not-found-schema";
+import createMessageObjectSchema from "@/openapi/schemas/utils/create-message-object-schema";
+import { PaginatedObjectsSchema } from "@/openapi/schemas/utils/paginated-objects-schema";
+import { StudioParamFilters } from "@/openapi/schemas/param-filters/studio-param-filter";
+import { StudioSchema } from "@/serializers/admin/studio.serializer";
 
 const tags = ["Studios"];
 
@@ -30,7 +30,7 @@ export const list = createRoute({
     [HttpStatusCodes.OK]: jsonContent(
       PaginatedObjectsSchema({
         objectType: "studio",
-        objectSchema: selectStudioSchema,
+        objectSchema: StudioSchema,
       }),
       "List of studios"
     ),
@@ -54,7 +54,7 @@ export const create = createRoute({
   },
   responses: {
     [HttpStatusCodes.CREATED]: jsonContent(
-      selectStudioSchema,
+      StudioSchema,
       "The created studio"
     ),
     [HttpStatusCodes.UNPROCESSABLE_ENTITY]: {
@@ -84,7 +84,7 @@ export const getOne = createRoute({
   },
   responses: {
     [HttpStatusCodes.OK]: jsonContent(
-      selectStudioSchema,
+      StudioSchema,
       "The requested studio"
     ),
     [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContent(
@@ -108,7 +108,7 @@ export const patch = createRoute({
   },
   responses: {
     [HttpStatusCodes.OK]: jsonContent(
-      selectStudioSchema,
+      StudioSchema,
       "The updated studio object"
     ),
     [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContentOneOf(

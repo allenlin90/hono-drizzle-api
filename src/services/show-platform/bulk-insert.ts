@@ -3,15 +3,15 @@ import { z } from "@hono/zod-openapi";
 import { and, eq, getTableColumns, inArray, isNull, sql } from "drizzle-orm";
 
 import db from "@/db";
-import { brand, platform, show, studioRoom } from "@/db/schema";
+import { formTemplate, member, platform, show } from "@/db/schema";
 import {
   showPlatform,
   type InsertShowPlatformSchema,
 } from "@/db/schema/show-platform.schema";
 
-type uidKeys = "platformIds" | "showIds" | "studioRoomIds";
+type uidKeys = "platformIds" | "showIds" | 'reviewerIds' | "reviewFormIds";
 
-type Error = { message: string; payload: InsertShowPlatformSchema };
+type Error = { message: string; payload: InsertShowPlatformSchema; };
 
 type ShowPlatformToInsert = z.infer<
   ReturnType<typeof createInsertSchema<typeof showPlatform>>
@@ -46,9 +46,8 @@ export const bulkInsertShowPlatform = async ({
         set: {
           show_id: sql`excluded.show_id`,
           platform_id: sql`excluded.platform_id`,
-          studio_room_id: sql`excluded.studio_room_id`,
           is_active: sql`excluded.is_active`,
-          alias_id: sql`case when excluded.alias_id is not null then excluded.alias_id else ${showPlatform.alias_id} end`,
+          ext_id: sql`case when excluded.ext_id is not null then excluded.ext_id else ${showPlatform.ext_id} end`,
           updated_at: new Date().toISOString(),
         },
       })
@@ -70,13 +69,13 @@ async function validateInsertShowPlatformPayload({
 
   await validateOverallDuration({ ids, resolvedIds });
 
-  const { platformMap, showMap, studioRoomMap } = resolvedIds;
+  const { platformMap, showMap } = resolvedIds;
   const errors: Error[] = [];
   const dataToInsert: ShowPlatformToInsert[] = [];
 
   showPlatforms.forEach((payload) => {
     const errorMessage: string[] = [];
-    const { platform_uid, studio_room_uid, show_uid, ...restPayload } = payload;
+    const { platform_uid, show_uid, ...restPayload } = payload;
     const platform = platformMap.get(platform_uid);
     const show = showMap.get(show_uid);
 
@@ -86,15 +85,6 @@ async function validateInsertShowPlatformPayload({
 
     if (!show) {
       errorMessage.push(`Show with UID ${show_uid} not found`);
-    }
-
-    let studioRoom;
-    if (studio_room_uid) {
-      studioRoom = studioRoomMap.get(studio_room_uid);
-
-      if (!studioRoom) {
-        errorMessage.push(`Studio room with UID ${studio_room_uid} not found`);
-      }
     }
 
     if (errorMessage.length > 0) {
@@ -107,9 +97,6 @@ async function validateInsertShowPlatformPayload({
 
     dataToInsert.push({
       ...restPayload,
-      ...(studioRoom && {
-        studio_room_id: studioRoom.id,
-      }),
       platform_id: platform!.id,
       show_id: show!.id,
     });
@@ -130,12 +117,13 @@ async function validateOverallDuration({
 }: {
   ids: ReturnType<typeof getUniqueIds>;
   resolvedIds: Awaited<ReturnType<typeof resolveUIDs>>;
-}) {}
+}) { }
 
 async function resolveUIDs({
   showIds,
   platformIds,
-  studioRoomIds,
+  reviewerIds,
+  reviewFormIds,
 }: ReturnType<typeof getUniqueIds>) {
   const platformsByUID = db
     .select({
@@ -149,37 +137,37 @@ async function resolveUIDs({
   const showsByUID = db
     .select({
       ...getTableColumns(show),
-      brand: {
-        ...getTableColumns(brand),
-      },
     })
     .from(show)
-    .innerJoin(
-      brand,
-      and(eq(show.brand_id, brand.id), isNull(brand.deleted_at))
-    )
     .where(and(inArray(show.uid, showIds), isNull(show.deleted_at)));
 
-  const studioRoomsByUID = db
+  const reviewersByUID = db
     .select({
-      ...getTableColumns(studioRoom),
+      ...getTableColumns(member),
     })
-    .from(studioRoom)
-    .where(
-      and(inArray(studioRoom.uid, studioRoomIds), isNull(studioRoom.deleted_at))
-    );
+    .from(member)
+    .where(and(inArray(member.uid, reviewerIds), isNull(member.deleted_at)));
 
-  const [resolvedPlatforms, resolvedStudioRooms, resolvedShows] =
-    await Promise.all([platformsByUID, studioRoomsByUID, showsByUID]);
+  const reviewFormsByUID = db
+    .select({
+      ...getTableColumns(formTemplate),
+    })
+    .from(formTemplate)
+    .where(and(inArray(formTemplate.uid, reviewFormIds), isNull(formTemplate.deleted_at)));
+
+  const [resolvedPlatforms, resolvedShows, resolvedReviewers, resolvedReviewForms] =
+    await Promise.all([platformsByUID, showsByUID, reviewersByUID, reviewFormsByUID]);
 
   const showMap = new Map(resolvedShows.map((s) => [s.uid, s]));
   const platformMap = new Map(resolvedPlatforms.map((p) => [p.uid, p]));
-  const studioRoomMap = new Map(resolvedStudioRooms.map((sr) => [sr.uid, sr]));
+  const reviewerMap = new Map(resolvedReviewers.map((r) => [r.uid, r]));
+  const reviewFormMap = new Map(resolvedReviewForms.map((rf) => [rf.uid, rf]));
 
   return {
     showMap,
     platformMap,
-    studioRoomMap,
+    reviewerMap,
+    reviewFormMap,
   };
 }
 
@@ -188,7 +176,8 @@ function getUniqueIds(
 ): Record<uidKeys, string[]> {
   const showIds = new Set<string>();
   const platformIds = new Set<string>();
-  const studioRoomIds = new Set<string>();
+  const reviewerIds = new Set<string>();
+  const reviewFormIds = new Set<string>();
 
   for (const sp of showPlatforms) {
     if (sp.show_uid) {
@@ -197,14 +186,18 @@ function getUniqueIds(
     if (sp.platform_uid) {
       platformIds.add(sp.platform_uid);
     }
-    if (sp.studio_room_uid) {
-      studioRoomIds.add(sp.studio_room_uid);
+    if (sp.reviewer_uid) {
+      reviewerIds.add(sp.reviewer_uid);
+    }
+    if (sp.review_form_uid) {
+      reviewFormIds.add(sp.review_form_uid);
     }
   }
 
   return {
     showIds: Array.from(showIds),
     platformIds: Array.from(platformIds),
-    studioRoomIds: Array.from(studioRoomIds),
+    reviewerIds: Array.from(reviewerIds),
+    reviewFormIds: Array.from(reviewFormIds),
   };
 }

@@ -60,12 +60,14 @@ export const show = table(
 export const selectShowSchema = createSelectSchema(show)
   .merge(
     z.object({
-      client_uid: z.string(),
+      client_uid: z.string().nullable(),
+      studio_room_uid: z.string().nullable(),
     })
   )
   .omit({
     id: true,
     client_id: true,
+    studio_room_id: true,
     deleted_at: true,
   });
 
@@ -73,6 +75,7 @@ export const insertShowSchema = createInsertSchema(show)
   .merge(
     z.object({
       client_uid: z.string().startsWith(PREFIX.CLIENT).optional(),
+      studio_room_uid: z.string().startsWith(PREFIX.STUDIO_ROOM).optional(),
       name: z.string().min(1),
       start_time: z.string().datetime(),
       end_time: z.string().datetime(),
@@ -81,6 +84,7 @@ export const insertShowSchema = createInsertSchema(show)
   .omit({
     uid: true,
     client_id: true,
+    studio_room_id: true,
     created_at: true,
     updated_at: true,
     deleted_at: true,
@@ -92,7 +96,9 @@ export const insertShowSchema = createInsertSchema(show)
 export const patchShowSchema = createUpdateSchema(show)
   .merge(
     z.object({
+      show_uid: z.string().startsWith(PREFIX.SHOW),
       client_uid: z.string().startsWith(PREFIX.CLIENT).optional(),
+      studio_room_uid: z.string().startsWith(PREFIX.STUDIO_ROOM).optional(),
       name: z.string().min(1).optional(),
     })
   )
@@ -115,6 +121,8 @@ export const patchBulkShowSchema = createUpdateSchema(show)
   .merge(
     z.object({
       show_uid: z.string().startsWith(PREFIX.SHOW),
+      client_uid: z.string().startsWith(PREFIX.CLIENT).optional(),
+      studio_room_uid: z.string().startsWith(PREFIX.STUDIO_ROOM).optional(),
       name: z.string().min(1).optional(),
     })
   )

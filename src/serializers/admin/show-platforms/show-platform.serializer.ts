@@ -1,41 +1,27 @@
-import { z } from "@hono/zod-openapi";
-import { createSelectSchema } from "drizzle-zod";
+import {
+  selectShowPlatformSchema,
+  type SelectShowPlatformSchema
+} from "@/db/schema/show-platform.schema";
 
-import { showPlatform } from "@/db/schema/show-platform.schema";
-import { selectPlatformSchema } from "@/db/schema/platform.schema";
-import { selectShowSchema } from "@/db/schema/show.schema";
-import { selectStudioRoomSchema } from "@/db/schema/studio-room.schema";
-import { selectStudioSchema } from "@/db/schema/studio.schema";
+export const ShowPlatformSchema = selectShowPlatformSchema.transform((data) => ({
+  id: data.uid,
+  platform_id: data.platform_uid,
+  show_id: data.show_uid,
+  ext_id: data.ext_id,
+  is_active: data.is_active,
+  note: data.note,
+  reviewer_id: data.reviewer_uid,
+  review_items: data.review_items,
+  review_form_id: data.review_form_uid,
+  created_at: data.created_at,
+  updated_at: data.updated_at,
+}));
 
-export const showPlatformSchema = createSelectSchema(showPlatform)
-  .merge(
-    z.object({
-      platform: selectPlatformSchema,
-      show: selectShowSchema,
-      studio_room: selectStudioRoomSchema.omit({ studio_uid: true }).nullable(),
-      studio: selectStudioSchema.omit({ address_uid: true }).nullable(),
-    })
-  )
-  .omit({
-    show_id: true,
-    platform_id: true,
-    studio_room_id: true,
-    deleted_at: true,
-  })
-  .transform((value) => {
-    const { studio, studio_room, ...rest } = value;
-    const studioRoom = studio_room
-      ? { ...studio_room, ...(studio && { studio_uid: studio.uid }) }
-      : null;
+export const showPlatformSerializer = (showPlatform: SelectShowPlatformSchema) => {
+  const parsed = ShowPlatformSchema.parse(showPlatform);
 
-    return {
-      ...rest,
-      studio_room: studioRoom,
-    };
-  });
-
-export type ShowPlatformSchema = z.infer<typeof showPlatformSchema>;
-
-export const showPlatformSerializer = (showPlatform: ShowPlatformSchema) => {
-  return showPlatformSchema.parse(showPlatform);
+  return {
+    object: "show_platform",
+    ...parsed,
+  };
 };

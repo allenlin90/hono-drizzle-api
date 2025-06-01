@@ -17,25 +17,35 @@ import {
 } from "drizzle-orm";
 import * as HttpStatusCodes from "@/http-status-codes";
 import db from "@/db";
-import { mc, user } from "@/db/schema";
+import { mc } from "@/db/schema";
 import { mcSerializer } from "@/serializers/admin/mc.serializer";
 
 export const list: AppRouteHandler<ListRoute> = async (c) => {
-  const { offset, limit, name, user_id } = c.req.valid("query");
+  const { offset, limit, id, banned, name, email, ext_id, ranking } = c.req.valid("query");
 
+  const ilikeById = id ? eq(mc.uid, id) : undefined;
+  const ilikeByBanned = banned ? eq(mc.banned, banned) : undefined;
   const ilikeByName = name ? ilike(mc.name, `%${name}%`) : undefined;
-  const userUid = user_id ? eq(user.uid, user_id) : undefined;
-  const activeUsers = isNull(user.deleted_at);
+  const ilikeByEmail = email ? ilike(mc.email, `%${email}%`) : undefined;
+  const ilikeByExtId = ext_id ? ilike(mc.ext_id, `%${ext_id}%`) : undefined;
+  const ilikeByRanking = ranking ? ilike(mc.ranking, `%${ranking}%`) : undefined;
+
   const activeMcs = isNull(mc.deleted_at);
-  const filters = and(activeMcs, activeUsers, ilikeByName, userUid);
+  const filters = and(
+    activeMcs,
+    ilikeById,
+    ilikeByBanned,
+    ilikeByName,
+    ilikeByEmail,
+    ilikeByExtId,
+    ilikeByRanking
+  );
 
   const mcs = await db
     .select({
       ...getTableColumns(mc),
-      user_uid: user.uid,
     })
     .from(mc)
-    .leftJoin(user, and(eq(mc.user_id, user.id), isNull(user.deleted_at)))
     .where(filters)
     .limit(limit)
     .offset(offset)
@@ -44,10 +54,9 @@ export const list: AppRouteHandler<ListRoute> = async (c) => {
   const [{ count: total }] = await db
     .select({ count: count() })
     .from(mc)
-    .leftJoin(user, and(eq(mc.user_id, user.id), isNull(user.deleted_at)))
     .where(filters);
 
-  const data = mcs.map(mcSerializer);
+  const data = mcs.map((row) => mcSerializer({ ...row, metadata: row.metadata as any }));
 
   return c.json(
     {
@@ -64,38 +73,16 @@ export const list: AppRouteHandler<ListRoute> = async (c) => {
 export const create: AppRouteHandler<CreateRoute> = async (c) => {
   const payload = c.req.valid("json");
 
-  let selectUser: { id: number; } | null = null;
-
   try {
-    if (payload.user_uid) {
-      const queryResult = await db
-        .select({ id: user.id })
-        .from(user)
-        .where(and(eq(user.uid, payload.user_uid), isNull(user.deleted_at)))
-        .limit(1);
-
-      selectUser = queryResult[0];
-
-      if (!selectUser) {
-        return c.json(
-          {
-            message: "User not found",
-          },
-          HttpStatusCodes.NOT_FOUND
-        );
-      }
-    }
-
     const [inserted] = await db
       .insert(mc)
       .values({
         ...payload,
-        user_id: selectUser?.id,
       })
       .returning();
 
     return c.json(
-      mcSerializer({ ...inserted, user_uid: payload.user_uid }),
+      mcSerializer({ ...inserted, metadata: inserted.metadata as any }),
       HttpStatusCodes.CREATED
     );
   } catch (error: any) {
@@ -107,7 +94,6 @@ export const create: AppRouteHandler<CreateRoute> = async (c) => {
         HttpStatusCodes.CONFLICT
       );
     }
-
     throw error;
   }
 };
@@ -118,11 +104,9 @@ export const getOne: AppRouteHandler<GetOneRoute> = async (c) => {
   const [mcData] = await db
     .select({
       ...getTableColumns(mc),
-      user_uid: user.uid,
     })
     .from(mc)
-    .leftJoin(user, eq(mc.user_id, user.id))
-    .where(and(eq(mc.uid, id), isNull(user.deleted_at), isNull(mc.deleted_at)))
+    .where(and(eq(mc.uid, id), isNull(mc.deleted_at)))
     .limit(1);
 
   if (!mcData) {
@@ -134,47 +118,21 @@ export const getOne: AppRouteHandler<GetOneRoute> = async (c) => {
     );
   }
 
-  return c.json(mcSerializer(mcData), HttpStatusCodes.OK);
+  return c.json(mcSerializer({ ...mcData, metadata: mcData.metadata as any }), HttpStatusCodes.OK);
 };
 
 export const patch: AppRouteHandler<PatchRoute> = async (c) => {
   const { id: mc_uid } = c.req.valid("param");
   const payload = c.req.valid("json");
 
-  let selectUser: { id: number; } | null = null;
-  let byUserUid = payload.user_uid ? eq(user.uid, payload.user_uid) : undefined;
-
-  if (payload.user_uid) {
-    const result = await db
-      .select({ id: user.id })
-      .from(user)
-      .where(and(byUserUid, isNull(user.deleted_at)))
-      .limit(1);
-
-    selectUser = result[0];
-
-    if (!selectUser) {
-      return c.json(
-        {
-          message: "User not found",
-        },
-        HttpStatusCodes.NOT_FOUND
-      );
-    }
-  }
-
   const [updated] = await db
     .update(mc)
     .set({
       ...payload,
-      ...(selectUser && { user_id: selectUser?.id }),
-      ...(payload.user_uid === null && { user_id: null }),
     })
-    .from(user)
-    .where(and(eq(mc.uid, mc_uid), byUserUid, isNull(mc.deleted_at)))
+    .where(and(eq(mc.uid, mc_uid), isNull(mc.deleted_at)))
     .returning({
       ...getTableColumns(mc),
-      user_uid: user.uid,
     });
 
   if (!updated) {
@@ -186,7 +144,7 @@ export const patch: AppRouteHandler<PatchRoute> = async (c) => {
     );
   }
 
-  return c.json(mcSerializer(updated), HttpStatusCodes.OK);
+  return c.json(mcSerializer({ ...updated, metadata: updated.metadata as any }), HttpStatusCodes.OK);
 };
 
 export const remove: AppRouteHandler<RemoveRoute> = async (c) => {

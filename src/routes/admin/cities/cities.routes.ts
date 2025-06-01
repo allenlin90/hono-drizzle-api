@@ -1,23 +1,21 @@
 import { createRoute, z } from "@hono/zod-openapi";
 import * as HttpStatusCodes from "@/http-status-codes";
 import {
-  selectCitySchema,
   insertCitySchema,
   patchCitySchema,
 } from "@/db/schema/city.schema";
 import jsonContent from "@/openapi/helpers/json-content";
 import jsonContentRequired from "@/openapi/helpers/json-content-required";
 import jsonContentOneOf from "@/openapi/helpers/json-content-one-of";
-import { createErrorSchema } from "@/openapi/schemas/create-error-schema";
-import { IdParams } from "@/openapi/schemas/id-params";
-import { UnauthorizedSchema } from "@/openapi/schemas/unauthorized";
-import { PageParams } from "@/openapi/schemas/page-params";
-import notFoundSchema, { NotFoundSchema } from "@/openapi/schemas/not-found";
-import createMessageObjectSchema from "@/openapi/schemas/create-message-object";
-import { PaginatedObjectsSchema } from "@/openapi/schemas/paginated-objects";
-import { ShowParamFilters } from "@/openapi/schemas/shows/show-param-filters";
+import { IdParams } from "@/openapi/schemas/params/id-params";
+import { UnauthorizedSchema } from "@/openapi/schemas/status/unauthorized";
+import { PageParams } from "@/openapi/schemas/params/page-params";
+import { NotFoundSchema } from "@/openapi/schemas/status/not-found-schema";
+import { createErrorSchema } from "@/openapi/schemas/utils/create-error-schema";
+import { PaginatedObjectsSchema } from "@/openapi/schemas/utils/paginated-objects-schema";
 import { PREFIX } from "@/constants";
-import NameParams from "@/openapi/schemas/name-params";
+import { NameParams } from "@/openapi/schemas/params/name-params";
+import { CitySchema } from "@/serializers/admin/city.serializer";
 
 const tags = ["Cities"];
 
@@ -32,7 +30,7 @@ export const list = createRoute({
     [HttpStatusCodes.OK]: jsonContent(
       PaginatedObjectsSchema({
         objectType: "city",
-        objectSchema: selectCitySchema,
+        objectSchema: CitySchema,
       }),
       "List of shows"
     ),
@@ -52,7 +50,7 @@ export const create = createRoute({
   },
   responses: {
     [HttpStatusCodes.CREATED]: jsonContent(
-      selectCitySchema,
+      CitySchema,
       "The created city"
     ),
     [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContent(
@@ -70,7 +68,7 @@ export const getOne = createRoute({
     params: IdParams(PREFIX.CITY),
   },
   responses: {
-    [HttpStatusCodes.OK]: jsonContent(selectCitySchema, "The requested city"),
+    [HttpStatusCodes.OK]: jsonContent(CitySchema, "The requested city"),
     [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContent(
       createErrorSchema(IdParams(PREFIX.CITY)),
       "invalid id error"
@@ -88,7 +86,7 @@ export const patch = createRoute({
     body: jsonContentRequired(patchCitySchema, "The city updates"),
   },
   responses: {
-    [HttpStatusCodes.OK]: jsonContent(selectCitySchema, "The updated city"),
+    [HttpStatusCodes.OK]: jsonContent(CitySchema, "The updated city"),
     [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContentOneOf(
       [
         createErrorSchema(patchCitySchema),

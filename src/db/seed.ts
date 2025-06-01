@@ -10,21 +10,17 @@ if (!env.DB_SEEDING) {
   throw new Error('You must set DB_SEEDING to "true" when running seeds');
 }
 
-const {
-  formTypeEnum,
-  materialTypeEnum,
-  memberTypeEnum,
-  onsetTaskTypeEnum,
-  roomTypeEnum
-} = schema;
-
 const tables = {
   address: schema.address,
   client: schema.client,
   city: schema.city,
+  material: schema.material,
+  mc: schema.mc,
   member: schema.member,
   platform: schema.platform,
-  material: schema.material,
+  showPlatform: schema.showPlatform,
+  showMcMaterial: schema.showMcMaterial,
+  showMc: schema.showMc,
   show: schema.show,
   studioRoom: schema.studioRoom,
   studio: schema.studio,
@@ -104,7 +100,7 @@ await seed(db, tables).refine((r) => {
   // Helper arrays for foreign key assignments
   const showIds = Array.from({ length: 1000 }, (_, i) => i + 1);
   const platformIds = Array.from({ length: 3 }, (_, i) => i + 1);
-  const memberIds = Array.from({ length: 5 }, (_, i) => i + 1);
+  const mcIds = Array.from({ length: 5 }, (_, i) => i + 1);
 
   return {
     address: {
@@ -118,21 +114,6 @@ await seed(db, tables).refine((r) => {
         city_id: r.int({ minValue: 1, maxValue: 3 }),
         province: r.state(),
         postcode: r.postcode(),
-        ...timestamps,
-      },
-    },
-    material: {
-      count: 30,
-      columns: {
-        uid: r.valuesFromArray({
-          values: Array.from({ length: 30 }, () => generateBrandedUid(PREFIX.MATERIAL)),
-        }),
-        client_id: r.int({ minValue: 1, maxValue: 5 }),
-        type: r.valuesFromArray({ values: schema.materialTypeEnum.enumValues }),
-        name: r.companyName(),
-        description: r.loremIpsum(),
-        is_active: r.boolean(),
-        resource_url: r.string(),
         ...timestamps,
       },
     },
@@ -156,18 +137,56 @@ await seed(db, tables).refine((r) => {
         ...timestamps,
       },
     },
+    material: {
+      count: 30,
+      columns: {
+        uid: r.valuesFromArray({
+          values: Array.from({ length: 30 }, () => generateBrandedUid(PREFIX.MATERIAL)),
+        }),
+        client_id: r.int({ minValue: 1, maxValue: 5 }),
+        type: r.valuesFromArray({ values: schema.materialTypePgEnum.enumValues }),
+        name: r.companyName(),
+        description: r.loremIpsum(),
+        is_active: r.boolean(),
+        resource_url: r.string(),
+        ...timestamps,
+      },
+    },
+    mc: {
+      count: 5,
+      columns: {
+        uid: r.valuesFromArray({
+          values: Array.from({ length: 5 }, () => generateBrandedUid(PREFIX.MC)),
+          isUnique: true,
+        }),
+        banned: r.default({ defaultValue: false }),
+        email: r.email(),
+        ext_id: r.valuesFromArray({
+          values: Array.from({ length: 5 }, (_, i) => `ext${i + 1}`),
+          isUnique: true,
+        }),
+        metadata: r.default({ defaultValue: {} }),
+        name: r.firstName(),
+        ranking: r.valuesFromArray({ values: schema.rankingTypeEnum.enumValues }),
+        ...timestamps,
+      },
+    },
     member: {
       count: 5,
       columns: {
         uid: r.valuesFromArray({
           values: Array.from({ length: 5 }, () => generateBrandedUid(PREFIX.MEMBER)),
+          isUnique: true,
         }),
+        banned: r.boolean(),
+        email: r.email(),
+        ext_id: r.valuesFromArray({
+          values: Array.from({ length: 5 }, (_, i) => `member-ext${i + 1}`),
+          isUnique: true,
+        }),
+        metadata: r.default({ defaultValue: {} }),
         name: r.firstName(),
         type: r.valuesFromArray({ values: schema.memberTypeEnum.enumValues }),
-        email: r.email(),
-        ext_id: r.int({ minValue: 1000, maxValue: 9999, isUnique: true }),
-        metadata: r.default({ defaultValue: {} }),
-        banned: r.boolean(),
         ...timestamps,
       },
     },
@@ -195,6 +214,41 @@ await seed(db, tables).refine((r) => {
         ...timestamps,
       },
     },
+    showMc: {
+      count: 1000,
+      columns: {
+        show_id: r.int({ minValue: 1, maxValue: 1000, isUnique: true }),
+        mc_id: r.int({ minValue: 1, maxValue: 5 }),
+        is_active: r.boolean(),
+        note: r.default({ defaultValue: null }),
+        review_form_id: r.default({ defaultValue: null }),
+        reviewer_id: r.default({ defaultValue: null }),
+        ...timestamps,
+      },
+    },
+    showMcMaterial: {
+      count: 1000,
+      columns: {
+        show_mc_id: r.int({ minValue: 1, maxValue: 1000, isUnique: true }),
+        material_id: r.int({ minValue: 1, maxValue: 30 }),
+        is_active: r.boolean(),
+        note: r.default({ defaultValue: null }),
+        ...timestamps,
+      },
+    },
+    showPlatform: {
+      count: 1000,
+      columns: {
+        show_id: r.int({ minValue: 1, maxValue: 1000, isUnique: true }),
+        platform_id: r.int({ minValue: 1, maxValue: 3 }),
+        is_active: r.boolean(),
+        ext_id: r.default({ defaultValue: null }),
+        note: r.default({ defaultValue: null }),
+        review_form_id: r.default({ defaultValue: null }),
+        reviewer_id: r.default({ defaultValue: null }),
+        ...timestamps,
+      },
+    },
     studioRoom: {
       count: 10,
       columns: {
@@ -215,41 +269,6 @@ await seed(db, tables).refine((r) => {
         }),
         name: r.companyName(),
         address_id: r.int({ minValue: 1, maxValue: 10, isUnique: true }),
-        ...timestamps,
-      },
-    },
-    showPlatform: {
-      count: 1000,
-      columns: {
-        show_id: r.valuesFromArray({ values: showIds }),
-        platform_id: r.valuesFromArray({ values: platformIds }),
-        is_active: r.boolean(),
-        ext_id: r.default({ defaultValue: undefined }),
-        note: r.default({ defaultValue: undefined }),
-        review_form_id: r.default({ defaultValue: undefined }),
-        reviewer_id: r.default({ defaultValue: undefined }),
-        ...timestamps,
-      },
-    },
-    showMc: {
-      count: 1000,
-      columns: {
-        show_id: r.valuesFromArray({ values: showIds }),
-        mc_id: r.valuesFromArray({ values: Array.from({ length: 1000 }, (_, i) => (i % memberIds.length) + 1) }),
-        is_active: r.boolean(),
-        note: r.default({ defaultValue: undefined }),
-        review_form_id: r.default({ defaultValue: undefined }),
-        reviewer_id: r.default({ defaultValue: undefined }),
-        ...timestamps,
-      },
-    },
-    showMcMaterial: {
-      count: 1000,
-      columns: {
-        show_mc_id: r.int({ minValue: 1, maxValue: 1000 }),
-        material_id: r.int({ minValue: 1, maxValue: 30 }),
-        is_active: r.boolean(),
-        note: r.default({ defaultValue: undefined }),
         ...timestamps,
       },
     },

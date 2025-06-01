@@ -9,46 +9,46 @@ import type {
 import { and, count, eq, getTableColumns, ilike, isNull } from "drizzle-orm";
 import * as HttpStatusCodes from "@/http-status-codes";
 import db from "@/db";
-import { brand, brandMaterial } from "@/db/schema";
-import { brandMaterialSerializer } from "@/serializers/admin/brand-material.serializer";
+import { client, material } from "@/db/schema";
+import { materialSerializer } from "@/serializers/admin/material.serializer";
 
 export const list: AppRouteHandler<ListRoute> = async (c) => {
-  const { offset, limit, brand_id, name, type, is_active } =
+  const { offset, limit, client_id, name, type, is_active } =
     c.req.valid("query");
 
-  const ilikeByName = name ? ilike(brandMaterial.name, `%${name}%`) : undefined;
-  const brandUid = brand_id ? eq(brand.uid, brand_id) : undefined;
+  const ilikeByName = name ? ilike(material.name, `%${name}%`) : undefined;
+  const clientUid = client_id ? eq(client.uid, client_id) : undefined;
   const isActive =
     is_active !== undefined
-      ? eq(brandMaterial.is_active, is_active)
+      ? eq(material.is_active, is_active)
       : undefined;
-  const materialType = type ? eq(brandMaterial.type, type) : undefined;
+  const materialType = type ? eq(material.type, type) : undefined;
 
-  const filters = and(ilikeByName, brandUid, isActive, materialType);
+  const filters = and(ilikeByName, clientUid, isActive, materialType);
 
-  const brandMaterials = await db
+  const materialsList = await db
     .select({
-      ...getTableColumns(brandMaterial),
-      brand_uid: brand.uid,
+      ...getTableColumns(material),
+      client_uid: client.uid,
     })
-    .from(brandMaterial)
-    .innerJoin(brand, eq(brandMaterial.brand_id, brand.id))
+    .from(material)
+    .innerJoin(client, eq(material.client_id, client.id))
     .where(filters)
     .limit(limit)
     .offset(offset)
-    .orderBy(brandMaterial.created_at);
+    .orderBy(material.created_at);
 
   const [{ count: total }] = await db
     .select({ count: count() })
-    .from(brandMaterial)
-    .innerJoin(brand, eq(brandMaterial.brand_id, brand.id))
+    .from(material)
+    .innerJoin(client, eq(material.client_id, client.id))
     .where(filters);
 
-  const data = brandMaterials.map(brandMaterialSerializer);
+  const data = materialsList.map(materialSerializer);
 
   return c.json(
     {
-      object: "brand-material",
+      object: "material",
       data,
       limit,
       offset,
@@ -72,31 +72,50 @@ export const create: AppRouteHandler<CreateRoute> = async (c) => {
 
   const payload = c.req.valid("json");
 
-  const [selectBrand] = await db
-    .select({ id: brand.id })
-    .from(brand)
-    .where(and(eq(brand.uid, payload.brand_uid), isNull(brand.deleted_at)))
-    .limit(1);
-
-  if (!selectBrand) {
+  if (!payload.client_uid) {
     return c.json(
       {
-        message: "Brand not found",
+        success: false,
+        error: {
+          name: "ValidationError",
+          issues: [
+            {
+              path: ["client_uid"],
+              code: "invalid_type",
+              message: "client_uid is required",
+            },
+          ],
+        },
+      },
+      HttpStatusCodes.UNPROCESSABLE_ENTITY
+    );
+  }
+
+  const [selectClient] = await db
+    .select({ id: client.id })
+    .from(client)
+    .where(and(eq(client.uid, payload.client_uid), isNull(client.deleted_at)))
+    .limit(1);
+
+  if (!selectClient) {
+    return c.json(
+      {
+        message: "Client not found",
       },
       HttpStatusCodes.NOT_FOUND
     );
   }
 
   const [inserted] = await db
-    .insert(brandMaterial)
+    .insert(material)
     .values({
       ...payload,
-      brand_id: selectBrand.id,
+      client_id: selectClient.id,
     })
     .returning();
 
   return c.json(
-    brandMaterialSerializer({ ...inserted, brand_uid: payload.brand_uid }),
+    materialSerializer({ ...inserted, client_uid: payload.client_uid as string }),
     HttpStatusCodes.CREATED
   );
 };
@@ -104,50 +123,50 @@ export const create: AppRouteHandler<CreateRoute> = async (c) => {
 export const getOne: AppRouteHandler<GetOneRoute> = async (c) => {
   const { id } = c.req.valid("param");
 
-  const [brandMaterialData] = await db
+  const [materialData] = await db
     .select({
-      ...getTableColumns(brandMaterial),
-      brand_uid: brand.uid,
+      ...getTableColumns(material),
+      client_uid: client.uid,
     })
-    .from(brandMaterial)
-    .innerJoin(brand, eq(brandMaterial.brand_id, brand.id))
-    .where(and(eq(brandMaterial.uid, id), isNull(brand.deleted_at)))
+    .from(material)
+    .innerJoin(client, eq(material.client_id, client.id))
+    .where(and(eq(material.uid, id), isNull(client.deleted_at)))
     .limit(1);
 
-  if (!brandMaterialData) {
+  if (!materialData) {
     return c.json(
       {
-        message: "Show not found",
+        message: "Material not found",
       },
       HttpStatusCodes.NOT_FOUND
     );
   }
 
-  return c.json(brandMaterialSerializer(brandMaterialData), HttpStatusCodes.OK);
+  return c.json(materialSerializer(materialData), HttpStatusCodes.OK);
 };
 
 export const patch: AppRouteHandler<PatchRoute> = async (c) => {
-  const { id: brand_material_uid } = c.req.valid("param");
+  const { id: material_uid } = c.req.valid("param");
   const payload = c.req.valid("json");
 
-  let selectBrand: { id: number; } | null = null;
-  let byBrandUid = payload.brand_uid
-    ? eq(brand.uid, payload.brand_uid)
+  let selectClient: { id: number } | null = null;
+  let byClientUid = payload.client_uid
+    ? eq(client.uid, payload.client_uid)
     : undefined;
 
-  if (payload.brand_uid) {
+  if (payload.client_uid) {
     const result = await db
-      .select({ id: brand.id })
-      .from(brand)
-      .where(and(byBrandUid, isNull(brand.deleted_at)))
+      .select({ id: client.id })
+      .from(client)
+      .where(and(byClientUid, isNull(client.deleted_at)))
       .limit(1);
 
-    selectBrand = result[0];
+    selectClient = result[0];
 
-    if (!selectBrand) {
+    if (!selectClient) {
       return c.json(
         {
-          message: "Brand not found",
+          message: "Client not found",
         },
         HttpStatusCodes.NOT_FOUND
       );
@@ -155,52 +174,52 @@ export const patch: AppRouteHandler<PatchRoute> = async (c) => {
   }
 
   const [updated] = await db
-    .update(brandMaterial)
+    .update(material)
     .set({
       ...payload,
-      ...(selectBrand && { brand_id: selectBrand?.id }),
+      ...(selectClient && { client_id: selectClient?.id }),
     })
-    .from(brand)
+    .from(client)
     .where(
       and(
-        eq(brandMaterial.uid, brand_material_uid),
-        byBrandUid,
-        isNull(brandMaterial.deleted_at)
+        eq(material.uid, material_uid),
+        byClientUid,
+        isNull(material.deleted_at)
       )
     )
     .returning({
-      ...getTableColumns(brandMaterial),
-      brand_uid: brand.uid,
+      ...getTableColumns(material),
+      client_uid: client.uid,
     });
 
   if (!updated) {
     return c.json(
       {
-        message: "Brand material not found",
+        message: "Material not found",
       },
       HttpStatusCodes.NOT_FOUND
     );
   }
 
-  return c.json(brandMaterialSerializer(updated), HttpStatusCodes.OK);
+  return c.json(materialSerializer(updated), HttpStatusCodes.OK);
 };
 
 export const remove: AppRouteHandler<RemoveRoute> = async (c) => {
-  const { id: show_uid } = c.req.valid("param");
+  const { id: material_uid } = c.req.valid("param");
 
-  // TODO: remove associated data, e.g. show_platform_material
+  // TODO: remove associated data, e.g. material_platform_material
   const result = await db
-    .update(brandMaterial)
+    .update(material)
     .set({ deleted_at: new Date().toISOString() })
     .where(
-      and(eq(brandMaterial.uid, show_uid), isNull(brandMaterial.deleted_at))
+      and(eq(material.uid, material_uid), isNull(material.deleted_at))
     )
     .returning();
 
   if (!result.length) {
     return c.json(
       {
-        message: "Brand material not found",
+        message: "Material not found",
       },
       HttpStatusCodes.NOT_FOUND
     );

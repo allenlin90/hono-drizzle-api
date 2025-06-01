@@ -4,18 +4,18 @@ import { PREFIX } from "@/constants";
 import {
   insertMcSchema,
   patchMcSchema,
-  selectMcSchema,
 } from "@/db/schema/mc.schema";
-import jsonContent from "@/openapi/helpers/json-content";
-import jsonContentRequired from "@/openapi/helpers/json-content-required";
-import jsonContentOneOf from "@/openapi/helpers/json-content-one-of";
-import { createErrorSchema } from "@/openapi/schemas/create-error-schema";
-import { IdParams } from "@/openapi/schemas/id-params";
-import { UnauthorizedSchema } from "@/openapi/schemas/unauthorized";
-import notFoundSchema, { NotFoundSchema } from "@/openapi/schemas/not-found";
-import createMessageObjectSchema from "@/openapi/schemas/create-message-object";
-import { PaginatedObjectsSchema } from "@/openapi/schemas/paginated-objects";
-import { McParamFilters } from "@/openapi/schemas/mcs/mc-param-filters";
+import { jsonContent } from "@/openapi/helpers/json-content";
+import { jsonContentRequired } from "@/openapi/helpers/json-content-required";
+import { jsonContentOneOf } from "@/openapi/helpers/json-content-one-of";
+import { createErrorSchema } from "@/openapi/schemas/utils/create-error-schema";
+import { IdParams } from "@/openapi/schemas/params/id-params";
+import { UnauthorizedSchema } from "@/openapi/schemas/status/unauthorized";
+import { NotFoundSchema } from "@/openapi/schemas/status/not-found-schema";
+import { createMessageObjectSchema } from "@/openapi/schemas/utils/create-message-object-schema";
+import { PaginatedObjectsSchema } from "@/openapi/schemas/utils/paginated-objects-schema";
+import { McParamFilters } from "@/openapi/schemas/param-filters/mc-param-filters";
+import { McSchema } from '@/serializers/admin/mc.serializer';
 
 const tags = ["Mcs"];
 
@@ -30,7 +30,7 @@ export const list = createRoute({
     [HttpStatusCodes.OK]: jsonContent(
       PaginatedObjectsSchema({
         objectType: "mc",
-        objectSchema: selectMcSchema,
+        objectSchema: McSchema,
       }),
       "List of mcs"
     ),
@@ -39,7 +39,7 @@ export const list = createRoute({
       "Unauthorized"
     ),
     [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContentOneOf(
-      [createErrorSchema(McParamFilters), notFoundSchema],
+      [createErrorSchema(McParamFilters), NotFoundSchema],
       "Provided query params are not processable"
     ),
   },
@@ -53,7 +53,7 @@ export const create = createRoute({
     body: jsonContentRequired(insertMcSchema, "The mc to create"),
   },
   responses: {
-    [HttpStatusCodes.CREATED]: jsonContent(selectMcSchema, "The created mc"),
+    [HttpStatusCodes.CREATED]: jsonContent(McSchema, "The created mc"),
     [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContent(
       createErrorSchema(insertMcSchema),
       "The validation error"
@@ -77,12 +77,12 @@ export const getOne = createRoute({
     params: IdParams(PREFIX.MC),
   },
   responses: {
-    [HttpStatusCodes.OK]: jsonContent(selectMcSchema, "The requested mc"),
+    [HttpStatusCodes.OK]: jsonContent(McSchema, "The requested mc"),
     [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContent(
       createErrorSchema(IdParams(PREFIX.MC)),
       "invalid id error"
     ),
-    [HttpStatusCodes.NOT_FOUND]: jsonContent(notFoundSchema, "Mc not found"),
+    [HttpStatusCodes.NOT_FOUND]: jsonContent(NotFoundSchema, "Mc not found"),
   },
 });
 
@@ -95,7 +95,7 @@ export const patch = createRoute({
     body: jsonContentRequired(patchMcSchema, "The mc to update"),
   },
   responses: {
-    [HttpStatusCodes.OK]: jsonContent(selectMcSchema, "The updated mc object"),
+    [HttpStatusCodes.OK]: jsonContent(McSchema, "The updated mc object"),
     [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContentOneOf(
       [
         createErrorSchema(patchMcSchema),
@@ -103,7 +103,7 @@ export const patch = createRoute({
       ],
       "The validation error"
     ),
-    [HttpStatusCodes.NOT_FOUND]: jsonContent(notFoundSchema, "Mc not found"),
+    [HttpStatusCodes.NOT_FOUND]: jsonContent(NotFoundSchema, "Mc not found"),
   },
 });
 

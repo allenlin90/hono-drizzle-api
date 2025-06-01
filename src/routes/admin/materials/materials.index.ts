@@ -5,7 +5,7 @@ import * as handlers from "./materials.handlers";
 
 export const router = createRouter();
 
-router.post("/brand-materials/*", idempotencyKey);
+router.post("/materials/*", idempotencyKey);
 
 /**
  * allow only admin and manager users

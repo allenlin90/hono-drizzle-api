@@ -3,19 +3,19 @@ import * as HttpStatusCodes from "@/http-status-codes";
 import {
   insertAddressSchema,
   patchAddressSchema,
-  selectAddressSchema,
 } from "@/db/schema/address.schema";
 import { PREFIX } from "@/constants";
 import jsonContent from "@/openapi/helpers/json-content";
 import jsonContentRequired from "@/openapi/helpers/json-content-required";
 import jsonContentOneOf from "@/openapi/helpers/json-content-one-of";
-import { createErrorSchema } from "@/openapi/schemas/create-error-schema";
-import { IdParams } from "@/openapi/schemas/id-params";
-import { UnauthorizedSchema } from "@/openapi/schemas/unauthorized";
-import notFoundSchema, { NotFoundSchema } from "@/openapi/schemas/not-found";
-import createMessageObjectSchema from "@/openapi/schemas/create-message-object";
-import { PaginatedObjectsSchema } from "@/openapi/schemas/paginated-objects";
-import { AddressParamFilters } from "@/openapi/schemas/addresses/address-param-filters";
+import { createErrorSchema } from "@/openapi/schemas/utils/create-error-schema";
+import { IdParams } from "@/openapi/schemas/params/id-params";
+import { UnauthorizedSchema } from "@/openapi/schemas/status/unauthorized";
+import { NotFoundSchema } from "@/openapi/schemas/status/not-found-schema";
+import createMessageObjectSchema from "@/openapi/schemas/utils/create-message-object-schema";
+import { PaginatedObjectsSchema } from "@/openapi/schemas/utils/paginated-objects-schema";
+import { AddressParamFilters } from "@/openapi/schemas/param-filters/address-param-filters";
+import { AddressSchema } from '@/serializers/admin/address.serializer';
 
 const tags = ["Addresses"];
 
@@ -30,7 +30,7 @@ export const list = createRoute({
     [HttpStatusCodes.OK]: jsonContent(
       PaginatedObjectsSchema({
         objectType: "address",
-        objectSchema: selectAddressSchema,
+        objectSchema: AddressSchema,
       }),
       "List of addresses"
     ),
@@ -39,7 +39,7 @@ export const list = createRoute({
       "Unauthorized"
     ),
     [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContentOneOf(
-      [createErrorSchema(AddressParamFilters), notFoundSchema],
+      [createErrorSchema(AddressParamFilters), NotFoundSchema],
       "Provided query params are not processable"
     ),
   },
@@ -54,7 +54,7 @@ export const create = createRoute({
   },
   responses: {
     [HttpStatusCodes.CREATED]: jsonContent(
-      selectAddressSchema,
+      AddressSchema,
       "The created show"
     ),
     [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContent(
@@ -77,7 +77,7 @@ export const getOne = createRoute({
   },
   responses: {
     [HttpStatusCodes.OK]: jsonContent(
-      selectAddressSchema,
+      AddressSchema,
       "The requested address"
     ),
     [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContent(
@@ -85,7 +85,7 @@ export const getOne = createRoute({
       "invalid id error"
     ),
     [HttpStatusCodes.NOT_FOUND]: jsonContent(
-      notFoundSchema,
+      NotFoundSchema,
       "Address not found"
     ),
   },
@@ -101,7 +101,7 @@ export const patch = createRoute({
   },
   responses: {
     [HttpStatusCodes.OK]: jsonContent(
-      selectAddressSchema,
+      AddressSchema,
       "The updated address object"
     ),
     [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContentOneOf(
@@ -111,7 +111,7 @@ export const patch = createRoute({
       ],
       "The validation error"
     ),
-    [HttpStatusCodes.NOT_FOUND]: jsonContent(notFoundSchema, "City not found"),
+    [HttpStatusCodes.NOT_FOUND]: jsonContent(NotFoundSchema, "City not found"),
   },
 });
 

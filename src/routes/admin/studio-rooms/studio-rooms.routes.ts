@@ -3,19 +3,19 @@ import * as HttpStatusCodes from "@/http-status-codes";
 import {
   insertStudioRoomSchema,
   patchStudioRoomSchema,
-  selectStudioRoomSchema,
 } from "@/db/schema/studio-room.schema";
 import { PREFIX } from "@/constants";
 import jsonContent from "@/openapi/helpers/json-content";
 import jsonContentRequired from "@/openapi/helpers/json-content-required";
 import jsonContentOneOf from "@/openapi/helpers/json-content-one-of";
-import { createErrorSchema } from "@/openapi/schemas/create-error-schema";
-import { IdParams } from "@/openapi/schemas/id-params";
-import { UnauthorizedSchema } from "@/openapi/schemas/unauthorized";
-import notFoundSchema from "@/openapi/schemas/not-found";
-import createMessageObjectSchema from "@/openapi/schemas/create-message-object";
-import { PaginatedObjectsSchema } from "@/openapi/schemas/paginated-objects";
-import StudioRoomParamFilters from "@/openapi/schemas/studio-rooms/studio-room-param-filters";
+import { createErrorSchema } from "@/openapi/schemas/utils/create-error-schema";
+import { IdParams } from "@/openapi/schemas/params/id-params";
+import { UnauthorizedSchema } from "@/openapi/schemas/status/unauthorized";
+import notFoundSchema from "@/openapi/schemas/status/not-found-schema";
+import createMessageObjectSchema from "@/openapi/schemas/utils/create-message-object-schema";
+import { PaginatedObjectsSchema } from "@/openapi/schemas/utils/paginated-objects-schema";
+import StudioRoomParamFilters from "@/openapi/schemas/param-filters/studio-room-param-filters";
+import { StudioRoomSchema } from "@/serializers/admin/studio-room.serializer";
 
 const tags = ["StudioRooms"];
 
@@ -30,7 +30,7 @@ export const list = createRoute({
     [HttpStatusCodes.OK]: jsonContent(
       PaginatedObjectsSchema({
         objectType: "studio",
-        objectSchema: selectStudioRoomSchema,
+        objectSchema: StudioRoomSchema,
       }),
       "List of studio rooms"
     ),
@@ -57,7 +57,7 @@ export const create = createRoute({
   },
   responses: {
     [HttpStatusCodes.CREATED]: jsonContent(
-      selectStudioRoomSchema,
+      StudioRoomSchema,
       "The created studio room"
     ),
     [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContent(
@@ -80,7 +80,7 @@ export const getOne = createRoute({
   },
   responses: {
     [HttpStatusCodes.OK]: jsonContent(
-      selectStudioRoomSchema,
+      StudioRoomSchema,
       "The requested studio room"
     ),
     [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContent(
@@ -107,7 +107,7 @@ export const patch = createRoute({
   },
   responses: {
     [HttpStatusCodes.OK]: jsonContent(
-      selectStudioRoomSchema,
+      StudioRoomSchema,
       "The updated studio room object"
     ),
     [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContentOneOf(

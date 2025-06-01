@@ -4,29 +4,28 @@ import { createRoute, z } from "@hono/zod-openapi";
 
 import { PREFIX } from "@/constants";
 import * as HttpStatusCodes from "@/http-status-codes";
-import { showPlatformSchema } from "@/serializers/admin/show-platforms/show-platform.serializer";
+import { ShowPlatformSchema } from "@/serializers/admin/show-platforms/show-platform.serializer";
 import {
   insertShowPlatformSchema,
   patchBulkShowPlatformSchema,
-  selectShowPlatformSchema,
 } from "@/db/schema/show-platform.schema";
 
 import { jsonContent } from "@/openapi/helpers/json-content";
 import { jsonContentOneOf } from "@/openapi/helpers/json-content-one-of";
 import { jsonContentRequired } from "@/openapi/helpers/json-content-required";
 
-import { NotFoundSchema } from "@/openapi/schemas/not-found";
-import { UnauthorizedSchema } from "@/openapi/schemas/unauthorized";
-import { createErrorSchema } from "@/openapi/schemas/create-error-schema";
-import { createMessageObjectSchema } from "@/openapi/schemas/create-message-object";
-import { IdParams } from "@/openapi/schemas/id-params";
-import { PatchIdParams } from "@/openapi/schemas/patch-id-params";
-import { PaginatedObjectsSchema } from "@/openapi/schemas/paginated-objects";
+import { NotFoundSchema } from "@/openapi/schemas/status/not-found-schema";
+import { UnauthorizedSchema } from "@/openapi/schemas/status/unauthorized";
+import { createErrorSchema } from "@/openapi/schemas/utils/create-error-schema";
+import { createMessageObjectSchema } from "@/openapi/schemas/utils/create-message-object-schema";
+import { IdParams } from "@/openapi/schemas/params/id-params";
+import { PatchIdParams } from "@/openapi/schemas/params/patch-id-params";
+import { PaginatedObjectsSchema } from "@/openapi/schemas/utils/paginated-objects-schema";
 import {
   createShowPlatformPayloadSchema,
   updateShowPlatformPayloadSchema,
 } from "@/openapi/schemas/show-platforms/show-platform-payload";
-import { ShowPlatformParamFiltersSchema } from "@/openapi/schemas/show-platforms/show-platform-param-filters";
+import { ShowPlatformParamFiltersSchema } from "@/openapi/schemas/param-filters/show-platform-param-filters";
 
 const tags = ["Show Platforms"];
 
@@ -41,7 +40,7 @@ export const list = createRoute({
     [HttpStatusCodes.OK]: jsonContent(
       PaginatedObjectsSchema({
         objectType: "show-platform",
-        objectSchema: showPlatformSchema,
+        objectSchema: ShowPlatformSchema,
       }),
       "List of show platforms"
     ),
@@ -50,7 +49,7 @@ export const list = createRoute({
       "Unauthorized"
     ),
     [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContentOneOf(
-      [createErrorSchema(showPlatformSchema), NotFoundSchema],
+      [createErrorSchema(ShowPlatformSchema), NotFoundSchema],
       "Provided query params are not processable"
     ),
   },
@@ -74,7 +73,7 @@ export const create = createRoute({
   },
   responses: {
     [HttpStatusCodes.CREATED]: jsonContent(
-      selectShowPlatformSchema,
+      ShowPlatformSchema,
       "The created show-platform"
     ),
     [HttpStatusCodes.UNPROCESSABLE_ENTITY]: {
@@ -108,7 +107,7 @@ export const getOne = createRoute({
   },
   responses: {
     [HttpStatusCodes.OK]: jsonContent(
-      showPlatformSchema,
+      ShowPlatformSchema,
       "The requested show-platform"
     ),
     [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContent(
@@ -137,7 +136,7 @@ export const patch = createRoute({
   },
   responses: {
     [HttpStatusCodes.OK]: jsonContent(
-      selectShowPlatformSchema,
+      ShowPlatformSchema,
       "The updated show-platform object"
     ),
     [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContentOneOf(
@@ -203,7 +202,7 @@ export const bulkInsert = createRoute({
             payload: insertShowPlatformSchema,
           })
         ),
-        showPlatforms: z.array(selectShowPlatformSchema),
+        showPlatforms: z.array(ShowPlatformSchema),
       }),
       "list of created show-platforms"
     ),
@@ -235,7 +234,7 @@ export const bulkUpdate = createRoute({
             payload: patchBulkShowPlatformSchema,
           })
         ),
-        showPlatforms: z.array(selectShowPlatformSchema),
+        showPlatforms: z.array(ShowPlatformSchema),
       }),
       "list of updated show-platforms"
     ),

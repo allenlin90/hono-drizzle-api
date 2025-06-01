@@ -6,18 +6,18 @@ import {
   insertShowSchema,
   patchBulkShowSchema,
   patchShowSchema,
-  selectShowSchema,
 } from "@/db/schema/show.schema";
-import jsonContent from "@/openapi/helpers/json-content";
-import jsonContentRequired from "@/openapi/helpers/json-content-required";
-import jsonContentOneOf from "@/openapi/helpers/json-content-one-of";
-import { createErrorSchema } from "@/openapi/schemas/create-error-schema";
-import { IdParams } from "@/openapi/schemas/id-params";
-import { UnauthorizedSchema } from "@/openapi/schemas/unauthorized";
-import { NotFoundSchema } from "@/openapi/schemas/not-found";
-import createMessageObjectSchema from "@/openapi/schemas/create-message-object";
-import { PaginatedObjectsSchema } from "@/openapi/schemas/paginated-objects";
-import { ShowParamFilters } from "@/openapi/schemas/shows/show-param-filters";
+import { jsonContent } from "@/openapi/helpers/json-content";
+import { jsonContentRequired } from "@/openapi/helpers/json-content-required";
+import { jsonContentOneOf } from "@/openapi/helpers/json-content-one-of";
+import { createErrorSchema } from "@/openapi/schemas/utils/create-error-schema";
+import { IdParams } from "@/openapi/schemas/params/id-params";
+import { UnauthorizedSchema } from "@/openapi/schemas/status/unauthorized";
+import { NotFoundSchema } from "@/openapi/schemas/status/not-found-schema";
+import { createMessageObjectSchema } from "@/openapi/schemas/utils/create-message-object-schema";
+import { PaginatedObjectsSchema } from "@/openapi/schemas/utils/paginated-objects-schema";
+import { ShowParamFilters } from "@/openapi/schemas/param-filters/show-param-filters";
+import { ShowSchema } from "@/serializers/admin/shows/show.serializer";
 
 const tags = ["Shows"];
 
@@ -32,7 +32,7 @@ export const list = createRoute({
     [HttpStatusCodes.OK]: jsonContent(
       PaginatedObjectsSchema({
         objectType: "show",
-        objectSchema: selectShowSchema,
+        objectSchema: ShowSchema,
       }),
       "List of shows"
     ),
@@ -62,7 +62,7 @@ export const create = createRoute({
   },
   responses: {
     [HttpStatusCodes.CREATED]: jsonContent(
-      selectShowSchema,
+      ShowSchema,
       "The created show"
     ),
     [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContent(
@@ -88,7 +88,7 @@ export const getOne = createRoute({
     params: IdParams(PREFIX.SHOW),
   },
   responses: {
-    [HttpStatusCodes.OK]: jsonContent(selectShowSchema, "The requested show"),
+    [HttpStatusCodes.OK]: jsonContent(ShowSchema, "The requested show"),
     [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContent(
       createErrorSchema(IdParams(PREFIX.SHOW)),
       "invalid id error"
@@ -107,7 +107,7 @@ export const patch = createRoute({
   },
   responses: {
     [HttpStatusCodes.OK]: jsonContent(
-      selectShowSchema,
+      ShowSchema,
       "The updated show object"
     ),
     [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContentOneOf(
@@ -167,7 +167,7 @@ export const bulkInsert = createRoute({
             payload: insertShowSchema,
           })
         ),
-        shows: z.array(selectShowSchema),
+        shows: z.array(ShowSchema),
       }),
       "list of created shows"
     ),
@@ -205,7 +205,7 @@ export const bulkUpsert = createRoute({
             payload: patchBulkShowSchema,
           })
         ),
-        shows: z.array(selectShowSchema),
+        shows: z.array(ShowSchema),
       }),
       "list of updated shows"
     ),

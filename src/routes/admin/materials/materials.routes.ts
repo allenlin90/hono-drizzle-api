@@ -2,26 +2,26 @@ import { createRoute, z } from "@hono/zod-openapi";
 import * as HttpStatusCodes from "@/http-status-codes";
 import { PREFIX } from "@/constants";
 import {
-  insertBrandMaterialSchema,
-  patchBrandMaterialSchema,
-  selectBrandMaterialSchema,
+  insertMaterialSchema,
+  patchMaterialSchema,
 } from "@/db/schema/material.schema";
 import jsonContent from "@/openapi/helpers/json-content";
 import jsonContentOneOf from "@/openapi/helpers/json-content-one-of";
 import jsonContentRequired from "@/openapi/helpers/json-content-required";
-import { IdParams } from "@/openapi/schemas/id-params";
-import { createErrorSchema } from "@/openapi/schemas/create-error-schema";
-import { UnauthorizedSchema } from "@/openapi/schemas/unauthorized";
-import notFoundSchema, { NotFoundSchema } from "@/openapi/schemas/not-found";
-import createMessageObjectSchema from "@/openapi/schemas/create-message-object";
-import { PaginatedObjectsSchema } from "@/openapi/schemas/paginated-objects";
-import MaterialParamFilters from "@/openapi/schemas/brand-materials/brand-materials-filters";
+import { IdParams } from "@/openapi/schemas/params/id-params";
+import { createErrorSchema } from "@/openapi/schemas/utils/create-error-schema";
+import { UnauthorizedSchema } from "@/openapi/schemas/status/unauthorized";
+import { NotFoundSchema } from "@/openapi/schemas/status/not-found-schema";
+import createMessageObjectSchema from "@/openapi/schemas/utils/create-message-object-schema";
+import { PaginatedObjectsSchema } from "@/openapi/schemas/utils/paginated-objects-schema";
+import { MaterialParamFilters } from "@/openapi/schemas/param-filters/materials-param-filters";
+import { MaterialSchema } from "@/serializers/admin/material.serializer";
 
-const tags = ["BrandMaterials"];
+const tags = ["Materials"];
 
 export const list = createRoute({
   tags,
-  path: "/brand-materials",
+  path: "/materials",
   method: "get",
   request: {
     query: MaterialParamFilters,
@@ -29,17 +29,17 @@ export const list = createRoute({
   responses: {
     [HttpStatusCodes.OK]: jsonContent(
       PaginatedObjectsSchema({
-        objectType: "brand_material",
-        objectSchema: selectBrandMaterialSchema,
+        objectType: "material",
+        objectSchema: MaterialSchema,
       }),
-      "List of brand materials"
+      "List of  materials"
     ),
     [HttpStatusCodes.FORBIDDEN]: jsonContent(
       UnauthorizedSchema,
       "Unauthorized"
     ),
     [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContentOneOf(
-      [createErrorSchema(MaterialParamFilters), notFoundSchema],
+      [createErrorSchema(MaterialParamFilters), NotFoundSchema],
       "Provided query params are not processable"
     ),
   },
@@ -47,7 +47,7 @@ export const list = createRoute({
 
 export const create = createRoute({
   tags,
-  path: "/brand-materials",
+  path: "/materials",
   method: "post",
   request: {
     headers: z.object({
@@ -57,17 +57,17 @@ export const create = createRoute({
       }),
     }),
     body: jsonContentRequired(
-      insertBrandMaterialSchema,
-      "The brand material to create"
+      insertMaterialSchema,
+      "The material to create"
     ),
   },
   responses: {
     [HttpStatusCodes.CREATED]: jsonContent(
-      selectBrandMaterialSchema,
-      "The created brand material"
+      MaterialSchema,
+      "The created material"
     ),
     [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContent(
-      createErrorSchema(insertBrandMaterialSchema),
+      createErrorSchema(insertMaterialSchema),
       "The validation error"
     ),
     [HttpStatusCodes.BAD_REQUEST]: jsonContent(
@@ -75,68 +75,68 @@ export const create = createRoute({
       "Invalid idempotency key"
     ),
     [HttpStatusCodes.NOT_FOUND]: jsonContent(
-      createMessageObjectSchema("Brand not found"),
-      "Brand not found"
+      createMessageObjectSchema("Client not found"),
+      "Client not found"
     ),
   },
 });
 
 export const getOne = createRoute({
   tags,
-  path: "/brand-materials/{id}",
+  path: "/materials/{id}",
   method: "get",
   request: {
     params: IdParams(PREFIX.MATERIAL),
   },
   responses: {
     [HttpStatusCodes.OK]: jsonContent(
-      selectBrandMaterialSchema,
-      "The requested brand material"
+      MaterialSchema,
+      "The requested material"
     ),
     [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContent(
       createErrorSchema(IdParams(PREFIX.MATERIAL)),
       "invalid id error"
     ),
     [HttpStatusCodes.NOT_FOUND]: jsonContent(
-      notFoundSchema,
-      "Brand material not found"
+      NotFoundSchema,
+      "Material not found"
     ),
   },
 });
 
 export const patch = createRoute({
   tags,
-  path: "/brand-materials/{id}",
+  path: "/materials/{id}",
   method: "patch",
   request: {
     params: IdParams(PREFIX.MATERIAL),
     body: jsonContentRequired(
-      patchBrandMaterialSchema,
-      "The brand material to update"
+      patchMaterialSchema,
+      "The material to update"
     ),
   },
   responses: {
     [HttpStatusCodes.OK]: jsonContent(
-      selectBrandMaterialSchema,
-      "The updated show object"
+      MaterialSchema,
+      "The updated material object"
     ),
     [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContentOneOf(
       [
-        createErrorSchema(patchBrandMaterialSchema),
+        createErrorSchema(patchMaterialSchema),
         createErrorSchema(IdParams(PREFIX.MATERIAL)),
       ],
       "The validation error"
     ),
     [HttpStatusCodes.NOT_FOUND]: jsonContent(
-      notFoundSchema,
-      "Brand material not found"
+      NotFoundSchema,
+      "Material not found"
     ),
   },
 });
 
 export const remove = createRoute({
   tags,
-  path: "/brand-materials/{id}",
+  path: "/materials/{id}",
   method: "delete",
   request: {
     params: IdParams(PREFIX.MATERIAL),

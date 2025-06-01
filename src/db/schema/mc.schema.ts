@@ -22,9 +22,9 @@ export const mc = table(
   {
     id: t.integer("id").primaryKey().generatedAlwaysAsIdentity(),
     uid: brandedUid(PREFIX.MC),
-    banned: t.boolean(),
+    banned: t.boolean().default(false).notNull(),
     email: t.varchar("email", { length: 255 }).unique(),
-    ext_id: t.integer("ext_id").unique(),
+    ext_id: t.varchar("ext_id").unique(),
     metadata: t.jsonb("metadata").default({}).notNull(),
     name: t.varchar("name").notNull(),
     ranking: rankingTypeEnum().notNull(),

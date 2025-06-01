@@ -12,12 +12,11 @@ import {
 import { z } from "@hono/zod-openapi";
 
 import db from "@/db";
-import { brand, platform, show, studioRoom } from "@/db/schema";
-import { showPlatform } from "@/db/schema/show-platform.schema";
+import { platform, show, showPlatform, member, formTemplate } from "@/db/schema";
 
-type uidKeys = "showPlatformIds" | "platformIds" | "showIds" | "studioRoomIds";
+type uidKeys = "showPlatformIds" | "platformIds" | "showIds" | "reviewerIds" | "reviewFormIds";
 
-type Error = { message: string; payload: PatchBulkShowPlatformSchema };
+type Error = { message: string; payload: PatchBulkShowPlatformSchema; };
 
 type ShowPlatformToUpdate = z.infer<
   ReturnType<typeof createUpdateSchema<typeof showPlatform>>
@@ -46,9 +45,11 @@ export const bulkUpdateShowPlatform = async ({
   const {
     showIdQuery,
     platformIdQuery,
-    studioRoomIdQuery,
     isActiveQuery,
-    aliasIdQuery,
+    reviewerIdQuery,
+    reviewFormIdQuery,
+    extIdQuery,
+    noteQuery,
   } = generateUpdateQuery(dataToUpdate);
 
   const updatedShowPlatforms = await db.transaction(async (tx) => {
@@ -57,9 +58,11 @@ export const bulkUpdateShowPlatform = async ({
       .set({
         show_id: showIdQuery,
         platform_id: platformIdQuery,
-        studio_room_id: studioRoomIdQuery,
         is_active: isActiveQuery,
-        alias_id: aliasIdQuery,
+        reviewer_id: reviewerIdQuery,
+        review_form_id: reviewFormIdQuery,
+        ext_id: extIdQuery,
+        note: noteQuery,
         updated_at: updatedAt,
       })
       .where(
@@ -81,9 +84,11 @@ export const bulkUpdateShowPlatform = async ({
 function generateUpdateQuery(dataToUpdate: ShowPlatformToUpdate[]) {
   const showIdChunks: SQL[] = [sql`(case`];
   const platformIdChunks: SQL[] = [sql`(case`];
-  const studioRoomIdChunks: SQL[] = [sql`(case`];
+  const reviewerIdChunks: SQL[] = [sql`(case`];
+  const reviewFormIdChunks: SQL[] = [sql`(case`];
   const isActiveChunks: SQL[] = [sql`(case`];
-  const aliasIdChunks: SQL[] = [sql`(case`];
+  const extIdChunks: SQL[] = [sql`(case`];
+  const noteChunks: SQL[] = [sql`(case`];
 
   dataToUpdate.forEach((payload) => {
     if (payload.show_id) {
@@ -98,9 +103,9 @@ function generateUpdateQuery(dataToUpdate: ShowPlatformToUpdate[]) {
       );
     }
 
-    if (payload.studio_room_id) {
-      studioRoomIdChunks.push(
-        sql`when ${showPlatform.uid} = ${payload.uid} then ${payload.studio_room_id}`
+    if (payload.reviewer_id) {
+      reviewerIdChunks.push(
+        sql`when ${showPlatform.uid} = ${payload.uid} then ${payload.reviewer_id}`
       );
     }
 
@@ -110,18 +115,32 @@ function generateUpdateQuery(dataToUpdate: ShowPlatformToUpdate[]) {
       );
     }
 
-    if (payload.alias_id) {
-      aliasIdChunks.push(
-        sql`when ${showPlatform.uid} = ${payload.uid} then ${payload.alias_id}`
+    if (payload.review_form_id) {
+      reviewFormIdChunks.push(
+        sql`when ${showPlatform.uid} = ${payload.uid} then ${payload.review_form_id}`
+      );
+    }
+
+    if (payload.ext_id) {
+      extIdChunks.push(
+        sql`when ${showPlatform.uid} = ${payload.uid} then ${payload.ext_id}`
+      );
+    }
+
+    if (payload.note) {
+      noteChunks.push(
+        sql`when ${showPlatform.uid} = ${payload.uid} then ${payload.note}`
       );
     }
   });
 
   showIdChunks.push(sql`else ${showPlatform.show_id} end)`);
   platformIdChunks.push(sql`else ${showPlatform.platform_id} end)`);
-  studioRoomIdChunks.push(sql`else ${showPlatform.studio_room_id} end)`);
   isActiveChunks.push(sql`else ${showPlatform.is_active} end)`);
-  aliasIdChunks.push(sql`else ${showPlatform.alias_id} end)`);
+  reviewerIdChunks.push(sql`else ${showPlatform.reviewer_id} end)`);
+  reviewFormIdChunks.push(sql`else ${showPlatform.review_form_id} end)`);
+  extIdChunks.push(sql`else ${showPlatform.ext_id} end)`);
+  noteChunks.push(sql`else ${showPlatform.note} end)`);
 
   return {
     showIdQuery:
@@ -132,17 +151,25 @@ function generateUpdateQuery(dataToUpdate: ShowPlatformToUpdate[]) {
       platformIdChunks.length > 2
         ? sql.join(platformIdChunks, sql.raw(" "))
         : undefined,
-    studioRoomIdQuery:
-      studioRoomIdChunks.length > 2
-        ? sql.join(studioRoomIdChunks, sql.raw(" "))
-        : undefined,
     isActiveQuery:
       isActiveChunks.length > 2
         ? sql.join(isActiveChunks, sql.raw(" "))
         : undefined,
-    aliasIdQuery:
-      aliasIdChunks.length > 2
-        ? sql.join(aliasIdChunks, sql.raw(" "))
+    reviewerIdQuery:
+      reviewerIdChunks.length > 2
+        ? sql.join(reviewerIdChunks, sql.raw(" "))
+        : undefined,
+    reviewFormIdQuery:
+      reviewFormIdChunks.length > 2
+        ? sql.join(reviewFormIdChunks, sql.raw(" "))
+        : undefined,
+    extIdQuery:
+      extIdChunks.length > 2
+        ? sql.join(extIdChunks, sql.raw(" "))
+        : undefined,
+    noteQuery:
+      noteChunks.length > 2
+        ? sql.join(noteChunks, sql.raw(" "))
         : undefined,
   };
 }
@@ -155,32 +182,36 @@ async function validateUpdateShowPlatformPayload({
 
   await validateOverallDuration({ ids, resolvedIds });
 
-  const { showMap, platformMap, studioRoomMap, showPlatformMap } = resolvedIds;
+  const { showMap, platformMap, reviewerMap, reviewFormMap, showPlatformMap } = resolvedIds;
   const errors: Error[] = [];
   const dataToUpdate: ShowPlatformToUpdate[] = [];
 
   showPlatforms.forEach((sp) => {
     const {
+      show_platform_uid,
       show_uid,
       platform_uid,
-      studio_room_uid,
-      show_platform_uid,
+      reviewer_uid,
+      review_form_uid,
       ...restPayload
     } = sp;
     const errorMessage: string[] = [];
 
+    if (show_platform_uid && !showPlatformMap.has(show_platform_uid)) {
+      errorMessage.push(`Show platform with uid ${show_platform_uid} not found`);
+    }
     if (show_uid && !showMap.has(show_uid)) {
       errorMessage.push(`Show with uid ${show_uid} not found`);
     }
     if (platform_uid && !platformMap.has(platform_uid)) {
       errorMessage.push(`Platform with uid ${platform_uid} not found`);
     }
-    if (studio_room_uid && !studioRoomMap.has(studio_room_uid)) {
-      errorMessage.push(`Studio room with uid ${studio_room_uid} not found`);
+    if (reviewer_uid && !reviewerMap.has(reviewer_uid)) {
+      errorMessage.push(`Reviewer with uid ${reviewer_uid} not found`);
     }
-    if (show_platform_uid && !showPlatformMap.has(show_platform_uid)) {
+    if (review_form_uid && !reviewFormMap.has(review_form_uid)) {
       errorMessage.push(
-        `Show-platform with uid ${show_platform_uid} not found`
+        `Review form with uid ${review_form_uid} not found`
       );
     }
 
@@ -198,10 +229,14 @@ async function validateUpdateShowPlatformPayload({
       ...(platform_uid && {
         platform_id: platformMap.get(platform_uid)?.id,
       }),
-      ...(studio_room_uid && {
-        studio_room_id: studioRoomMap.get(studio_room_uid)?.id,
+      ...(reviewer_uid && {
+        reviewer_id: reviewerMap.get(reviewer_uid)?.id,
       }),
-      uid: show_platform_uid,
+      ...(review_form_uid && {
+        review_form_id: reviewFormMap.get(review_form_uid)?.id,
+      }),
+      uid: show_platform_uid!,
+      is_active: restPayload.is_active ?? false,
       updated_at: new Date().toISOString(),
     };
 
@@ -227,13 +262,14 @@ async function validateOverallDuration({
 }: {
   ids: ReturnType<typeof getUniqueIds>;
   resolvedIds: Awaited<ReturnType<typeof resolveUIDs>>;
-}) {}
+}) { }
 
 async function resolveUIDs({
   showIds,
   platformIds,
-  studioRoomIds,
   showPlatformIds,
+  reviewerIds,
+  reviewFormIds,
 }: ReturnType<typeof getUniqueIds>) {
   const platformsByUID = db
     .select({
@@ -247,25 +283,9 @@ async function resolveUIDs({
   const showsByUID = db
     .select({
       ...getTableColumns(show),
-      brand: {
-        ...getTableColumns(brand),
-      },
     })
     .from(show)
-    .innerJoin(
-      brand,
-      and(eq(show.brand_id, brand.id), isNull(brand.deleted_at))
-    )
     .where(and(inArray(show.uid, showIds), isNull(show.deleted_at)));
-
-  const studioRoomsByUID = db
-    .select({
-      ...getTableColumns(studioRoom),
-    })
-    .from(studioRoom)
-    .where(
-      and(inArray(studioRoom.uid, studioRoomIds), isNull(studioRoom.deleted_at))
-    );
 
   const showPlatformsByUID = db
     .select({
@@ -279,57 +299,87 @@ async function resolveUIDs({
       )
     );
 
+  const reviewerByUID = db
+    .select({
+      ...getTableColumns(member),
+    })
+    .from(member)
+    .where(
+      and(inArray(member.uid, reviewerIds), isNull(member.deleted_at))
+    );
+
+  const reviewFormByUID = db
+    .select({
+      ...getTableColumns(formTemplate),
+    })
+    .from(formTemplate)
+    .where(
+      and(inArray(formTemplate.uid, reviewFormIds), isNull(formTemplate.deleted_at))
+    );
+
   const [
     resolvedPlatforms,
-    resolvedStudioRooms,
-    resolvedShows,
     resolvedShowPlatforms,
+    resolvedShows,
+    resolvedReviewers,
+    resolvedReviewForms,
   ] = await Promise.all([
     platformsByUID,
-    studioRoomsByUID,
-    showsByUID,
     showPlatformsByUID,
+    showsByUID,
+    reviewerByUID,
+    reviewFormByUID,
   ]);
 
   const showMap = new Map(resolvedShows.map((s) => [s.uid, s]));
   const platformMap = new Map(resolvedPlatforms.map((p) => [p.uid, p]));
-  const studioRoomMap = new Map(resolvedStudioRooms.map((sr) => [sr.uid, sr]));
   const showPlatformMap = new Map(
     resolvedShowPlatforms.map((sp) => [sp.uid, sp])
   );
+  const reviewerMap = new Map(resolvedReviewers.map((r) => [r.uid, r]));
+  const reviewFormMap = new Map(resolvedReviewForms.map((rf) => [rf.uid, rf]));
 
   return {
     showMap,
     platformMap,
-    studioRoomMap,
     showPlatformMap,
+    reviewerMap,
+    reviewFormMap,
   };
 }
 
 function getUniqueIds(
   showPlatforms: PatchBulkShowPlatformSchema[]
 ): Record<uidKeys, string[]> {
-  const showPlatformIds = showPlatforms.map((sp) => sp.show_platform_uid);
+  const showPlatformIds = new Set<string>();
   const showIds = new Set<string>();
   const platformIds = new Set<string>();
-  const studioRoomIds = new Set<string>();
+  const reviewerIds = new Set<string>();
+  const reviewFormIds = new Set<string>();
 
   for (const sp of showPlatforms) {
+    if (sp.show_platform_uid) {
+      showPlatformIds.add(sp.show_platform_uid);
+    }
     if (sp.show_uid) {
       showIds.add(sp.show_uid);
     }
     if (sp.platform_uid) {
       platformIds.add(sp.platform_uid);
     }
-    if (sp.studio_room_uid) {
-      studioRoomIds.add(sp.studio_room_uid);
+    if (sp.reviewer_uid) {
+      reviewerIds.add(sp.reviewer_uid);
+    }
+    if (sp.review_form_uid) {
+      reviewFormIds.add(sp.review_form_uid);
     }
   }
 
   return {
+    showPlatformIds: Array.from(showPlatformIds),
     showIds: Array.from(showIds),
     platformIds: Array.from(platformIds),
-    studioRoomIds: Array.from(studioRoomIds),
-    showPlatformIds: Array.from([...new Set(showPlatformIds)]),
+    reviewerIds: Array.from(reviewerIds),
+    reviewFormIds: Array.from(reviewFormIds),
   };
 }

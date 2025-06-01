@@ -9,7 +9,8 @@ import {
 } from "drizzle-zod";
 
 import { PREFIX } from "@/constants";
-import { brandedUid, reviewByMember, timestamps } from "../helpers/columns.helpers";
+import { brandedUid, timestamps } from "../helpers/columns.helpers";
+import { reviewByMember } from "../helpers/reviews.helpers";
 import { show } from "./show.schema";
 import { mc } from "./mc.schema";
 
@@ -61,7 +62,7 @@ export const showMc = table(
   ]
 );
 
-export const selectShowSchema = createSelectSchema(showMc)
+export const selectShowMcSchema = createSelectSchema(showMc)
   .merge(
     z.object({
       client_uid: z.string(),
@@ -76,7 +77,7 @@ export const selectShowSchema = createSelectSchema(showMc)
     deleted_at: true,
   });
 
-export const insertShowSchema = createInsertSchema(showMc)
+export const insertShowMcSchema = createInsertSchema(showMc)
   .merge(
     z.object({
       name: z.string().min(1),
@@ -97,7 +98,7 @@ export const insertShowSchema = createInsertSchema(showMc)
     deleted_at: true,
   });
 
-export const patchShowSchema = createUpdateSchema(showMc)
+export const patchShowMcSchema = createUpdateSchema(showMc)
   .merge(
     z.object({
       name: z.string().min(1).optional(),
@@ -118,7 +119,7 @@ export const patchShowSchema = createUpdateSchema(showMc)
     deleted_at: true,
   });
 
-export const patchBulkShowSchema = createUpdateSchema(showMc)
+export const patchBulkShowMcSchema = createUpdateSchema(showMc)
   .merge(
     z.object({
       name: z.string().min(1).optional(),
@@ -139,7 +140,7 @@ export const patchBulkShowSchema = createUpdateSchema(showMc)
     deleted_at: true,
   });
 
-export type SelectShowMcSchema = z.infer<typeof selectShowSchema>;
-export type InsertShowMcSchema = z.infer<typeof insertShowSchema>;
-export type PatchShowMcSchema = z.infer<typeof patchShowSchema>;
-export type PatchBulkShowMcSchema = z.infer<typeof patchBulkShowSchema>;
+export type SelectShowMcSchema = z.infer<typeof selectShowMcSchema>;
+export type InsertShowMcSchema = z.infer<typeof insertShowMcSchema>;
+export type PatchShowMcSchema = z.infer<typeof patchShowMcSchema>;
+export type PatchBulkShowMcSchema = z.infer<typeof patchBulkShowMcSchema>;

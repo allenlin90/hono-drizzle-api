@@ -3,17 +3,20 @@ import * as HttpStatusCodes from "@/http-status-codes";
 
 import { PREFIX } from "@/constants";
 
-import { UnauthorizedSchema } from "@/openapi/schemas/unauthorized";
-import { PaginatedObjectsSchema } from "@/openapi/schemas/paginated-objects";
+import { UnauthorizedSchema } from "@/openapi/schemas/status/unauthorized";
 import { jsonContent } from "@/openapi/helpers/json-content";
 import { jsonContentOneOf } from "@/openapi/helpers/json-content-one-of";
-import { NotFoundSchema } from "@/openapi/schemas/not-found";
-import { ShowPlatformParamFiltersSchema } from "@/openapi/schemas/show-platforms/show-platform-param-filters";
-import { createErrorSchema } from "@/openapi/schemas/create-error-schema";
-import { IdParams } from "@/openapi/schemas/id-params";
+import { PaginatedObjectsSchema } from "@/openapi/schemas/utils/paginated-objects-schema";
+import { createErrorSchema } from "@/openapi/schemas/utils/create-error-schema";
+import { NotFoundSchema } from "@/openapi/schemas/status/not-found-schema";
+import { ShowParamFilters } from "@/openapi/schemas/param-filters/show-param-filters";
+// import { IdParams } from "@/openapi/schemas/params/id-params";
 
-import { showDetailsTransformer, showTransformer } from "@/serializers/api/shows/show.serializer";
-import { selectBrandMaterialSchema } from "@/db/schema/material.schema";
+// import { selectMaterialSchema } from "@/db/schema/material.schema";
+import {
+  // showDetailsTransformer,
+  ShowTransformer
+} from "@/serializers/api/shows/show.serializer";
 
 const tags = ["Shows"];
 
@@ -22,13 +25,13 @@ export const list = createRoute({
   path: "/shows",
   method: "get",
   request: {
-    query: ShowPlatformParamFiltersSchema,
+    query: ShowParamFilters,
   },
   responses: {
     [HttpStatusCodes.OK]: jsonContent(
       PaginatedObjectsSchema({
         objectType: "show",
-        objectSchema: showTransformer,
+        objectSchema: ShowTransformer,
       }),
       "List of shows"
     ),
@@ -37,50 +40,54 @@ export const list = createRoute({
       "Unauthorized"
     ),
     [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContentOneOf(
-      [createErrorSchema(ShowPlatformParamFiltersSchema), NotFoundSchema],
+      [createErrorSchema(ShowParamFilters), NotFoundSchema],
       "Provided query params are not processable"
     ),
-  },
-});
-
-export const getOne = createRoute({
-  tags,
-  path: "/shows/{id}",
-  method: "get",
-  request: {
-    params: IdParams(PREFIX.SHOW),
-  },
-  responses: {
-    [HttpStatusCodes.OK]: jsonContent(
-      showDetailsTransformer,
-      "The requested show"
-    ),
     [HttpStatusCodes.NOT_FOUND]: jsonContent(
       NotFoundSchema,
-      "Show not found"
+      "MC not found"
     ),
   },
 });
 
-export const getMaterials = createRoute({
-  tags,
-  path: '/shows/{id}/materials',
-  method: 'get',
-  request: {
-    params: IdParams(PREFIX.SHOW),
-  },
-  responses: {
-    [HttpStatusCodes.OK]: jsonContent(
-      z.object({ materials: z.array(selectBrandMaterialSchema) }),
-      "The requested materials by show ID"
-    ),
-    [HttpStatusCodes.NOT_FOUND]: jsonContent(
-      NotFoundSchema,
-      "Show not found"
-    ),
-  },
-});
+// export const getOne = createRoute({
+//   tags,
+//   path: "/shows/{id}",
+//   method: "get",
+//   request: {
+//     params: IdParams(PREFIX.SHOW),
+//   },
+//   responses: {
+//     [HttpStatusCodes.OK]: jsonContent(
+//       showDetailsTransformer,
+//       "The requested show"
+//     ),
+//     [HttpStatusCodes.NOT_FOUND]: jsonContent(
+//       NotFoundSchema,
+//       "Show not found"
+//     ),
+//   },
+// });
+
+// export const getMaterials = createRoute({
+//   tags,
+//   path: '/shows/{id}/materials',
+//   method: 'get',
+//   request: {
+//     params: IdParams(PREFIX.SHOW),
+//   },
+//   responses: {
+//     [HttpStatusCodes.OK]: jsonContent(
+//       z.object({ materials: z.array(selectMaterialSchema) }),
+//       "The requested materials by show ID"
+//     ),
+//     [HttpStatusCodes.NOT_FOUND]: jsonContent(
+//       NotFoundSchema,
+//       "Show not found"
+//     ),
+//   },
+// });
 
 export type ListRoute = typeof list;
-export type GetOneRoute = typeof getOne;
-export type GetMaterialsRoute = typeof getMaterials;
+// export type GetOneRoute = typeof getOne;
+// export type GetMaterialsRoute = typeof getMaterials;

@@ -1,18 +1,15 @@
-import type { insertShowSchema } from "@/db/schema/show.schema";
-import { z } from "@hono/zod-openapi";
+import type { InsertShowSchema } from "@/db/schema/show.schema";
 import { and, getTableColumns, inArray, isNull } from "drizzle-orm";
-
 import db from "@/db";
-import { brand, show } from "@/db/schema";
+import { client, studioRoom, show } from "@/db/schema";
 
-type Show = z.infer<typeof insertShowSchema>;
-type ShowToInsert = Omit<Show, "brand_uid"> & {
-  brand_id: number;
+type ShowToInsert = Omit<InsertShowSchema, "client_uid" | "studio_room_uid"> & {
+  client_id: number | null;
+  studio_room_id: number | null;
 };
-type Error = { message: string; payload: Show };
-
+type Error = { message: string; payload: InsertShowSchema; };
 type BulkInsertShows = {
-  shows: Show[];
+  shows: InsertShowSchema[];
 };
 
 export const bulkInsertShows = async ({ shows }: BulkInsertShows) => {
@@ -46,17 +43,26 @@ async function validateShowPayload({ shows }: BulkInsertShows) {
 
   await validateOverallDuration({ ids, resolvedIds });
 
-  const { brandMap } = resolvedIds;
+  const { clientMap, studioRoomMap } = resolvedIds;
   const errors: Error[] = [];
   const dataToCreate: ShowToInsert[] = [];
 
   shows.forEach((payload) => {
-    const { brand_uid, ...showPayload } = payload;
-    const brand = brandMap.get(brand_uid);
+    const { client_uid, studio_room_uid, ...showPayload } = payload;
+    const client = clientMap.get(client_uid ?? "");
+    const studioRoom = studioRoomMap.get(studio_room_uid ?? "");
 
-    if (!brand) {
+    if (!client && client_uid) {
       errors.push({
-        message: `Brand with UID ${brand_uid} not found.`,
+        message: `Client with UID ${client_uid} not found.`,
+        payload,
+      });
+      return;
+    }
+
+    if (!studioRoom && studio_room_uid) {
+      errors.push({
+        message: `Studio Room with UID ${studio_room_uid} not found.`,
         payload,
       });
       return;
@@ -64,7 +70,8 @@ async function validateShowPayload({ shows }: BulkInsertShows) {
 
     dataToCreate.push({
       ...showPayload,
-      brand_id: brand.id,
+      client_id: client?.id ?? null,
+      studio_room_id: studioRoom?.id ?? null,
     });
   });
 
@@ -88,27 +95,52 @@ async function validateOverallDuration({
 }: {
   ids: ReturnType<typeof getUniqueIds>;
   resolvedIds: Awaited<ReturnType<typeof resolveUIDs>>;
-}) {}
+}) { }
 
-async function resolveUIDs({ brandIds }: ReturnType<typeof getUniqueIds>) {
-  const brands = await db
+async function resolveUIDs({ clientIds, studioRoomIds }: ReturnType<typeof getUniqueIds>) {
+  const clientsQuery = db
     .select({
-      ...getTableColumns(brand),
+      ...getTableColumns(client),
     })
-    .from(brand)
-    .where(and(inArray(brand.uid, brandIds), isNull(brand.deleted_at)));
+    .from(client)
+    .where(and(inArray(client.uid, clientIds), isNull(client.deleted_at)));
 
-  const brandMap = new Map(brands.map((brand) => [brand.uid, brand]));
+  const studioRoomsQuery = db
+    .select({
+      ...getTableColumns(studioRoom),
+    })
+    .from(studioRoom)
+    .where(and(inArray(studioRoom.uid, studioRoomIds), isNull(studioRoom.deleted_at)));
+
+  const [clients, studioRooms] = await Promise.all([
+    clientsQuery,
+    studioRoomsQuery,
+  ]);
+
+  const clientMap = new Map(clients.map((client) => [client.uid, client]));
+  const studioRoomMap = new Map(studioRooms.map((studioRoom) => [studioRoom.uid, studioRoom]));
 
   return {
-    brandMap,
+    clientMap,
+    studioRoomMap,
   };
 }
 
-function getUniqueIds(showsPayload: Show[]) {
-  const brandIds = showsPayload.map((payload) => payload.brand_uid);
+function getUniqueIds(showsPayload: InsertShowSchema[]) {
+  const clientIdsSet = new Set<string>();
+  const studioRoomIdsSet = new Set<string>();
+
+  for (const payload of showsPayload) {
+    if (payload.client_uid) {
+      clientIdsSet.add(payload.client_uid);
+    }
+    if (payload.studio_room_uid) {
+      studioRoomIdsSet.add(payload.studio_room_uid);
+    }
+  }
 
   return {
-    brandIds: Array.from(new Set([...brandIds])),
+    clientIds: Array.from(clientIdsSet),
+    studioRoomIds: Array.from(studioRoomIdsSet),
   };
 }

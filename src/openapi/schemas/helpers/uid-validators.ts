@@ -5,49 +5,55 @@ import { union } from "drizzle-orm/pg-core";
 import { PREFIX } from "@/constants";
 import db from "@/db";
 import {
-  brand,
-  brandMaterial,
+  client,
+  formTemplate,
+  material,
   mc,
+  member,
   platform,
   show,
   showPlatform,
-  showPlatformMaterial,
-  showPlatformMc,
   studio,
   studioRoom,
 } from "@/db/schema";
 
 export type EntityTypes =
+  | "client"
+  | "form_template"
   | "material"
   | "mc"
-  | "show"
-  | "show_platform_material"
-  | "show_platform_mc"
-  | "show_platform"
+  | "member"
   | "platform"
-  | "studio_room";
+  | "show_platform"
+  | "show"
+  | "studio_room"
+  | "studio";
 
 export type ParamUidTypes =
-  | "brand_material_uid"
+  | "client_uid"
+  | "form_template_uid"
+  | "material_uid"
   | "mc_uid"
-  | "show_uid"
-  | "show_platform_material_uid"
-  | "show_platform_mc_uid"
-  | "show_platform_uid"
+  | "member_uid"
   | "platform_uid"
-  | "studio_room_uid";
+  | "show_platform_uid"
+  | "show_uid"
+  | "studio_room_uid"
+  | "studio_uid";
 
 export type Tables =
-  | typeof brandMaterial
+  | typeof client
+  | typeof formTemplate
+  | typeof material
   | typeof mc
-  | typeof show
-  | typeof showPlatformMaterial
-  | typeof showPlatformMc
-  | typeof showPlatform
+  | typeof member
   | typeof platform
-  | typeof studioRoom;
+  | typeof showPlatform
+  | typeof show
+  | typeof studioRoom
+  | typeof studio;
 
-type QueryResult = Partial<Record<EntityTypes, { id?: number; uid: string }>>;
+type QueryResult = Partial<Record<EntityTypes, { id?: number; uid: string; }>>;
 
 type TableSelect<T extends Tables> = T["$inferSelect"];
 
@@ -63,14 +69,11 @@ export type TableType<T extends Tables> = {
   table: T;
   prefix: PREFIX;
   queryObject:
-    | typeof brandMaterialQuery
-    | typeof showPlatformMaterialQuery
-    | typeof showPlatformMcQuery
-    | typeof showPlatformQuery
-    | typeof showQuery
-    | typeof showQuery
-    | typeof studioRoomQuery
-    | ((uid: string) => Promise<TableSelect<T>[]>);
+  | typeof materialQuery
+  | typeof showPlatformQuery
+  | typeof showQuery
+  | typeof studioRoomQuery
+  | ((uid: string) => Promise<TableSelect<T>[]>);
 };
 
 const queryObject = (table: Tables) => (uid: string) =>
@@ -80,72 +83,16 @@ const queryObject = (table: Tables) => (uid: string) =>
     .where(and(eq(table.uid, uid), isNull(table.deleted_at)))
     .limit(1);
 
-const brandMaterialQuery = (material_uid: string) =>
+const materialQuery = (material_uid: string) =>
   db
     .select({
-      ...getTableColumns(brandMaterial),
-      brand: { ...getTableColumns(brand) },
+      ...getTableColumns(material),
+      client: { ...getTableColumns(client) },
     })
-    .from(brandMaterial)
-    .innerJoin(brand, eq(brandMaterial.brand_id, brand.id))
+    .from(material)
+    .leftJoin(client, eq(material.client_id, client.id))
     .where(
-      and(eq(brandMaterial.uid, material_uid), isNull(brandMaterial.deleted_at))
-    )
-    .limit(1);
-
-const showPlatformMaterialQuery = (show_platform_material_uid: string) =>
-  db
-    .select({
-      ...getTableColumns(showPlatformMaterial),
-      brand: { ...getTableColumns(brand) },
-      material: { ...getTableColumns(brandMaterial) },
-      show: { ...getTableColumns(show) },
-      platform: { ...getTableColumns(platform) },
-    })
-    .from(showPlatformMaterial)
-    .innerJoin(show, and(eq(show.id, showPlatformMaterial.show_id)))
-    .innerJoin(platform, and(eq(platform.id, showPlatformMaterial.platform_id)))
-    .innerJoin(
-      brandMaterial,
-      and(eq(brandMaterial.id, showPlatformMaterial.brand_material_id))
-    )
-    .innerJoin(brand, and(eq(brand.id, brandMaterial.brand_id)))
-    .where(
-      and(
-        eq(showPlatformMaterial.uid, show_platform_material_uid),
-        isNull(showPlatformMaterial.deleted_at)
-      )
-    )
-    .limit(1);
-
-const showPlatformMcQuery = (show_platform_mc_uid: string) =>
-  db
-    .select({
-      ...getTableColumns(showPlatformMc),
-      brand: { ...getTableColumns(brand) },
-      mc: { ...getTableColumns(mc) },
-      platform: { ...getTableColumns(platform) },
-      show: { ...getTableColumns(show) },
-      studio_room: { ...getTableColumns(studioRoom) },
-    })
-    .from(showPlatformMc)
-    .innerJoin(mc, and(eq(showPlatformMc.mc_id, mc.id)))
-    .innerJoin(show, and(eq(showPlatformMc.show_id, show.id)))
-    .innerJoin(brand, and(eq(show.brand_id, brand.id)))
-    .innerJoin(platform, and(eq(showPlatformMc.platform_id, platform.id)))
-    .innerJoin(
-      showPlatform,
-      and(
-        eq(showPlatform.show_id, showPlatformMc.show_id),
-        eq(showPlatform.platform_id, showPlatformMc.platform_id)
-      )
-    )
-    .leftJoin(studioRoom, and(eq(showPlatform.studio_room_id, studioRoom.id)))
-    .where(
-      and(
-        eq(showPlatformMc.uid, show_platform_mc_uid),
-        isNull(showPlatformMc.deleted_at)
-      )
+      and(eq(material.uid, material_uid), isNull(material.deleted_at))
     )
     .limit(1);
 
@@ -155,12 +102,23 @@ const showPlatformQuery = (show_platform_uid: string) =>
       ...getTableColumns(showPlatform),
       show_uid: show.uid,
       platform_uid: platform.uid,
-      studio_room_uid: studioRoom.uid,
+      reviewer_uid: member.uid,
+      review_form_uid: formTemplate.uid,
     })
     .from(showPlatform)
     .innerJoin(show, eq(showPlatform.show_id, show.id))
     .innerJoin(platform, eq(showPlatform.platform_id, platform.id))
-    .leftJoin(studioRoom, eq(showPlatform.studio_room_id, studioRoom.id))
+    .leftJoin(
+      member,
+      and(eq(showPlatform.reviewer_id, member.id), isNull(member.deleted_at))
+    )
+    .leftJoin(
+      formTemplate,
+      and(
+        eq(showPlatform.review_form_id, formTemplate.id),
+        isNull(formTemplate.deleted_at)
+      )
+    )
     .where(
       and(
         eq(showPlatform.uid, show_platform_uid),
@@ -173,10 +131,10 @@ const showQuery = (show_uid: string) =>
   db
     .select({
       ...getTableColumns(show),
-      brand_uid: brand.uid,
+      client_uid: client.uid,
     })
     .from(show)
-    .innerJoin(brand, eq(show.brand_id, brand.id))
+    .leftJoin(client, eq(show.client_id, client.id))
     .where(and(eq(show.uid, show_uid), isNull(show.deleted_at)))
     .limit(1);
 
@@ -194,11 +152,23 @@ const studioRoomQuery = (studio_room_uid: string) =>
     .limit(1);
 
 export const idValidators = {
+  client: {
+    param: "client_uid",
+    table: client,
+    prefix: PREFIX.CLIENT,
+    queryObject: queryObject(client),
+  },
+  form_template: {
+    param: "form_template_uid",
+    table: formTemplate,
+    prefix: PREFIX.FORM_TEMPLATE,
+    queryObject: queryObject(formTemplate),
+  },
   material: {
     param: "material_uid",
-    table: brandMaterial,
+    table: material,
     prefix: PREFIX.MATERIAL,
-    queryObject: brandMaterialQuery,
+    queryObject: materialQuery,
   },
   mc: {
     param: "mc_uid",
@@ -206,23 +176,17 @@ export const idValidators = {
     prefix: PREFIX.MC,
     queryObject: queryObject(mc),
   },
+  member: {
+    param: "member_uid",
+    table: member,
+    prefix: PREFIX.MEMBER,
+    queryObject: queryObject(member),
+  },
   platform: {
     param: "platform_uid",
     table: platform,
     prefix: PREFIX.PLATFORM,
     queryObject: queryObject(platform),
-  },
-  show_platform_material: {
-    param: "show_platform_material_uid",
-    table: showPlatformMaterial,
-    prefix: PREFIX.SHOW_PLATFORM_MATERIAL,
-    queryObject: showPlatformMaterialQuery,
-  },
-  show_platform_mc: {
-    param: "show_platform_mc_uid",
-    table: showPlatformMc,
-    prefix: PREFIX.SHOW_PLATFORM_MC,
-    queryObject: showPlatformMcQuery,
   },
   show_platform: {
     param: "show_platform_uid",
@@ -241,6 +205,12 @@ export const idValidators = {
     table: studioRoom,
     prefix: PREFIX.STUDIO_ROOM,
     queryObject: studioRoomQuery,
+  },
+  studio: {
+    param: "studio_uid",
+    table: studio,
+    prefix: PREFIX.STUDIO,
+    queryObject: queryObject(studio),
   },
 };
 

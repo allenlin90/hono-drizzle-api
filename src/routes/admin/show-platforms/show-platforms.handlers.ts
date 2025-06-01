@@ -23,12 +23,10 @@ import db from "@/db";
 import {
   showPlatform,
   show,
-  studioRoom,
   platform,
-  studio,
-  brand,
+  member,
+  formTemplate
 } from "@/db/schema";
-import { selectShowPlatformSchema } from "@/db/schema/show-platform.schema";
 import { bulkInsertShowPlatform } from "@/services/show-platform/bulk-insert";
 import { showPlatformSerializer } from "@/serializers/admin/show-platforms/show-platform.serializer";
 import { showPlatformBulkSerializer } from "@/serializers/admin/show-platforms/show-platform-bulk.serializer";
@@ -40,74 +38,74 @@ export const list: AppRouteHandler<ListRoute> = async (c) => {
     limit,
     platform_id,
     show_id,
-    studio_room_id,
+    ext_id,
     is_active,
-    brand_name,
     platform_name,
     show_name,
-    studio_room_name,
   } = c.req.valid("query");
 
   const isApproved =
     is_active !== undefined ? eq(showPlatform.is_active, is_active) : undefined;
 
+  const ilikeByExtId = ext_id ? ilike(showPlatform.ext_id, `%${ext_id}%`) : undefined;
   const ilikeByPlatformUid = platform_id
     ? ilike(platform.uid, `%${platform_id}%`)
     : undefined;
   const ilikeByShowUid = show_id ? ilike(show.uid, `%${show_id}%`) : undefined;
-  const ilikeByStudioRoomUid = studio_room_id
-    ? ilike(studioRoom.uid, `%${studio_room_id}%`)
-    : undefined;
-  const ilikeByBrandName = brand_name
-    ? ilike(brand.name, `%${brand_name}%`)
-    : undefined;
   const ilikeByPlatformName = platform_name
     ? ilike(platform.name, `%${platform_name}%`)
     : undefined;
   const ilikeByShowName = show_name
     ? ilike(show.name, `%${show_name}%`)
     : undefined;
-  const ilikeByStudioRoomName = studio_room_name
-    ? ilike(studioRoom.name, `%${studio_room_name}%`)
-    : undefined;
 
-  const activeBrands = isNull(brand.deleted_at);
   const activePlatforms = isNull(platform.deleted_at);
   const activeShowPlatforms = isNull(showPlatform.deleted_at);
   const activeShows = isNull(show.deleted_at);
-  const activeStudios = isNull(studio.deleted_at);
-  const activeStudioRooms = isNull(studioRoom.deleted_at);
   const filters = and(
-    activeBrands,
     activePlatforms,
     activeShowPlatforms,
     activeShows,
-    activeStudios,
-    activeStudioRooms,
+    isApproved,
+    ilikeByExtId,
     ilikeByPlatformUid,
     ilikeByShowUid,
-    ilikeByStudioRoomUid,
-    isApproved,
-    ilikeByBrandName,
     ilikeByPlatformName,
     ilikeByShowName,
-    ilikeByStudioRoomName
   );
 
   const showPlatforms = await db
     .select({
       ...getTableColumns(showPlatform),
-      platform: { ...getTableColumns(platform) },
-      show: { ...getTableColumns(show), brand_uid: brand.uid },
-      studio_room: { ...getTableColumns(studioRoom) },
-      studio: { ...getTableColumns(studio) },
+      platform_uid: platform.uid,
+      show_uid: show.uid,
+      review_items: showPlatform.review_items as any,
+      reviewer_uid: member.uid,
+      review_form_uid: formTemplate.uid,
     })
     .from(showPlatform)
-    .innerJoin(show, and(eq(showPlatform.show_id, show.id)))
-    .innerJoin(brand, and(eq(show.brand_id, brand.id)))
-    .innerJoin(platform, and(eq(showPlatform.platform_id, platform.id)))
-    .leftJoin(studioRoom, and(eq(showPlatform.studio_room_id, studioRoom.id)))
-    .leftJoin(studio, and(eq(studioRoom.studio_id, studio.id)))
+    .innerJoin(
+      show,
+      and(eq(showPlatform.show_id, show.id), isNull(show.deleted_at))
+    )
+    .innerJoin(
+      platform,
+      and(eq(showPlatform.platform_id, platform.id), isNull(platform.deleted_at))
+    )
+    .innerJoin(
+      member,
+      and(
+        eq(showPlatform.reviewer_id, member.id),
+        isNull(member.deleted_at)
+      )
+    )
+    .innerJoin(
+      formTemplate,
+      and(
+        eq(showPlatform.review_form_id, formTemplate.id),
+        isNull(formTemplate.deleted_at)
+      )
+    )
     .where(filters)
     .limit(limit)
     .offset(offset)
@@ -121,30 +119,12 @@ export const list: AppRouteHandler<ListRoute> = async (c) => {
       and(eq(showPlatform.show_id, show.id), isNull(show.deleted_at))
     )
     .innerJoin(
-      brand,
-      and(eq(show.brand_id, brand.id), isNull(brand.deleted_at))
-    )
-    .innerJoin(
       platform,
-      and(
-        eq(showPlatform.platform_id, platform.id),
-        isNull(platform.deleted_at)
-      )
-    )
-    .leftJoin(
-      studioRoom,
-      and(
-        eq(showPlatform.studio_room_id, studioRoom.id),
-        isNull(studioRoom.deleted_at)
-      )
-    )
-    .leftJoin(
-      studio,
-      and(eq(studioRoom.studio_id, studio.id), isNull(studio.deleted_at))
+      and(eq(showPlatform.platform_id, platform.id), isNull(platform.deleted_at))
     )
     .where(filters);
 
-  const data = showPlatforms.map(showPlatformSerializer);
+  const data = showPlatforms.map((sp) => showPlatformSerializer(sp));
 
   return c.json(
     {
@@ -163,14 +143,18 @@ export const create: AppRouteHandler<CreateRoute> = async (c) => {
 
   const show = payload.show!;
   const platform = payload.platform!;
-  const studio_room = payload.studio_room ?? null;
+  const reviewForm = payload.review_form;
+  const reviewer = payload.reviewer;
+  const params = payload.params;
 
   const [inserted] = await db
     .insert(showPlatform)
     .values({
+      ...params,
       show_id: show.id,
       platform_id: platform.id,
-      studio_room_id: studio_room?.id,
+      review_form_id: reviewForm?.id ?? null,
+      reviewer_id: reviewer?.id ?? null,
       ...(is_active && { is_active }),
     })
     .onConflictDoUpdate({
@@ -179,7 +163,6 @@ export const create: AppRouteHandler<CreateRoute> = async (c) => {
         is_active: is_active ?? false,
         show_id: show.id,
         platform_id: platform.id,
-        ...(studio_room && { studio_room_id: studio_room.id }),
         deleted_at: null,
       },
       setWhere: isNotNull(showPlatform.deleted_at),
@@ -195,12 +178,14 @@ export const create: AppRouteHandler<CreateRoute> = async (c) => {
 
   const data = {
     ...inserted,
+    review_items: inserted.review_items as any,
     platform_uid: platform.uid,
     show_uid: show.uid,
-    studio_room_uid: studio_room?.uid ?? null,
+    reviewer_uid: reviewer?.uid ?? null,
+    review_form_uid: reviewForm?.uid ?? null,
   };
 
-  return c.json(selectShowPlatformSchema.parse(data), HttpStatusCodes.CREATED);
+  return c.json(showPlatformSerializer(data), HttpStatusCodes.CREATED);
 };
 
 export const getOne: AppRouteHandler<GetOneRoute> = async (c) => {
@@ -209,10 +194,11 @@ export const getOne: AppRouteHandler<GetOneRoute> = async (c) => {
   const [showPlatformData] = await db
     .select({
       ...getTableColumns(showPlatform),
-      platform: { ...getTableColumns(platform) },
-      show: { ...getTableColumns(show), brand_uid: brand.uid },
-      studio_room: { ...getTableColumns(studioRoom) },
-      studio: { ...getTableColumns(studio) },
+      platform_uid: platform.uid,
+      show_uid: show.uid,
+      review_items: showPlatform.review_items as any,
+      reviewer_uid: member.uid,
+      review_form_uid: formTemplate.uid,
     })
     .from(showPlatform)
     .innerJoin(
@@ -220,26 +206,11 @@ export const getOne: AppRouteHandler<GetOneRoute> = async (c) => {
       and(eq(showPlatform.show_id, show.id), isNull(show.deleted_at))
     )
     .innerJoin(
-      brand,
-      and(eq(show.brand_id, brand.id), isNull(brand.deleted_at))
-    )
-    .innerJoin(
       platform,
       and(
         eq(showPlatform.platform_id, platform.id),
         isNull(platform.deleted_at)
       )
-    )
-    .leftJoin(
-      studioRoom,
-      and(
-        eq(showPlatform.studio_room_id, studioRoom.id),
-        isNull(studioRoom.deleted_at)
-      )
-    )
-    .leftJoin(
-      studio,
-      and(eq(studioRoom.studio_id, studio.id), isNull(studio.deleted_at))
     )
     .where(
       and(
@@ -261,13 +232,19 @@ export const getOne: AppRouteHandler<GetOneRoute> = async (c) => {
 export const patch: AppRouteHandler<PatchRoute> = async (c) => {
   const searchData = c.req.valid("param");
 
-  const { show, studio_room, platform, params, ...payload } =
-    c.req.valid("json");
+  const {
+    show,
+    platform,
+    reviewer,
+    review_form,
+    params,
+    ...payload
+  } = c.req.valid("json");
 
-  const removeStudioRoom = params.studio_room_uid === null;
-  const studio_room_id = removeStudioRoom ? null : studio_room?.id;
   const show_id = show?.id;
   const platform_id = platform?.id;
+  const reviewer_id = reviewer?.id;
+  const review_form_id = review_form?.id;
 
   const [showPlatformData] = await db
     .update(showPlatform)
@@ -275,7 +252,8 @@ export const patch: AppRouteHandler<PatchRoute> = async (c) => {
       ...payload,
       ...(show_id && { show_id }),
       ...(platform_id && { platform_id }),
-      ...((studio_room_id || removeStudioRoom) && { studio_room_id }),
+      ...(reviewer_id && { reviewer_id }),
+      ...(review_form_id && { review_form_id }),
     })
     .where(
       and(
@@ -288,18 +266,18 @@ export const patch: AppRouteHandler<PatchRoute> = async (c) => {
 
   const platform_uid = platform?.uid ?? searchData.platform_uid;
   const show_uid = show?.uid ?? searchData.show_uid;
-  const studio_room_uid = removeStudioRoom
-    ? null
-    : studio_room?.uid ?? searchData.studio_room_uid;
+  const reviewer_uid = reviewer?.uid ?? null;
+  const review_form_uid = review_form?.uid ?? null;
 
   const data = {
     ...showPlatformData,
+    review_items: showPlatformData.review_items as any,
     platform_uid,
     show_uid,
-    studio_room_uid,
+    reviewer_uid,
+    review_form_uid,
   };
-
-  return c.json(selectShowPlatformSchema.parse(data), HttpStatusCodes.OK);
+  return c.json(showPlatformSerializer(data), HttpStatusCodes.OK);
 };
 
 export const remove: AppRouteHandler<RemoveRoute> = async (c) => {

@@ -9,7 +9,8 @@ import {
 } from "drizzle-zod";
 
 import { PREFIX } from "@/constants";
-import { brandedUid, reviewByMember, timestamps } from "../helpers/columns.helpers";
+import { brandedUid, timestamps } from "../helpers/columns.helpers";
+import { reviewByMember } from "../helpers/reviews.helpers";
 import { show } from "./show.schema";
 import { platform } from "./platform.schema";
 
@@ -55,10 +56,13 @@ export const showPlatform = table(
   ]
 );
 
-export const selectShowSchema = createSelectSchema(showPlatform)
+export const selectShowPlatformSchema = createSelectSchema(showPlatform)
   .merge(
     z.object({
-      client_uid: z.string(),
+      show_uid: z.string().startsWith(PREFIX.SHOW),
+      platform_uid: z.string().startsWith(PREFIX.PLATFORM),
+      reviewer_uid: z.string().startsWith(PREFIX.MEMBER).nullable(),
+      review_form_uid: z.string().startsWith(PREFIX.FORM_TEMPLATE).nullable(),
     })
   )
   .omit({
@@ -68,12 +72,14 @@ export const selectShowSchema = createSelectSchema(showPlatform)
     deleted_at: true,
   });
 
-export const insertShowSchema = createInsertSchema(showPlatform)
+export const insertShowPlatformSchema = createInsertSchema(showPlatform)
   .merge(
     z.object({
       name: z.string().min(1),
       show_uid: z.string().startsWith(PREFIX.SHOW),
       platform_uid: z.string().startsWith(PREFIX.PLATFORM),
+      reviewer_uid: z.string().startsWith(PREFIX.MEMBER).nullish(),
+      review_form_uid: z.string().startsWith(PREFIX.FORM_TEMPLATE).nullish(),
       ext_id: z.string().min(1).optional(),
       note: z.string().min(1).optional(),
     })
@@ -87,14 +93,16 @@ export const insertShowSchema = createInsertSchema(showPlatform)
     deleted_at: true,
   });
 
-export const patchShowSchema = createUpdateSchema(showPlatform)
+export const patchShowPlatformSchema = createUpdateSchema(showPlatform)
   .merge(
     z.object({
-      name: z.string().min(1).optional(),
-      show_uid: z.string().startsWith(PREFIX.SHOW),
-      platform_uid: z.string().startsWith(PREFIX.PLATFORM),
-      ext_id: z.string().min(1).optional(),
-      note: z.string().min(1).optional(),
+      show_platform_uid: z.string().startsWith(PREFIX.SHOW_PLATFORM).nullish(),
+      show_uid: z.string().startsWith(PREFIX.SHOW).nullish(),
+      platform_uid: z.string().startsWith(PREFIX.PLATFORM).nullish(),
+      reviewer_uid: z.string().startsWith(PREFIX.MEMBER).nullish(),
+      review_form_uid: z.string().startsWith(PREFIX.FORM_TEMPLATE).nullish(),
+      ext_id: z.string().min(1).nullish(),
+      note: z.string().min(1).nullish(),
     })
   )
   .omit({
@@ -106,14 +114,17 @@ export const patchShowSchema = createUpdateSchema(showPlatform)
     deleted_at: true,
   });
 
-export const patchBulkShowSchema = createUpdateSchema(showPlatform)
+export const patchBulkShowPlatformSchema = createUpdateSchema(showPlatform)
   .merge(
     z.object({
-      name: z.string().min(1).optional(),
-      show_uid: z.string().startsWith(PREFIX.SHOW),
-      platform_uid: z.string().startsWith(PREFIX.PLATFORM),
-      ext_id: z.string().min(1).optional(),
-      note: z.string().min(1).optional(),
+      show_platform_uid: z.string().startsWith(PREFIX.SHOW_PLATFORM).nullish(),
+      show_uid: z.string().startsWith(PREFIX.SHOW).nullish(),
+      platform_uid: z.string().startsWith(PREFIX.PLATFORM).nullish(),
+      reviewer_uid: z.string().startsWith(PREFIX.MEMBER).nullish(),
+      review_form_uid: z.string().startsWith(PREFIX.FORM_TEMPLATE).nullish(),
+      is_active: z.boolean().nullish(),
+      ext_id: z.string().min(1).nullish(),
+      note: z.string().min(1).nullish(),
     })
   )
   .omit({
@@ -125,7 +136,7 @@ export const patchBulkShowSchema = createUpdateSchema(showPlatform)
     deleted_at: true,
   });
 
-export type SelectShowSchema = z.infer<typeof selectShowSchema>;
-export type InsertShowSchema = z.infer<typeof insertShowSchema>;
-export type PatchShowSchema = z.infer<typeof patchShowSchema>;
-export type PatchBulkShowSchema = z.infer<typeof patchBulkShowSchema>;
+export type SelectShowPlatformSchema = z.infer<typeof selectShowPlatformSchema>;
+export type InsertShowPlatformSchema = z.infer<typeof insertShowPlatformSchema>;
+export type PatchShowPlatformSchema = z.infer<typeof patchShowPlatformSchema>;
+export type PatchBulkShowPlatformSchema = z.infer<typeof patchBulkShowPlatformSchema>;
