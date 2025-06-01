@@ -1,13 +1,14 @@
 import type { AppRouteHandler } from "@/lib/types";
 import type {
-  // GetMaterialsRoute, 
-  // GetOneRoute, 
+  // GetMaterialsRoute,
+  GetOneRoute,
   ListRoute
 } from "./shows.routes";
 
 import * as HttpStatusCodes from "@/http-status-codes";
 import db from "@/db";
 import {
+  material,
   mc,
   platform,
   show,
@@ -15,11 +16,10 @@ import {
   studioRoom,
 } from "@/db/schema";
 import {
-  // showDetailsSerializer,
   showSerializer
 } from "@/serializers/api/shows/show.serializer";
 // import { showMaterialSerializer } from "@/serializers/api/shows/material.serializer";
-import { and, eq, ilike, gte, lte, isNull, count, desc, getTableColumns } from "drizzle-orm";
+import { and, eq, ilike, gte, lte, isNull, count, desc, getTableColumns, or } from "drizzle-orm";
 import { showMc } from "@/db/schema/show-mc.schema";
 import { client } from "@/db/schema/client.schema";
 
@@ -103,63 +103,57 @@ export const list: AppRouteHandler<ListRoute> = async (c) => {
   }, HttpStatusCodes.OK);
 };
 
-// export const getOne: AppRouteHandler<GetOneRoute> = async (c) => {
-//   const { id: show_uid } = c.req.valid("param");
-//   const userId = c.get('jwtPayload')!.id;
+export const getOne: AppRouteHandler<GetOneRoute> = async (c) => {
+  const { id: show_id } = c.req.valid("param");
+  const userId = c.get('jwtPayload')!.id;
 
-//   const [showDetails] = await db
-//     .select({
-//       ...getTableColumns(showPlatformMc),
-//       brand: { ...getTableColumns(brand) },
-//       platform: { ...getTableColumns(platform) },
-//       show_platform: { ...getTableColumns(showPlatform) },
-//       show: { ...getTableColumns(show) },
-//       studio_room: { ...getTableColumns(studioRoom) },
-//     })
-//     .from(showPlatformMc)
-//     .innerJoin(showPlatform,
-//       and(
-//         eq(showPlatformMc.show_id, showPlatform.show_id),
-//         eq(showPlatformMc.platform_id, showPlatform.platform_id)
-//       )
-//     )
-//     .innerJoin(show, and(eq(showPlatformMc.show_id, show.id)))
-//     .innerJoin(brand, and(eq(show.brand_id, brand.id)))
-//     .innerJoin(mc, and(eq(showPlatformMc.mc_id, mc.id)))
-//     .innerJoin(user, and(eq(mc.user_id, user.id)))
-//     .innerJoin(platform, and(eq(showPlatformMc.platform_id, platform.id),))
-//     .leftJoin(studioRoom, and(eq(showPlatform.studio_room_id, studioRoom.id)))
-//     .where(
-//       and(
-//         or(eq(user.ext_uid, userId), eq(user.uid, userId)),
-//         isNull(brand.deleted_at),
-//         isNull(mc.deleted_at),
-//         isNull(platform.deleted_at),
-//         isNull(show.deleted_at),
-//         isNull(showPlatform.deleted_at),
-//         isNull(studioRoom.deleted_at),
-//         isNull(user.deleted_at),
-//         eq(show.uid, show_uid)
-//       )
-//     );
+  const [mcRecord] = await db
+    .select({ id: mc.id })
+    .from(mc)
+    .where(and(eq(mc.ext_id, userId), isNull(mc.deleted_at)))
+    .limit(1);
 
-//   if (!showDetails) {
-//     return c.json({ message: 'show not found' }, HttpStatusCodes.NOT_FOUND);
-//   }
+  if (!mcRecord) {
+    return c.json({ message: 'MC not found' }, HttpStatusCodes.NOT_FOUND);
+  }
 
-//   const data = showDetailsSerializer(showDetails);
+  const [showDetails] = await db
+    .select({
+      ...getTableColumns(show),
+      client: { ...getTableColumns(client) },
+      studio_room: { ...getTableColumns(studioRoom) },
+    })
+    .from(showMc)
+    .innerJoin(show, and(eq(showMc.show_id, show.id)))
+    .leftJoin(studioRoom, eq(show.studio_room_id, studioRoom.id))
+    .leftJoin(client, eq(show.client_id, client.id))
+    .where(
+      and(
+        eq(showMc.mc_id, mcRecord.id),
+        eq(show.uid, show_id),
+        isNull(client.deleted_at),
+        isNull(show.deleted_at),
+        isNull(studioRoom.deleted_at),
+      )
+    );
 
-//   return c.json(data, HttpStatusCodes.OK);
-// };
+  if (!showDetails) {
+    return c.json({ message: 'show not found' }, HttpStatusCodes.NOT_FOUND);
+  }
+
+  const data = showSerializer(showDetails);
+
+  return c.json(data, HttpStatusCodes.OK);
+};
 
 // export const getMaterials: AppRouteHandler<GetMaterialsRoute> = async (c) => {
-//   const { id: show_uid } = c.req.valid("param");
+//   const { id: show_id } = c.req.valid("param");
 //   const userId = c.get('jwtPayload')!.id;
 
 //   const materials = await db
 //     .select({
-//       ...getTableColumns(brandMaterial),
-//       brand_uid: brand.uid,
+//       ...getTableColumns(material),
+//       client_id: client.uid,
 //     })
 //     .from(showPlatformMc)
 //     .innerJoin(show, and(eq(showPlatformMc.show_id, show.id)))

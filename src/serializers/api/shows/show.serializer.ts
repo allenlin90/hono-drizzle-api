@@ -13,32 +13,55 @@ export const ShowSchema = selectShowSchema
     studio_room: selectStudioRoomSchema.omit({ studio_uid: true }).nullable(),
   });
 
-export const ShowTransformer = ShowSchema.transform((data) => ({
-  id: data.uid,
-  name: data.name,
-  client: data.client ? {
-    id: data.client.uid,
-    name: data.client.name,
-    created_at: data.client.created_at,
-    updated_at: data.client.updated_at,
-  } : null,
-  studio_room: data.studio_room ? {
-    id: data.studio_room.uid,
-    name: data.studio_room.name,
-    created_at: data.studio_room.created_at,
-    updated_at: data.studio_room.updated_at,
-  } : null,
-  start_time: data.start_time,
-  end_time: data.end_time,
-  created_at: data.created_at,
-  updated_at: data.updated_at,
-}));
+export const ShowExpandedSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  client: z
+    .object({
+      id: z.string(),
+      name: z.string(),
+      created_at: z.string(),
+      updated_at: z.string(),
+    })
+    .nullable(),
+  studio_room: z
+    .object({
+      id: z.string(),
+      name: z.string(),
+      created_at: z.string(),
+      updated_at: z.string(),
+    })
+    .nullable(),
+  start_time: z.string(),
+  end_time: z.string(),
+  created_at: z.string(),
+  updated_at: z.string(),
+});
 
 export const showSerializer = (show: z.infer<typeof ShowSchema>) => {
-  const parsed = ShowTransformer.parse(show);
-
   return {
     object: "show",
-    ...parsed,
+    id: show.uid, // fallback if id is not present
+    name: show.name,
+    client: show.client
+      ? {
+        id: show.client.uid,
+        name: show.client.name,
+        created_at: show.client.created_at,
+        updated_at: show.client.updated_at,
+      }
+      : null,
+    studio_room: show.studio_room
+      ? {
+        id: show.studio_room.uid,
+        name: show.studio_room.name,
+        created_at: show.studio_room.created_at,
+        updated_at: show.studio_room.updated_at,
+      }
+      : null,
+    start_time: show.start_time,
+    end_time: show.end_time,
+    created_at: show.created_at,
+    updated_at: show.updated_at,
   };
 };

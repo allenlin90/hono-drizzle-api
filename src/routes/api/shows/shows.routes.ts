@@ -10,12 +10,11 @@ import { PaginatedObjectsSchema } from "@/openapi/schemas/utils/paginated-object
 import { createErrorSchema } from "@/openapi/schemas/utils/create-error-schema";
 import { NotFoundSchema } from "@/openapi/schemas/status/not-found-schema";
 import { ShowParamFilters } from "@/openapi/schemas/param-filters/show-param-filters";
-// import { IdParams } from "@/openapi/schemas/params/id-params";
+import { IdParams } from "@/openapi/schemas/params/id-params";
 
-// import { selectMaterialSchema } from "@/db/schema/material.schema";
+import { selectMaterialSchema } from "@/db/schema/material.schema";
 import {
-  // showDetailsTransformer,
-  ShowTransformer
+  ShowExpandedSchema
 } from "@/serializers/api/shows/show.serializer";
 
 const tags = ["Shows"];
@@ -31,7 +30,7 @@ export const list = createRoute({
     [HttpStatusCodes.OK]: jsonContent(
       PaginatedObjectsSchema({
         objectType: "show",
-        objectSchema: ShowTransformer,
+        objectSchema: ShowExpandedSchema,
       }),
       "List of shows"
     ),
@@ -50,24 +49,24 @@ export const list = createRoute({
   },
 });
 
-// export const getOne = createRoute({
-//   tags,
-//   path: "/shows/{id}",
-//   method: "get",
-//   request: {
-//     params: IdParams(PREFIX.SHOW),
-//   },
-//   responses: {
-//     [HttpStatusCodes.OK]: jsonContent(
-//       showDetailsTransformer,
-//       "The requested show"
-//     ),
-//     [HttpStatusCodes.NOT_FOUND]: jsonContent(
-//       NotFoundSchema,
-//       "Show not found"
-//     ),
-//   },
-// });
+export const getOne = createRoute({
+  tags,
+  path: "/shows/{id}",
+  method: "get",
+  request: {
+    params: IdParams(PREFIX.SHOW),
+  },
+  responses: {
+    [HttpStatusCodes.OK]: jsonContent(
+      ShowExpandedSchema,
+      "The requested show"
+    ),
+    [HttpStatusCodes.NOT_FOUND]: jsonContent(
+      NotFoundSchema,
+      "Show not found"
+    ),
+  },
+});
 
 // export const getMaterials = createRoute({
 //   tags,
@@ -78,7 +77,9 @@ export const list = createRoute({
 //   },
 //   responses: {
 //     [HttpStatusCodes.OK]: jsonContent(
-//       z.object({ materials: z.array(selectMaterialSchema) }),
+//       z.object({
+//         materials: z.array(selectMaterialSchema)
+//       }),
 //       "The requested materials by show ID"
 //     ),
 //     [HttpStatusCodes.NOT_FOUND]: jsonContent(
@@ -89,5 +90,5 @@ export const list = createRoute({
 // });
 
 export type ListRoute = typeof list;
-// export type GetOneRoute = typeof getOne;
+export type GetOneRoute = typeof getOne;
 // export type GetMaterialsRoute = typeof getMaterials;
