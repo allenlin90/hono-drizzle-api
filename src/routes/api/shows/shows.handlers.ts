@@ -1,6 +1,6 @@
 import type { AppRouteHandler } from "@/lib/types";
 import type {
-  // GetMaterialsRoute,
+  GetMaterialsRoute,
   GetOneRoute,
   ListRoute
 } from "./shows.routes";
@@ -12,13 +12,14 @@ import {
   mc,
   platform,
   show,
+  showMcMaterial,
   showPlatform,
   studioRoom,
 } from "@/db/schema";
 import {
   showSerializer
 } from "@/serializers/api/shows/show.serializer";
-// import { showMaterialSerializer } from "@/serializers/api/shows/material.serializer";
+import { showMaterialSerializer } from "@/serializers/api/shows/material.serializer";
 import { and, eq, ilike, gte, lte, isNull, count, desc, getTableColumns, or } from "drizzle-orm";
 import { showMc } from "@/db/schema/show-mc.schema";
 import { client } from "@/db/schema/client.schema";
@@ -146,40 +147,42 @@ export const getOne: AppRouteHandler<GetOneRoute> = async (c) => {
   return c.json(data, HttpStatusCodes.OK);
 };
 
-// export const getMaterials: AppRouteHandler<GetMaterialsRoute> = async (c) => {
-//   const { id: show_id } = c.req.valid("param");
-//   const userId = c.get('jwtPayload')!.id;
+export const getMaterials: AppRouteHandler<GetMaterialsRoute> = async (c) => {
+  const { id: show_id } = c.req.valid("param");
+  const userId = c.get('jwtPayload')!.id;
 
-//   const materials = await db
-//     .select({
-//       ...getTableColumns(material),
-//       client_id: client.uid,
-//     })
-//     .from(showPlatformMc)
-//     .innerJoin(show, and(eq(showPlatformMc.show_id, show.id)))
-//     .innerJoin(mc, and(eq(showPlatformMc.mc_id, mc.id)))
-//     .innerJoin(user, and(eq(mc.user_id, user.id)))
-//     .leftJoin(showPlatformMaterial, and(
-//       eq(showPlatformMc.show_id, showPlatformMaterial.show_id),
-//       eq(showPlatformMc.platform_id, showPlatformMaterial.platform_id),
-//     ))
-//     .leftJoin(brandMaterial, and(eq(showPlatformMaterial.brand_material_id, brandMaterial.id)))
-//     .leftJoin(brand, and(eq(brandMaterial.brand_id, brand.id)))
-//     .where(
-//       and(
-//         or(eq(user.ext_uid, userId), eq(user.uid, userId)),
-//         eq(show.uid, show_uid),
-//         isNull(showPlatformMc.deleted_at),
-//         isNull(show.deleted_at),
-//         isNull(mc.deleted_at),
-//         isNull(user.deleted_at),
-//         isNull(showPlatformMaterial.deleted_at),
-//         isNull(brandMaterial.deleted_at),
-//         isNull(brand.deleted_at),
-//       )
-//     );
+  const [mcRecord] = await db
+    .select({ id: mc.id })
+    .from(mc)
+    .where(and(eq(mc.ext_id, userId), isNull(mc.deleted_at)))
+    .limit(1);
 
-//   const data = materials.map(showMaterialSerializer);
+  if (!mcRecord) {
+    return c.json({ message: 'MC not found' }, HttpStatusCodes.NOT_FOUND);
+  }
 
-//   return c.json({ materials: data }, HttpStatusCodes.OK);
-// };
+  const materials = await db
+    .select({
+      ...getTableColumns(material),
+      client: { ...getTableColumns(client) },
+    })
+    .from(showMcMaterial)
+    .innerJoin(showMc, and(eq(showMc.id, showMcMaterial.show_mc_id)))
+    .innerJoin(show, and(eq(show.id, showMc.show_id)))
+    .innerJoin(material, and(eq(showMcMaterial.material_id, material.id)))
+    .leftJoin(client, and(eq(material.client_id, client.id), isNull(client.deleted_at)))
+    .where(
+      and(
+        eq(show.uid, show_id),
+        eq(showMc.mc_id, mcRecord.id),
+        eq(showMcMaterial.is_active, true),
+        isNull(showMc.deleted_at),
+        isNull(showMcMaterial.deleted_at),
+        isNull(show.deleted_at),
+      )
+    );
+
+  const data = materials.map(showMaterialSerializer);
+
+  return c.json({ materials: data }, HttpStatusCodes.OK);
+};

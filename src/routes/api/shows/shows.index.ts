@@ -15,7 +15,7 @@ router.use(routeGuard(['admin', 'member']));
 
 router
   .openapi(routes.list, handlers.list)
-  .openapi(routes.getOne, handlers.getOne);
-// .openapi(routes.getMaterials, handlers.getMaterials);
+  .openapi(routes.getOne, handlers.getOne)
+  .openapi(routes.getMaterials, handlers.getMaterials);
 
 export default router;

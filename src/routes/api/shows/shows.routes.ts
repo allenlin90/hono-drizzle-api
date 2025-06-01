@@ -12,10 +12,10 @@ import { NotFoundSchema } from "@/openapi/schemas/status/not-found-schema";
 import { ShowParamFilters } from "@/openapi/schemas/param-filters/show-param-filters";
 import { IdParams } from "@/openapi/schemas/params/id-params";
 
-import { selectMaterialSchema } from "@/db/schema/material.schema";
 import {
   ShowExpandedSchema
 } from "@/serializers/api/shows/show.serializer";
+import { ShowMaterialExpandedSchema } from "@/serializers/api/shows/material.serializer";
 
 const tags = ["Shows"];
 
@@ -68,27 +68,27 @@ export const getOne = createRoute({
   },
 });
 
-// export const getMaterials = createRoute({
-//   tags,
-//   path: '/shows/{id}/materials',
-//   method: 'get',
-//   request: {
-//     params: IdParams(PREFIX.SHOW),
-//   },
-//   responses: {
-//     [HttpStatusCodes.OK]: jsonContent(
-//       z.object({
-//         materials: z.array(selectMaterialSchema)
-//       }),
-//       "The requested materials by show ID"
-//     ),
-//     [HttpStatusCodes.NOT_FOUND]: jsonContent(
-//       NotFoundSchema,
-//       "Show not found"
-//     ),
-//   },
-// });
+export const getMaterials = createRoute({
+  tags,
+  path: '/shows/{id}/materials',
+  method: 'get',
+  request: {
+    params: IdParams(PREFIX.SHOW),
+  },
+  responses: {
+    [HttpStatusCodes.OK]: jsonContent(
+      z.object({
+        materials: z.array(ShowMaterialExpandedSchema)
+      }),
+      "The requested materials by show ID"
+    ),
+    [HttpStatusCodes.NOT_FOUND]: jsonContent(
+      NotFoundSchema,
+      "Show not found"
+    ),
+  },
+});
 
 export type ListRoute = typeof list;
 export type GetOneRoute = typeof getOne;
-// export type GetMaterialsRoute = typeof getMaterials;
+export type GetMaterialsRoute = typeof getMaterials;
