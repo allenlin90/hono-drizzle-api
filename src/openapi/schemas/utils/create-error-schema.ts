@@ -1,6 +1,6 @@
 import { z } from "@hono/zod-openapi";
 
-import type { ZodSchema } from "../helpers/types.ts";
+import type { ZodSchema } from "@/openapi/helpers/types";
 
 export const createErrorSchema = <T extends ZodSchema>(schema: T) => {
   const { error } = schema.safeParseAsync(

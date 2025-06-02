@@ -24,7 +24,13 @@ export const list: AppRouteHandler<ListRoute> = async (c) => {
       : undefined;
   const materialType = type ? eq(material.type, type) : undefined;
 
-  const filters = and(ilikeByName, clientUid, isActive, materialType);
+  const filters = and(
+    ilikeByName,
+    clientUid,
+    isActive,
+    materialType,
+    isNull(material.deleted_at)
+  );
 
   const materialsList = await db
     .select({
@@ -130,7 +136,11 @@ export const getOne: AppRouteHandler<GetOneRoute> = async (c) => {
     })
     .from(material)
     .innerJoin(client, eq(material.client_id, client.id))
-    .where(and(eq(material.uid, id), isNull(client.deleted_at)))
+    .where(and(
+      eq(material.uid, id),
+      isNull(client.deleted_at),
+      isNull(material.deleted_at),
+    ))
     .limit(1);
 
   if (!materialData) {
@@ -149,7 +159,7 @@ export const patch: AppRouteHandler<PatchRoute> = async (c) => {
   const { id: material_uid } = c.req.valid("param");
   const payload = c.req.valid("json");
 
-  let selectClient: { id: number } | null = null;
+  let selectClient: { id: number; } | null = null;
   let byClientUid = payload.client_uid
     ? eq(client.uid, payload.client_uid)
     : undefined;
@@ -158,7 +168,10 @@ export const patch: AppRouteHandler<PatchRoute> = async (c) => {
     const result = await db
       .select({ id: client.id })
       .from(client)
-      .where(and(byClientUid, isNull(client.deleted_at)))
+      .where(and(
+        byClientUid,
+        isNull(client.deleted_at),
+      ))
       .limit(1);
 
     selectClient = result[0];
@@ -184,7 +197,7 @@ export const patch: AppRouteHandler<PatchRoute> = async (c) => {
       and(
         eq(material.uid, material_uid),
         byClientUid,
-        isNull(material.deleted_at)
+        isNull(material.deleted_at),
       )
     )
     .returning({
